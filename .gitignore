@@ -8,7 +8,7 @@ packages/next/wasm/@next
 tarballs/
 packages/**/*.tgz
 .errors/
-
+public/
 # rust compiler crashes
 rustc-ice-*.txt
 
