@@ -1,15 +1,15 @@
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { JsonLd } from '@/components/seo/JsonLd';
+
 import { HeroSection } from '@/components/home/HeroSection';
 import { ToolsSection } from '@/components/home/ToolsSection';
-// Эти компоненты сделаем в следующих шагах:
-// import { HowItWorksSection } from '@/components/home/HowItWorksSection';
-// import { PortfolioSection } from '@/components/home/PortfolioSection';
-// import { MaterialsSection } from '@/components/home/MaterialsSection';
-// import { TestimonialsSection } from '@/components/home/TestimonialsSection';
-// import { FaqSection } from '@/components/home/FaqSection';
-// import { CtaSection } from '@/components/home/CtaSection';
+import { HowItWorksSection } from '@/components/home/HowItWorksSection';
+import { PortfolioSection } from '@/components/home/PortfolioSection';
+import { MaterialsSection } from '@/components/home/MaterialsSection';
+import { TestimonialsSection } from '@/components/home/TestimonialsSection';
+import { FaqSection } from '@/components/home/FaqSection';
+import { CtaSection } from '@/components/home/CtaSection';
 
 import { db } from '@/db';
 import { materials, portfolioItems } from '@/db/schema';
@@ -36,14 +36,14 @@ export default async function Home() {
       <main className="flex-1 overflow-hidden">
         <HeroSection />
         <ToolsSection />
+        <HowItWorksSection />
         
-        {/* Заглушки для следующих секций, пока мы их не переписали */}
-        {/* <HowItWorksSection /> */}
-        {/* {recentWorks.length > 0 && <PortfolioSection items={recentWorks} />} */}
-        {/* {popMaterials.length > 0 && <MaterialsSection items={popMaterials} />} */}
-        {/* <TestimonialsSection /> */}
-        {/* <FaqSection /> */}
-        {/* <CtaSection /> */}
+        {recentWorks.length > 0 && <PortfolioSection items={recentWorks} />}
+        {popMaterials.length > 0 && <MaterialsSection items={popMaterials} />}
+        
+        <TestimonialsSection />
+        <FaqSection />
+        <CtaSection />
       </main>
       
       <Footer />

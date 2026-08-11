@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { motion } from 'motion/react';
+import { motion, Variants } from 'motion/react';
 import { ArrowRight, Calculator, Image as ImageIcon, Package } from 'lucide-react';
 
 const tools = [
@@ -31,7 +31,8 @@ const tools = [
   },
 ];
 
-const containerVariants = {
+// Явно указываем тип Variants
+const containerVariants: Variants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
@@ -39,7 +40,7 @@ const containerVariants = {
   }
 };
 
-const itemVariants = {
+const itemVariants: Variants = {
   hidden: { opacity: 0, y: 30 },
   visible: { opacity: 1, y: 0, transition: { type: "spring", bounce: 0.4 } }
 };

@@ -75,12 +75,11 @@ export function HeroSection() {
             {/* Основная картинка с маской-пузырем */}
             <div className="absolute inset-0 bg-white bubble-shape anime-border anime-shadow z-10 overflow-hidden border-8">
               <Image
-                src="https://images.unsplash.com/photo-1578632767115-351597cf2477?auto=format&fit=crop&q=80&w=800"
+                src="/og-image.jpg"
                 alt="Anime blue ocean illustration"
                 fill
                 className="object-cover hover:scale-105 transition-transform duration-700"
                 priority
-                referrerPolicy="no-referrer"
               />
             </div>
           </div>
