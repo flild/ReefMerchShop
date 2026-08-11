@@ -5,14 +5,13 @@ import { motion } from 'motion/react';
 
 export function CtaSection() {
   return (
-    <section className="py-24 bg-reef-blue relative overflow-hidden border-t-4 border-slate-900">
+    <section className="py-24 bg-reef-blue dark:bg-slate-950 relative overflow-hidden border-t-4 border-theme-border">
       <div className="absolute inset-0 manga-dots opacity-20 pointer-events-none" />
       
-      {/* Декоративные круги на фоне */}
       <motion.div 
         animate={{ scale: [1, 1.2, 1], opacity: [0.1, 0.2, 0.1] }}
         transition={{ duration: 8, repeat: Infinity }}
-        className="absolute -top-32 -left-32 w-96 h-96 bg-white rounded-full blur-3xl pointer-events-none"
+        className="absolute -top-32 -left-32 w-96 h-96 bg-theme-surface rounded-full blur-3xl pointer-events-none"
       />
       
       <div className="container mx-auto px-4 relative z-10 text-center">
@@ -42,7 +41,7 @@ export function CtaSection() {
           transition={{ delay: 0.4, type: "spring" }}
           className="flex flex-wrap justify-center gap-6"
         >
-          <Link href="/calculator" className="bg-white text-reef-blue px-10 py-5 rounded-full font-black text-xl hover:scale-105 active:scale-95 transition-transform shadow-[0_8px_0_0_#94a3b8] hover:shadow-[0_4px_0_0_#94a3b8] hover:translate-y-1 active:shadow-[0_0px_0_0_#94a3b8] active:translate-y-2 border-2 border-transparent hover:border-slate-200">
+          <Link href="/calculator" className="bg-theme-surface text-theme-text px-10 py-5 rounded-full font-black text-xl hover:scale-105 active:scale-95 transition-transform shadow-[0_8px_0_0_var(--theme-shadow-base)] hover:shadow-[0_4px_0_0_var(--theme-shadow-base)] hover:translate-y-1 active:shadow-[0_0px_0_0_var(--theme-shadow-base)] active:translate-y-2 border-2 border-transparent hover:border-theme-border">
             Сделать расчет заказа
           </Link>
         </motion.div>

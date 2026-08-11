@@ -2,6 +2,17 @@ import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import { ThemeProvider } from '@/components/ThemeProvider';
 
+const themeInitScript = `
+  try {
+    let theme = localStorage.getItem('reef-theme') || 'system';
+    let resolvedTheme = theme;
+    if (theme === 'system') {
+      resolvedTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    }
+    document.documentElement.classList.add(resolvedTheme);
+  } catch (e) {}
+`;
+
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
@@ -57,9 +68,12 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="ru" suppressHydrationWarning>
-      <body className="antialiased min-h-screen bg-reef-light dark:bg-slate-900 text-slate-800 dark:text-slate-200 font-sans selection:bg-reef-cyan selection:text-white" suppressHydrationWarning>
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+    <html lang="ru" suppressHydrationWarning> 
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} suppressHydrationWarning />
+      </head>
+      <body className="antialiased min-h-screen bg-theme-bg text-theme-text font-sans selection:bg-reef-cyan selection:text-white" suppressHydrationWarning>
+        <ThemeProvider>
           {children}
         </ThemeProvider>
       </body>

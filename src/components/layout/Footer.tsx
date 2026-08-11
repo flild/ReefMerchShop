@@ -2,7 +2,7 @@ import Link from 'next/link';
 
 export function Footer() {
   return (
-    <footer className="bg-reef-blue text-white pt-16 pb-8 mt-24 rounded-t-[3rem] border-t-[8px] border-reef-dark relative overflow-hidden">
+    <footer className="bg-reef-blue dark:bg-slate-950 text-white pt-16 pb-8 mt-24 rounded-t-[3rem] border-t-[8px] border-[var(--theme-btn-shadow)] relative overflow-hidden">
       <div className="absolute top-0 left-0 w-full h-full manga-dots opacity-20 pointer-events-none" />
       <div className="container mx-auto px-4 grid grid-cols-1 md:grid-cols-4 gap-8 relative z-10">
         <div>
@@ -14,29 +14,29 @@ export function Footer() {
         </div>
         
         <div>
-          <h4 className="font-display font-black text-xl mb-6 text-reef-light">Навигация</h4>
+          <h4 className="font-display font-black text-xl mb-6 text-white/90">Навигация</h4>
           <ul className="space-y-3 font-bold opacity-90">
-            <li><Link href="/portfolio" className="hover:text-reef-light hover:pl-2 transition-all">Портфолио</Link></li>
-            <li><Link href="/materials" className="hover:text-reef-light hover:pl-2 transition-all">Материалы</Link></li>
-            <li><Link href="/calculator" className="hover:text-reef-light hover:pl-2 transition-all">Калькулятор</Link></li>
+            <li><Link href="/portfolio" className="hover:text-reef-cyan hover:pl-2 transition-all">Портфолио</Link></li>
+            <li><Link href="/materials" className="hover:text-reef-cyan hover:pl-2 transition-all">Материалы</Link></li>
+            <li><Link href="/calculator" className="hover:text-reef-cyan hover:pl-2 transition-all">Калькулятор</Link></li>
           </ul>
         </div>
         
         <div>
-          <h4 className="font-display font-black text-xl mb-6 text-reef-light">Инструменты</h4>
+          <h4 className="font-display font-black text-xl mb-6 text-white/90">Инструменты</h4>
           <ul className="space-y-3 font-bold opacity-90">
-            <li><Link href="/tools/checklist" className="hover:text-reef-light hover:pl-2 transition-all">Чек-лист макета</Link></li>
-            <li><Link href="/tools/mockup" className="hover:text-reef-light hover:pl-2 transition-all">Примерить арт</Link></li>
-            <li><Link href="/templates" className="hover:text-reef-light hover:pl-2 transition-all">Скачать шаблоны</Link></li>
-            <li><Link href="/tools/check" className="hover:text-reef-light hover:pl-2 transition-all">Проверить файл</Link></li>
+            <li><Link href="/tools/checklist" className="hover:text-reef-cyan hover:pl-2 transition-all">Чек-лист макета</Link></li>
+            <li><Link href="/tools/mockup" className="hover:text-reef-cyan hover:pl-2 transition-all">Примерить арт</Link></li>
+            <li><Link href="/templates" className="hover:text-reef-cyan hover:pl-2 transition-all">Скачать шаблоны</Link></li>
+            <li><Link href="/tools/check" className="hover:text-reef-cyan hover:pl-2 transition-all">Проверить файл</Link></li>
           </ul>
         </div>
         
         <div>
-          <h4 className="font-display font-black text-xl mb-6 text-reef-light">Связь с нами</h4>
+          <h4 className="font-display font-black text-xl mb-6 text-white/90">Связь с нами</h4>
           <ul className="space-y-3 font-bold opacity-90">
-            <li><a href="#" className="hover:text-reef-light hover:pl-2 transition-all flex items-center gap-2">VKontakte</a></li>
-            <li><a href="#" className="hover:text-reef-light hover:pl-2 transition-all flex items-center gap-2">Telegram</a></li>
+            <li><a href="#" className="hover:text-reef-cyan hover:pl-2 transition-all flex items-center gap-2">VKontakte</a></li>
+            <li><a href="#" className="hover:text-reef-cyan hover:pl-2 transition-all flex items-center gap-2">Telegram</a></li>
             <li className="pt-2 opacity-80">📍 Санкт-Петербург</li>
           </ul>
         </div>

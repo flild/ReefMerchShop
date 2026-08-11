@@ -10,28 +10,27 @@ const tools = [
     icon: <Calculator size={36} strokeWidth={2.5} />,
     title: 'Калькулятор 2.0',
     desc: 'Точный расчет стоимости с учетом материалов, фурнитуры и тиража.',
-    bgClass: 'bg-reef-light',
-    iconBgClass: 'bg-white',
+    bgClass: 'bg-theme-bg',
+    iconBgClass: 'bg-theme-surface',
   },
   {
     href: '/tools/mockup',
     icon: <ImageIcon size={36} strokeWidth={2.5} />,
     title: 'Мокап-генератор',
     desc: 'Примерьте свой арт на прозрачный, жемчужный или цветной акрил онлайн.',
-    bgClass: 'bg-white',
-    iconBgClass: 'bg-reef-light',
+    bgClass: 'bg-theme-surface',
+    iconBgClass: 'bg-theme-bg',
   },
   {
     href: '/collects',
     icon: <Package size={36} strokeWidth={2.5} />,
     title: 'Коллекты',
     desc: 'Совместные заказы для снижения стоимости производства мерча.',
-    bgClass: 'bg-reef-light',
-    iconBgClass: 'bg-white',
+    bgClass: 'bg-theme-bg',
+    iconBgClass: 'bg-theme-surface',
   },
 ];
 
-// Явно указываем тип Variants
 const containerVariants: Variants = {
   hidden: { opacity: 0 },
   visible: {
@@ -47,7 +46,7 @@ const itemVariants: Variants = {
 
 export function ToolsSection() {
   return (
-    <section className="py-24 bg-white relative">
+    <section className="py-24 bg-theme-surface relative">
       <div className="container mx-auto px-4 relative z-10">
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
@@ -55,10 +54,10 @@ export function ToolsSection() {
           viewport={{ once: true, margin: "-100px" }}
           className="text-center mb-16"
         >
-          <h2 className="text-4xl md:text-5xl font-display font-black text-slate-800 mb-6 drop-shadow-sm">
+          <h2 className="text-4xl md:text-5xl font-display font-black text-theme-text mb-6 drop-shadow-sm">
             Инструменты для художников
           </h2>
-          <p className="text-xl text-slate-600 max-w-2xl mx-auto font-medium">
+          <p className="text-xl text-theme-muted max-w-2xl mx-auto font-medium">
             Мы сделали всё, чтобы подготовка и расчет заказа были максимально простыми и приятными.
           </p>
         </motion.div>
@@ -76,12 +75,12 @@ export function ToolsSection() {
                 href={tool.href} 
                 className={`${tool.bgClass} rounded-[40px] p-10 anime-border anime-shadow hover:anime-shadow-hover hover:-translate-y-2 transition-all group block h-full flex flex-col`}
               >
-                <div className={`w-20 h-20 ${tool.iconBgClass} rounded-3xl flex items-center justify-center text-reef-blue mb-8 shadow-sm group-hover:scale-110 group-hover:${i % 2 === 0 ? 'rotate-6' : '-rotate-6'} transition-transform anime-border`}>
+                <div className={`w-20 h-20 ${tool.iconBgClass} rounded-3xl flex items-center justify-center text-reef-cyan mb-8 shadow-sm group-hover:scale-110 group-hover:${i % 2 === 0 ? 'rotate-6' : '-rotate-6'} transition-transform anime-border`}>
                   {tool.icon}
                 </div>
-                <h3 className="text-2xl font-display font-black text-slate-800 mb-4">{tool.title}</h3>
-                <p className="text-lg text-slate-600 mb-8 font-medium flex-1">{tool.desc}</p>
-                <div className="text-reef-blue font-bold flex items-center gap-2 group-hover:gap-4 transition-all text-lg mt-auto">
+                <h3 className="text-2xl font-display font-black text-theme-text mb-4">{tool.title}</h3>
+                <p className="text-lg text-theme-muted mb-8 font-medium flex-1">{tool.desc}</p>
+                <div className="text-reef-cyan font-bold flex items-center gap-2 group-hover:gap-4 transition-all text-lg mt-auto">
                   Перейти <ArrowRight size={24} strokeWidth={3} />
                 </div>
               </Link>

@@ -7,7 +7,9 @@ import { useTheme } from '@/components/ThemeProvider';
 const emptySubscribe = () => () => {};
 
 export function ThemeToggle() {
-  const { theme, setTheme } = useTheme();
+  const { resolvedTheme, setTheme } = useTheme();
+  
+  // Защита от ошибок гидратации (SSR vs Client)
   const isClient = React.useSyncExternalStore(
     emptySubscribe,
     () => true,
@@ -16,14 +18,19 @@ export function ThemeToggle() {
 
   return (
     <button
-      onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-      className="p-3 hover:bg-reef-light dark:hover:bg-slate-800 rounded-full transition-colors active:scale-95 text-reef-blue dark:text-reef-cyan"
+      onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
+      className="p-3 hover:bg-theme-bg rounded-full transition-colors active:scale-95 text-theme-accent"
       aria-label="Toggle theme"
     >
-      {isClient && theme === 'dark' ? <Sun size={24} strokeWidth={2.5} /> : <Moon size={24} strokeWidth={2.5} />}
+      {/* Пока клиент не смонтирован, рисуем заглушку, чтобы интерфейс не прыгал */}
+      {!isClient ? (
+        <div className="w-6 h-6" /> 
+      ) : resolvedTheme === 'dark' ? (
+        <Sun size={24} strokeWidth={2.5} />
+      ) : (
+        <Moon size={24} strokeWidth={2.5} />
+      )}
       <span className="sr-only">Toggle theme</span>
     </button>
   );
 }
-
-

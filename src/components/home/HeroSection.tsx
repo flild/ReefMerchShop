@@ -7,17 +7,15 @@ import { ArrowRight, Calculator, Sparkles } from 'lucide-react';
 
 export function HeroSection() {
   return (
-    <section className="relative w-full min-h-[650px] flex items-center bg-reef-light manga-dots overflow-hidden">
-      {/* Декоративный фон */}
+    <section className="relative w-full min-h-[650px] flex items-center bg-theme-bg manga-dots overflow-hidden">
       <div className="absolute inset-0 z-0 pointer-events-none">
-        <div className="absolute -top-20 -left-20 w-[500px] h-[500px] bg-white rounded-full blur-3xl opacity-60" />
+        <div className="absolute -top-20 -left-20 w-[500px] h-[500px] bg-theme-surface rounded-full blur-3xl opacity-60" />
         <div className="absolute bottom-10 right-10 w-64 h-64 bg-reef-cyan/30 rounded-full blur-2xl" />
         
-        {/* Анимированные пузыри на фоне */}
         <motion.div 
           animate={{ y: [0, -20, 0] }} 
           transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute top-1/4 left-1/4 w-8 h-8 rounded-full border-4 border-white/40" 
+          className="absolute top-1/4 left-1/4 w-8 h-8 rounded-full border-4 border-theme-border" 
         />
         <motion.div 
           animate={{ y: [0, -30, 0], scale: [1, 1.1, 1] }} 
@@ -33,16 +31,16 @@ export function HeroSection() {
           transition={{ duration: 0.6, type: "spring", bounce: 0.4 }}
           className="space-y-8 max-w-2xl"
         >
-          <div className="inline-flex items-center gap-2 px-6 py-3 bg-white rounded-full anime-border shadow-sm text-reef-blue font-bold text-sm tracking-wide">
+          <div className="inline-flex items-center gap-2 px-6 py-3 bg-theme-surface rounded-full anime-border shadow-sm text-theme-text font-bold text-sm tracking-wide">
             <Sparkles size={16} className="text-reef-cyan" />
             Типография для мерчеделов
           </div>
           
-          <h1 className="text-5xl md:text-7xl font-display font-black text-slate-800 leading-[1.1] drop-shadow-sm">
-            <span className="text-reef-blue drop-shadow-md">РИФ</span> — твоя гавань мерча
+          <h1 className="text-5xl md:text-7xl font-display font-black text-theme-text leading-[1.1] drop-shadow-sm">
+            <span className="text-reef-cyan drop-shadow-md">РИФ</span> — твоя гавань мерча
           </h1>
           
-          <p className="text-xl md:text-2xl text-slate-600 font-medium max-w-lg leading-relaxed">
+          <p className="text-xl md:text-2xl text-theme-muted font-medium max-w-lg leading-relaxed">
             Акрил, стенды, брелоки и нестандартные формы — мы воплощаем самые яркие идеи в жизнь! 
           </p>
           
@@ -65,18 +63,16 @@ export function HeroSection() {
           className="flex justify-center relative mt-12 lg:mt-0"
         >
           <div className="relative w-full max-w-[500px] aspect-square">
-            {/* Тень-пузырь позади */}
             <motion.div 
               animate={{ rotate: 360 }}
               transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-              className="absolute inset-0 bg-reef-cyan bubble-shape shadow-[0_12px_0_0_#2a8bf2] opacity-20 scale-105" 
+              className="absolute inset-0 bg-reef-cyan bubble-shape shadow-[0_12px_0_0_var(--theme-shadow-base)] opacity-20 scale-105" 
             />
             
-            {/* Основная картинка с маской-пузырем */}
-            <div className="absolute inset-0 bg-white bubble-shape anime-border anime-shadow z-10 overflow-hidden border-8">
+            <div className="absolute inset-0 bg-theme-surface bubble-shape anime-border anime-shadow z-10 overflow-hidden border-8">
               <Image
                 src="/og-image.jpg"
-                alt="Anime blue ocean illustration"
+                alt="Акриловые брелоки и стенды на заказ от Reef"
                 fill
                 className="object-cover hover:scale-105 transition-transform duration-700"
                 priority
