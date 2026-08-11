@@ -1,0 +1,42 @@
+@import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700;800&family=Nunito:wght@400;600;700;800&display=swap');
+
+@theme {
+  --color-reef-dark: #093f8e;
+  --color-reef-blue: #2a8bf2;
+  --color-reef-cyan: #4bd3e5;
+  --color-reef-light: #e6f6fb;
+  --color-reef-white: #FFFFFF;
+  --color-reef-bubble: rgba(75, 211, 229, 0.15);
+  
+  --font-sans: 'Nunito', system-ui, sans-serif;
+  --font-display: 'M PLUS Rounded 1c', 'Nunito', system-ui, sans-serif;
+}
+
+@layer utilities {
+  .bg-glass {
+    @apply bg-white/80 backdrop-blur-md border-b-2 border-reef-blue/10;
+  }
+  .anime-shadow {
+    box-shadow: 6px 6px 0px 0px rgba(42, 139, 242, 0.2);
+  }
+  .anime-shadow-hover {
+    box-shadow: 8px 8px 0px 0px rgba(42, 139, 242, 0.3);
+  }
+  .anime-border {
+    @apply border-2 border-reef-blue/20 rounded-[40px];
+  }
+  .anime-button {
+    @apply bg-reef-blue text-white rounded-[30px] font-bold transition-all border-2 border-transparent active:scale-95 shadow-[0_6px_0_0_#093f8e] hover:shadow-[0_4px_0_0_#093f8e] hover:translate-y-[2px] active:shadow-[0_0px_0_0_#093f8e] active:translate-y-[6px];
+  }
+  .anime-button-alt {
+    @apply bg-white text-reef-blue rounded-[30px] font-bold transition-all border-2 border-reef-blue/20 active:scale-95 shadow-[0_6px_0_0_rgba(42,139,242,0.2)] hover:shadow-[0_4px_0_0_rgba(42,139,242,0.2)] hover:translate-y-[2px] active:shadow-[0_0px_0_0_rgba(42,139,242,0.2)] active:translate-y-[6px] hover:border-reef-blue/40 hover:bg-reef-light/50;
+  }
+  .manga-dots {
+    background-image: radial-gradient(rgba(42, 139, 242, 0.12) 2px, transparent 2px);
+    background-size: 20px 20px;
+  }
+  .bubble-shape {
+    border-radius: 48% 52% 68% 32% / 43% 38% 62% 57%;
+  }
+}
