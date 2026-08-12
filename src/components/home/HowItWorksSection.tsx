@@ -1,71 +1,72 @@
 'use client';
 
-import { motion, Variants } from 'motion/react';
-import { UploadCloud, Paintbrush, Scissors, Truck } from 'lucide-react';
+import { motion } from 'motion/react';
+import { UploadCloud, Paintbrush, Scissors, Truck, ArrowRight, ArrowDown } from 'lucide-react';
 
 const steps = [
-  { icon: <UploadCloud size={32} />, title: 'Загрузка', desc: 'Скидываете нам свои макеты через личный кабинет' },
-  { icon: <Paintbrush size={32} />, title: 'Проверка', desc: 'Наш дизайнер проверяет файлы на ошибки печати' },
-  { icon: <Scissors size={32} />, title: 'Печать и резка', desc: 'Воплощаем идеи в акриле с яркой УФ-печатью' },
-  { icon: <Truck size={32} />, title: 'Доставка', desc: 'Бережно упаковываем и отправляем вам!' },
+  { icon: <UploadCloud size={40} strokeWidth={2} />, title: 'Загрузка', desc: 'Заливаете макеты через личный кабинет или скидываете менеджеру.' },
+  { icon: <Paintbrush size={40} strokeWidth={2} />, title: 'Проверка', desc: 'Наш дизайнер проверяет слои, вылеты и контуры реза.' },
+  { icon: <Scissors size={40} strokeWidth={2} />, title: 'Печать', desc: 'Наносим УФ-печать, режем лазером и собираем с фурнитурой.' },
+  { icon: <Truck size={40} strokeWidth={2} />, title: 'Отправка', desc: 'Упаковываем в пленку и отправляем СДЭКом или Почтой.' },
 ];
-
-const containerVariants: Variants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: { staggerChildren: 0.2, delayChildren: 0.1 }
-  }
-};
-
-const itemVariants: Variants = {
-  hidden: { opacity: 0, y: 30 },
-  visible: { opacity: 1, y: 0, transition: { type: "spring", bounce: 0.4 } }
-};
 
 export function HowItWorksSection() {
   return (
-    <section className="py-24 bg-theme-bg relative border-t-4 border-theme-border overflow-hidden">
+    <section className="py-24 bg-theme-surface relative border-t-4 border-theme-border overflow-hidden">
       <div className="container mx-auto px-4 relative z-10">
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-100px" }}
-          className="text-center mb-16"
+          className="text-center mb-20"
         >
-          <h2 className="text-4xl md:text-5xl font-display font-black text-theme-text mb-6 drop-shadow-sm">Как мы работаем</h2>
-          <p className="text-xl text-theme-muted max-w-2xl mx-auto font-medium">Простой путь от вашего макета до готового мерча</p>
+          <h2 className="text-4xl md:text-5xl font-display font-black text-theme-text mb-6 drop-shadow-sm">Как строится работа</h2>
+          <p className="text-xl text-theme-muted max-w-2xl mx-auto font-medium">Весь путь от вашего исходника до готового изделия в руках</p>
         </motion.div>
         
-        <div className="relative max-w-6xl mx-auto">
-          <motion.div 
-            initial={{ scaleX: 0 }}
-            whileInView={{ scaleX: 1 }}
-            viewport={{ once: true, margin: "-100px" }}
-            transition={{ duration: 1, ease: "easeInOut" }}
-            className="hidden md:block absolute top-12 left-[10%] right-[10%] h-2 bg-theme-border -z-10 rounded-full origin-left" 
-          />
-          
-          <motion.div 
-            variants={containerVariants}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "-50px" }}
-            className="grid grid-cols-1 md:grid-cols-4 gap-8 relative"
-          >
-            {steps.map((step, i) => (
-              <motion.div key={i} variants={itemVariants} className="flex flex-col items-center text-center relative group">
-                <div className="w-24 h-24 bg-theme-surface rounded-full flex items-center justify-center text-reef-cyan mb-6 shadow-md border-4 border-theme-border group-hover:scale-110 group-hover:bg-theme-bg transition-all duration-300">
-                  {step.icon}
-                </div>
-                <div className="absolute top-0 -right-4 md:right-4 lg:-right-4 w-8 h-8 bg-reef-cyan text-theme-surface rounded-full flex items-center justify-center font-black border-2 border-theme-border shadow-sm">
+        <div className="flex flex-col md:flex-row items-center justify-between max-w-7xl mx-auto relative gap-4 lg:gap-8">
+          {steps.map((step, i) => (
+            <div key={i} className="flex flex-col md:flex-row items-center flex-1 relative w-full group">
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                whileInView={{ opacity: 1, scale: 1, y: 0 }}
+                viewport={{ once: true, margin: "-50px" }}
+                transition={{ delay: i * 0.15, type: "spring", bounce: 0.4 }}
+                className="w-full bg-theme-bg p-8 rounded-[32px] anime-border anime-shadow flex flex-col items-center text-center relative z-10 hover:-translate-y-2 hover:anime-shadow-hover transition-all"
+              >
+                <div className="absolute -top-6 -left-6 w-12 h-12 bg-reef-cyan text-slate-900 rounded-full flex items-center justify-center font-black text-xl border-4 border-theme-border shadow-sm rotate-12 group-hover:rotate-0 transition-transform">
                   {i + 1}
                 </div>
-                <h3 className="text-xl font-black text-theme-text mb-3">{step.title}</h3>
+                
+                <div className="w-20 h-20 bg-theme-surface rounded-2xl border-2 border-theme-border flex items-center justify-center text-theme-text mb-6 group-hover:scale-110 transition-transform shadow-sm">
+                  {step.icon}
+                </div>
+                
+                <h3 className="text-2xl font-black text-theme-text mb-3">{step.title}</h3>
                 <p className="text-theme-muted font-medium leading-relaxed">{step.desc}</p>
               </motion.div>
-            ))}
-          </motion.div>
+
+              {/* Стрелка между шагами (скрыта на последнем) */}
+              {i < steps.length - 1 && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  whileInView={{ opacity: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: i * 0.15 + 0.2 }}
+                  className="hidden md:flex items-center justify-center mx-2 lg:mx-4 text-theme-border shrink-0 z-0"
+                >
+                  <ArrowRight size={48} strokeWidth={3} className="group-hover:translate-x-2 transition-transform text-reef-cyan" />
+                </motion.div>
+              )}
+
+              {/* Стрелка вниз для мобилки */}
+              {i < steps.length - 1 && (
+                <div className="md:hidden py-4 text-reef-cyan">
+                  <ArrowDown size={32} strokeWidth={3} />
+                </div>
+              )}
+            </div>
+          ))}
         </div>
       </div>
     </section>

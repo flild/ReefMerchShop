@@ -10,6 +10,9 @@ interface MaterialItem {
   name: string;
   description: string | null;
   imageUrl: string | null;
+  stock: number;
+  minStock: number;
+  inStock: boolean;
 }
 
 interface MaterialsSectionProps {
@@ -18,6 +21,16 @@ interface MaterialsSectionProps {
 
 export function MaterialsSection({ items }: MaterialsSectionProps) {
   if (!items || items.length === 0) return null;
+
+  const getStockStatus = (material: MaterialItem) => {
+    if (!material.inStock || material.stock <= 0) {
+      return { label: 'Нет в наличии', classes: 'bg-slate-200 text-slate-500 border-slate-300 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700' };
+    }
+    if (material.stock <= material.minStock) {
+      return { label: 'Осталось мало', classes: 'bg-yellow-100 text-yellow-800 border-yellow-300 dark:bg-yellow-900 dark:text-yellow-200 dark:border-yellow-700' };
+    }
+    return { label: 'В наличии', classes: 'bg-green-100 text-green-800 border-green-300 dark:bg-green-900 dark:text-green-200 dark:border-green-700' };
+  };
 
   return (
     <section className="py-24 bg-theme-bg manga-dots border-t-4 border-theme-border overflow-hidden">
@@ -33,28 +46,37 @@ export function MaterialsSection({ items }: MaterialsSectionProps) {
         </motion.div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
-          {items.map((mat, index) => (
-            <motion.div 
-              key={mat.id}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: index * 0.1, duration: 0.5 }}
-              className="bg-theme-surface rounded-[32px] p-6 anime-border anime-shadow hover:anime-shadow-hover hover:-translate-y-2 transition-all flex flex-col group cursor-pointer"
-            >
-              <div className="aspect-square rounded-2xl overflow-hidden mb-6 border-2 border-theme-border relative bg-theme-bg">
-                <Image
-                  src={mat.imageUrl || `https://picsum.photos/seed/${mat.id}/400/400`}
-                  alt={mat.name}
-                  fill
-                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-                  className="object-cover group-hover:scale-110 transition-transform duration-500"
-                />
-              </div>
-              <h3 className="text-xl font-black text-theme-text mb-2">{mat.name}</h3>
-              {mat.description && <p className="text-theme-muted text-sm line-clamp-3 mt-auto">{mat.description}</p>}
-            </motion.div>
-          ))}
+          {items.map((mat, index) => {
+            const status = getStockStatus(mat);
+            
+            return (
+              <motion.div 
+                key={mat.id}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: index * 0.1, duration: 0.5 }}
+                className="bg-theme-surface rounded-[32px] p-6 anime-border anime-shadow hover:anime-shadow-hover hover:-translate-y-2 transition-all flex flex-col group relative cursor-pointer"
+              >
+                {/* Бейдж статуса */}
+                <div className={`absolute top-4 right-4 z-10 px-3 py-1 rounded-full text-xs font-bold border-2 shadow-sm ${status.classes}`}>
+                  {status.label}
+                </div>
+
+                <div className="aspect-square rounded-2xl overflow-hidden mb-6 border-2 border-theme-border relative bg-theme-bg">
+                  <Image
+                    src={mat.imageUrl || `https://picsum.photos/seed/${mat.id}/400/400`}
+                    alt={mat.name}
+                    fill
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                    className="object-cover group-hover:scale-110 transition-transform duration-500"
+                  />
+                </div>
+                <h3 className="text-xl font-black text-theme-text mb-2">{mat.name}</h3>
+                {mat.description && <p className="text-theme-muted text-sm line-clamp-3 mt-auto">{mat.description}</p>}
+              </motion.div>
+            );
+          })}
         </div>
         
         <motion.div 
@@ -64,7 +86,7 @@ export function MaterialsSection({ items }: MaterialsSectionProps) {
           transition={{ delay: 0.5 }}
           className="mt-12 text-center"
         >
-          <Link href="/materials" className="anime-button-alt px-8 py-4 inline-flex items-center gap-3 text-lg bg-theme-surface group">
+          <Link href="/materials" className="anime-button-alt px-8 py-4 inline-flex items-center gap-3 text-lg bg-theme-surface border-2 border-theme-border rounded-full font-bold text-theme-text hover:bg-theme-bg transition-colors shadow-[0_4px_0_0_var(--theme-border)] active:translate-y-1 active:shadow-none group">
             Весь каталог материалов
             <ArrowRight size={24} strokeWidth={3} className="group-hover:translate-x-1 transition-transform" />
           </Link>
