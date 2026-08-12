@@ -8,7 +8,6 @@ import { db } from '@/db';
 import { materials, accessories } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 
-// Строгая генерация SEO-метаданных по правилам проекта
 export const metadata: Metadata = {
   title: 'Калькулятор заказа',
   description: 'Точный расчет стоимости производства мерча: акриловые брелоки, стенды. Выбор материалов, фурнитуры и тиража.',
@@ -17,20 +16,23 @@ export const metadata: Metadata = {
   },
 };
 
-// Отключаем кэширование, так как цены и остатки могут меняться
 export const dynamic = 'force-dynamic';
 
+// Вытягиваем типы прямо из схемы Drizzle, чтобы гарантировать совпадение с БД
+type Material = typeof materials.$inferSelect;
+type Accessory = typeof accessories.$inferSelect;
+
 export default async function CalculatorPage() {
-  let availableMaterials = [];
-  let availableAccessories = [];
+  // Явно указываем типы массивов, избавляясь от implicit any
+  let availableMaterials: Material[] = [];
+  let availableAccessories: Accessory[] = [];
 
   try {
-    // Тянем только те материалы, которые есть в наличии
     availableMaterials = await db
       .select()
       .from(materials)
       .where(eq(materials.inStock, true));
-      
+
     availableAccessories = await db.select().from(accessories);
   } catch (error) {
     console.error('Ошибка загрузки данных для калькулятора:', error);
@@ -40,7 +42,7 @@ export default async function CalculatorPage() {
     <div className="min-h-screen flex flex-col font-sans bg-theme-bg">
       <JsonLd />
       <Header />
-      
+
       <main className="flex-1 py-16 manga-dots">
         <div className="container mx-auto px-4 max-w-7xl relative z-10">
           <CalculatorClient 

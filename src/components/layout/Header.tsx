@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { User, Menu, X } from 'lucide-react';
@@ -19,7 +20,6 @@ export function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const pathname = usePathname();
 
-  // Блокируем скролл боди при открытом мобильном меню
   useEffect(() => {
     if (isMobileMenuOpen) {
       document.body.style.overflow = 'hidden';
@@ -35,11 +35,12 @@ export function Header() {
     <header className="sticky top-0 z-50 w-full bg-glass">
       <div className="container mx-auto px-4 h-20 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-3 hover:scale-105 transition-transform relative z-20">
-          <div className="w-12 h-12 rounded-full bg-theme-accent flex items-center justify-center text-theme-surface font-black text-2xl leading-none shadow-[0_3px_0_0_var(--theme-btn-shadow)] pb-1 border-2 border-theme-surface">
-            R
+          <div className="relative w-12 h-12 shrink-0">
+            {/* Placeholder для логотипа */}
+            <Image src="/logo.png" alt="РИФ Логотип" fill className="object-contain" />
           </div>
           <span className="font-display font-black text-3xl tracking-tight text-theme-accent drop-shadow-sm">
-            Reef
+            РИФ
           </span>
         </Link>
         
@@ -77,7 +78,6 @@ export function Header() {
         </div>
       </div>
 
-      {/* Мобильное меню с использованием CSS Grid для плавной анимации высоты */}
       <div 
         className={`lg:hidden absolute top-full left-0 w-full bg-theme-surface shadow-xl origin-top grid transition-[grid-template-rows,opacity] duration-300 ease-in-out border-b border-theme-border ${
           isMobileMenuOpen ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'

@@ -12,16 +12,22 @@ export function HeroSection() {
         <div className="absolute -top-20 -left-20 w-[500px] h-[500px] bg-theme-surface rounded-full blur-3xl opacity-60" />
         <div className="absolute bottom-10 right-10 w-64 h-64 bg-reef-cyan/30 rounded-full blur-2xl" />
         
+        {/* Белые пузырики с бликами */}
         <motion.div 
           animate={{ y: [0, -20, 0] }} 
           transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute top-1/4 left-1/4 w-8 h-8 rounded-full border-4 border-theme-border" 
-        />
+          className="absolute top-1/4 left-1/4 w-8 h-8 rounded-full border border-white/40 bg-white/10 backdrop-blur-sm overflow-hidden" 
+        >
+          <div className="absolute top-1 left-1.5 w-2 h-1 bg-white/70 rounded-full rotate-45" />
+        </motion.div>
+
         <motion.div 
           animate={{ y: [0, -30, 0], scale: [1, 1.1, 1] }} 
           transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-          className="absolute bottom-1/4 left-1/3 w-12 h-12 rounded-full border-4 border-reef-blue/20" 
-        />
+          className="absolute bottom-1/4 left-1/3 w-12 h-12 rounded-full border border-white/40 bg-white/10 backdrop-blur-sm overflow-hidden" 
+        >
+          <div className="absolute top-1.5 left-2 w-3 h-1.5 bg-white/70 rounded-full rotate-45" />
+        </motion.div>
       </div>
 
       <div className="container mx-auto px-4 z-10 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center py-20">
@@ -32,12 +38,12 @@ export function HeroSection() {
           className="space-y-8 max-w-2xl"
         >
           <div className="inline-flex items-center gap-2 px-6 py-3 bg-theme-surface rounded-full anime-border shadow-sm text-theme-text font-bold text-sm tracking-wide">
-            <Sparkles size={16} className="text-reef-cyan" />
+            <Sparkles size={16} className="text-theme-accent" />
             Типография для мерчеделов
           </div>
           
           <h1 className="text-5xl md:text-7xl font-display font-black text-theme-text leading-[1.1] drop-shadow-sm">
-            <span className="text-reef-cyan drop-shadow-md">РИФ</span> — твоя гавань мерча
+            <span className="text-theme-accent drop-shadow-md">РИФ</span> — твоя гавань мерча
           </h1>
           
           <p className="text-xl md:text-2xl text-theme-muted font-medium max-w-lg leading-relaxed">
@@ -49,7 +55,7 @@ export function HeroSection() {
               Посмотреть работы
               <ArrowRight size={24} strokeWidth={3} className="group-hover:translate-x-1 transition-transform" />
             </Link>
-            <Link href="/calculator" className="anime-button-alt px-8 py-4 flex items-center gap-3 text-lg group">
+            <Link href="/calculator" className="anime-button-alt px-8 py-4 flex items-center gap-3 text-lg group bg-theme-surface border-2 border-theme-border rounded-full font-bold text-theme-text hover:bg-theme-bg shadow-[0_4px_0_0_var(--theme-border)] active:translate-y-1 active:shadow-none transition-all">
               Рассчитать заказ
               <Calculator size={24} strokeWidth={3} className="group-hover:rotate-12 transition-transform" />
             </Link>
@@ -66,13 +72,13 @@ export function HeroSection() {
             <motion.div 
               animate={{ rotate: 360 }}
               transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-              className="absolute inset-0 bg-reef-cyan bubble-shape shadow-[0_12px_0_0_var(--theme-shadow-base)] opacity-20 scale-105" 
+              className="absolute inset-0 bg-theme-accent bubble-shape shadow-[0_12px_0_0_var(--theme-shadow-base)] opacity-20 scale-105" 
             />
             
             <div className="absolute inset-0 bg-theme-surface bubble-shape anime-border anime-shadow z-10 overflow-hidden border-8">
               <Image
                 src="/og-image.jpg"
-                alt="Акриловые брелоки и стенды на заказ от Reef"
+                alt="Акриловые брелоки и стенды на заказ от РИФ"
                 fill
                 className="object-cover hover:scale-105 transition-transform duration-700"
                 priority

@@ -7,7 +7,7 @@ const steps = [
   { icon: <UploadCloud size={40} strokeWidth={2} />, title: 'Загрузка', desc: 'Заливаете макеты через личный кабинет или скидываете менеджеру.' },
   { icon: <Paintbrush size={40} strokeWidth={2} />, title: 'Проверка', desc: 'Наш дизайнер проверяет слои, вылеты и контуры реза.' },
   { icon: <Scissors size={40} strokeWidth={2} />, title: 'Печать', desc: 'Наносим УФ-печать, режем лазером и собираем с фурнитурой.' },
-  { icon: <Truck size={40} strokeWidth={2} />, title: 'Отправка', desc: 'Упаковываем в пленку и отправляем СДЭКом или Почтой.' },
+  { icon: <Truck size={40} strokeWidth={2} />, title: 'Получение', desc: 'Доставка СДЭКом по РФ или самовывоз из студии в Санкт-Петербурге.' },
 ];
 
 export function HowItWorksSection() {
@@ -34,7 +34,7 @@ export function HowItWorksSection() {
                 transition={{ delay: i * 0.15, type: "spring", bounce: 0.4 }}
                 className="w-full bg-theme-bg p-8 rounded-[32px] anime-border anime-shadow flex flex-col items-center text-center relative z-10 hover:-translate-y-2 hover:anime-shadow-hover transition-all"
               >
-                <div className="absolute -top-6 -left-6 w-12 h-12 bg-reef-cyan text-slate-900 rounded-full flex items-center justify-center font-black text-xl border-4 border-theme-border shadow-sm rotate-12 group-hover:rotate-0 transition-transform">
+                <div className="absolute -top-6 -left-6 w-12 h-12 bg-theme-accent text-theme-surface rounded-full flex items-center justify-center font-black text-xl border-4 border-theme-border shadow-sm rotate-12 group-hover:rotate-0 transition-transform">
                   {i + 1}
                 </div>
                 
@@ -46,7 +46,6 @@ export function HowItWorksSection() {
                 <p className="text-theme-muted font-medium leading-relaxed">{step.desc}</p>
               </motion.div>
 
-              {/* Стрелка между шагами (скрыта на последнем) */}
               {i < steps.length - 1 && (
                 <motion.div
                   initial={{ opacity: 0 }}
@@ -55,13 +54,12 @@ export function HowItWorksSection() {
                   transition={{ delay: i * 0.15 + 0.2 }}
                   className="hidden md:flex items-center justify-center mx-2 lg:mx-4 text-theme-border shrink-0 z-0"
                 >
-                  <ArrowRight size={48} strokeWidth={3} className="group-hover:translate-x-2 transition-transform text-reef-cyan" />
+                  <ArrowRight size={48} strokeWidth={3} className="group-hover:translate-x-2 transition-transform text-theme-accent" />
                 </motion.div>
               )}
 
-              {/* Стрелка вниз для мобилки */}
               {i < steps.length - 1 && (
-                <div className="md:hidden py-4 text-reef-cyan">
+                <div className="md:hidden py-4 text-theme-accent">
                   <ArrowDown size={32} strokeWidth={3} />
                 </div>
               )}
