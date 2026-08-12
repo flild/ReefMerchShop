@@ -2,50 +2,65 @@
 
 import Link from 'next/link';
 import { motion } from 'motion/react';
+import { Calculator, Send, Users } from 'lucide-react';
 
 export function CtaSection() {
   return (
-    <section className="py-24 bg-theme-surface relative overflow-hidden border-t-4 border-theme-border">
-      <div className="absolute inset-0 manga-dots opacity-20 pointer-events-none" />
+    <section className="py-24 bg-theme-accent relative overflow-hidden border-t-4 border-theme-border">
+      {/* Манга-фон, который подстраивается под акцентный цвет */}
+      <div className="absolute inset-0 opacity-20" style={{ backgroundImage: 'radial-gradient(var(--theme-text-main) 2px, transparent 2px)', backgroundSize: '20px 20px' }} />
       
-      {/* Декоративные круги на фоне */}
-      <motion.div 
-        animate={{ scale: [1, 1.2, 1], opacity: [0.1, 0.2, 0.1] }}
-        transition={{ duration: 8, repeat: Infinity }}
-        className="absolute -top-32 -left-32 w-96 h-96 bg-theme-bg rounded-full blur-3xl pointer-events-none"
-      />
-      
-      <div className="container mx-auto px-4 relative z-10 text-center">
-        <motion.h2 
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="text-4xl md:text-6xl font-display font-black text-theme-text mb-8 drop-shadow-md leading-tight"
-        >
-          Готовы напечатать <br/>свой первый тираж?
-        </motion.h2>
-        
-        <motion.p 
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true }}
-          transition={{ delay: 0.2 }}
-          className="text-xl text-theme-muted max-w-2xl mx-auto font-medium mb-12"
-        >
-          Напишите нам, и мы с радостью поможем подготовить макеты, подобрать лучшие материалы и запустим заказ в работу!
-        </motion.p>
-        
-        <motion.div 
-          initial={{ opacity: 0, scale: 0.9 }}
-          whileInView={{ opacity: 1, scale: 1 }}
-          viewport={{ once: true }}
-          transition={{ delay: 0.4, type: "spring" }}
-          className="flex flex-wrap justify-center gap-6"
-        >
-          <Link href="/calculator" className="bg-theme-accent text-theme-surface px-10 py-5 rounded-full font-black text-xl hover:scale-105 active:scale-95 transition-transform shadow-[0_8px_0_0_var(--theme-btn-shadow)] hover:shadow-[0_4px_0_0_var(--theme-btn-shadow)] hover:translate-y-1 active:shadow-[0_0px_0_0_var(--theme-btn-shadow)] active:translate-y-2 border-2 border-transparent hover:border-theme-border">
-            Сделать расчет заказа
-          </Link>
-        </motion.div>
+      <div className="container mx-auto px-4 relative z-10">
+        <div className="max-w-4xl mx-auto bg-theme-surface rounded-[48px] p-10 md:p-16 anime-border anime-shadow-hover text-center">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+          >
+            <h2 className="text-4xl md:text-6xl font-display font-black text-theme-text mb-6 drop-shadow-sm">
+              Готовы печатать?
+            </h2>
+            <p className="text-xl text-theme-muted font-medium mb-10 max-w-2xl mx-auto">
+              Рассчитайте стоимость заказа прямо сейчас или напишите нашим менеджерам. Мы поможем с макетами и ответим на любые технические вопросы.
+            </p>
+          </motion.div>
+          
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.2 }}
+            className="flex flex-col sm:flex-row flex-wrap justify-center gap-4"
+          >
+            <Link 
+              href="/calculator" 
+              className="anime-button flex items-center justify-center gap-3 px-8 py-5 text-xl w-full sm:w-auto"
+            >
+              <Calculator size={24} strokeWidth={2.5} />
+              Калькулятор заказа
+            </Link>
+            
+            <Link 
+              href="https://t.me/reef_print" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="flex items-center justify-center gap-3 px-8 py-5 text-xl font-bold bg-[#2AABEE] text-white rounded-[30px] border-2 border-theme-border shadow-[0_6px_0_0_#1c7baf] hover:shadow-[0_4px_0_0_#1c7baf] hover:translate-y-[2px] active:shadow-none active:translate-y-[6px] transition-all w-full sm:w-auto"
+            >
+              <Send size={24} strokeWidth={2.5} />
+              Telegram
+            </Link>
+            
+            <Link 
+              href="https://vk.com/reef_print" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="flex items-center justify-center gap-3 px-8 py-5 text-xl font-bold bg-[#0077FF] text-white rounded-[30px] border-2 border-theme-border shadow-[0_6px_0_0_#0059bf] hover:shadow-[0_4px_0_0_#0059bf] hover:translate-y-[2px] active:shadow-none active:translate-y-[6px] transition-all w-full sm:w-auto"
+            >
+              <Users size={24} strokeWidth={2.5} />
+              ВКонтакте
+            </Link>
+          </motion.div>
+        </div>
       </div>
     </section>
   );
