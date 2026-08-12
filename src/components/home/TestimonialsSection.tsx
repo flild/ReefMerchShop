@@ -1,12 +1,12 @@
 'use client';
 
 import { motion, Variants } from 'motion/react';
-import { Quote, Star } from 'lucide-react';
+import { Quote } from 'lucide-react';
 
 const reviews = [
-  { name: 'Kitsu_Art', text: 'Заказывала партию стендов на маркет, всё пришло идеально упаковано. Качество печати — огонь, цвета яркие и сочные!' },
-  { name: 'MikaDraws', text: 'Очень удобный калькулятор на сайте. Сразу видно, сколько выйдет заказ. Сделали всё в срок, спасибо огромное!' },
-  { name: 'PixelGhost', text: 'Голографический акрил просто волшебный. Брелоки разлетелись в первый же день маркета. Буду заказывать еще 100%.' },
+  { name: 'Kitsu_Art', date: '12 августа 2026', text: 'Заказывала партию стендов на маркет, всё пришло идеально упаковано. Качество печати — огонь, цвета яркие и сочные!' },
+  { name: 'MikaDraws', date: '28 июля 2026', text: 'Очень удобный калькулятор на сайте. Сразу видно, сколько выйдет заказ. Сделали всё в срок, спасибо огромное!' },
+  { name: 'PixelGhost', date: '15 июля 2026', text: 'Голографический акрил просто волшебный. Брелоки разлетелись в первый же день маркета. Буду заказывать еще 100%.' },
 ];
 
 const containerVariants: Variants = {
@@ -42,14 +42,12 @@ export function TestimonialsSection() {
           {reviews.map((review, i) => (
             <motion.div key={i} variants={itemVariants} className="bg-theme-bg rounded-[40px] p-8 anime-border anime-shadow relative flex flex-col justify-between hover:-translate-y-1 hover:anime-shadow-hover transition-all cursor-default">
               <div>
-                <Quote size={48} className="text-reef-cyan/20 absolute top-6 right-6" />
-                <div className="flex text-yellow-400 mb-6 gap-1">
-                  {[1,2,3,4,5].map(s => <Star key={s} size={20} className="fill-current" />)}
-                </div>
+                <Quote size={48} className="text-theme-accent/20 absolute top-6 right-6" />
+                <div className="text-theme-muted font-bold text-sm mb-6">{review.date}</div>
                 <p className="text-lg text-theme-text font-medium italic mb-6 leading-relaxed">«{review.text}»</p>
               </div>
               <div className="flex items-center gap-4 mt-auto">
-                <div className="w-12 h-12 rounded-full bg-reef-cyan text-theme-surface flex items-center justify-center font-black border-2 border-theme-border text-xl shadow-sm">
+                <div className="w-12 h-12 rounded-full bg-theme-accent text-theme-surface flex items-center justify-center font-black border-2 border-theme-border text-xl shadow-sm">
                   {review.name.charAt(0)}
                 </div>
                 <div className="font-bold text-theme-text text-lg">{review.name}</div>
@@ -60,4 +58,4 @@ export function TestimonialsSection() {
       </div>
     </section>
   );
-}
+} 

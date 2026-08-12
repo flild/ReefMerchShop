@@ -26,7 +26,7 @@ export function CollectsSection({ items }: { items: Collect[] }) {
           viewport={{ once: true }}
           className="text-center mb-16"
         >
-          <div className="inline-block bg-yellow-400 text-slate-900 font-black px-4 py-1 rounded-full border-2 border-theme-border mb-4 anime-shadow rotate-2">
+          <div className="inline-block bg-theme-accent text-theme-surface font-black px-4 py-1 rounded-full border-2 border-theme-border mb-4 anime-shadow rotate-2">
              Горящие сборы
           </div>
           <h2 className="text-4xl md:text-5xl font-display font-black text-theme-text mb-6">Впишись в коллект</h2>
@@ -53,11 +53,11 @@ export function CollectsSection({ items }: { items: Collect[] }) {
                 
                 <div className="space-y-4 mb-8 flex-1">
                   <div className="flex items-center gap-3 text-theme-text font-bold">
-                    <Calendar className="text-reef-cyan" size={24} />
+                    <Calendar className="text-theme-accent" size={24} />
                     <span>Сбор до {new Date(collect.deadline).toLocaleDateString('ru-RU')}</span>
                   </div>
                   <div className="flex items-center gap-3 text-theme-text font-bold">
-                    <Users className="text-reef-cyan" size={24} />
+                    <Users className="text-theme-accent" size={24} />
                     <span>Собрано: {collect.currentCount} из {collect.minCount} шт.</span>
                   </div>
                 </div>
@@ -68,14 +68,14 @@ export function CollectsSection({ items }: { items: Collect[] }) {
                     initial={{ width: 0 }}
                     whileInView={{ width: `${progress}%` }}
                     transition={{ duration: 1, delay: 0.2, ease: "easeOut" }}
-                    className="h-full bg-reef-cyan border-r-2 border-theme-border relative overflow-hidden"
+                    className="h-full bg-theme-accent border-r-2 border-theme-border relative overflow-hidden"
                   >
                     {/* Блики на прогресс-баре */}
                     <div className="absolute top-0 left-0 right-0 h-2 bg-white/30" />
                   </motion.div>
                 </div>
 
-                <Link href={`/collects/${collect.id}`} className="anime-button w-full py-4 text-center text-lg flex items-center justify-center gap-2 group-hover:bg-yellow-400 group-hover:text-slate-900 group-hover:shadow-[0_6px_0_0_#b45309]">
+                <Link href={`/collects/${collect.id}`} className="anime-button w-full py-4 text-center text-lg flex items-center justify-center gap-2 group-hover:-translate-y-1 transition-transform">
                   Участвовать 
                   <ArrowRight size={24} className="group-hover:translate-x-1 transition-transform" />
                 </Link>
