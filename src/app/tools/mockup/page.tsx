@@ -1,10 +1,10 @@
 'use client';
 
 import { useState, useRef } from 'react';
+import Link from 'next/link';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
-import { Image as ImageIcon, Upload, Download, Sliders, MonitorPlay } from 'lucide-react';
-import Image from 'next/image';
+import { Image as ImageIcon, Upload, Sliders, MonitorPlay, ChevronRight, Trash2 } from 'lucide-react';
 
 export default function MockupGenerator() {
   const [image, setImage] = useState<string | null>(null);
@@ -26,53 +26,67 @@ export default function MockupGenerator() {
   return (
     <div className="min-h-screen flex flex-col font-sans">
       <Header />
-      
-      <main className="flex-1 py-16 bg-slate-50">
-        <div className="container mx-auto px-4 max-w-6xl">
+
+      <main className="flex-1 py-16 bg-theme-bg manga-dots">
+        <div className="container mx-auto px-4 max-w-7xl relative z-10">
+          
+          <nav className="flex items-center gap-2 text-sm text-theme-muted mb-8 font-medium" aria-label="Breadcrumb">
+            <Link href="/" className="hover:text-theme-highlight transition-colors">Главная</Link>
+            <ChevronRight size={14} />
+            <Link href="/tools" className="hover:text-theme-highlight transition-colors">Инструменты</Link>
+            <ChevronRight size={14} />
+            <span className="text-theme-text" aria-current="page">3D Превью</span>
+          </nav>
+
           <div className="mb-12">
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-reef-light rounded-full text-reef-blue font-bold text-sm tracking-wide mb-4">
+            <div className="inline-flex items-center gap-2 px-6 py-3 bg-theme-surface rounded-full text-theme-highlight font-bold text-sm tracking-wide mb-6 anime-border shadow-[2px_2px_0_0_var(--theme-border)] rotate-[-1deg]">
               <MonitorPlay size={16} />
               Инструменты
             </div>
-            <h1 className="text-4xl md:text-5xl font-display font-black text-slate-800 mb-6">3D превью акрила</h1>
-            <p className="text-xl text-slate-600 max-w-2xl">
+            <h1 className="text-4xl md:text-5xl font-display font-black text-theme-text mb-6">3D превью акрила</h1>
+            <p className="text-xl text-theme-muted max-w-2xl font-medium leading-relaxed">
               Загрузите ваш макет без фона (PNG), чтобы увидеть, как он будет смотреться в готовом изделии.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-            {/* Sidebar Controls */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
+            
+            {/* Настройки */}
             <div className="lg:col-span-4 space-y-6">
-              <div className="bg-white p-6 rounded-3xl anime-border shadow-sm">
-                <h3 className="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2">
-                  <Sliders size={20} className="text-reef-blue" />
-                  Настройки изделия
+              <div className="bg-theme-surface p-8 rounded-[40px] anime-border anime-shadow">
+                <h3 className="text-2xl font-black text-theme-text mb-8 flex items-center gap-3">
+                  <div className="p-2 bg-theme-bg rounded-xl border-2 border-theme-border text-theme-highlight">
+                    <Sliders size={24} strokeWidth={2.5} />
+                  </div>
+                  Настройки
                 </h3>
-                
+
                 {!image ? (
                   <div 
-                    className="border-2 border-dashed border-reef-blue/30 rounded-2xl p-8 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-reef-light/30 transition-colors mb-6 group"
+                    className="border-4 border-dashed border-theme-border rounded-[32px] p-8 flex flex-col items-center justify-center text-center cursor-pointer hover:border-theme-highlight hover:bg-theme-highlight/10 transition-all mb-8 group bg-theme-bg"
                     onClick={() => fileInputRef.current?.click()}
                   >
-                    <div className="w-16 h-16 bg-reef-light rounded-full flex items-center justify-center text-reef-blue mb-4 group-hover:scale-110 transition-transform">
-                      <Upload size={24} />
+                    <div className="w-16 h-16 bg-theme-surface anime-border rounded-full flex items-center justify-center text-theme-highlight mb-4 group-hover:scale-110 group-hover:rotate-6 transition-transform shadow-sm">
+                      <Upload size={24} strokeWidth={2.5} />
                     </div>
-                    <div className="font-bold text-slate-700 mb-1">Загрузить макет</div>
-                    <div className="text-xs text-slate-500">PNG с прозрачным фоном</div>
+                    <div className="font-black text-theme-text text-lg mb-1">Загрузить макет</div>
+                    <div className="font-bold text-sm text-theme-muted px-4 py-1.5 bg-theme-surface border-2 border-theme-border rounded-xl mt-3">PNG без фона</div>
                   </div>
                 ) : (
-                  <div className="flex items-center justify-between p-4 bg-slate-50 rounded-xl mb-6 border border-slate-100">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-slate-200 rounded text-slate-400 flex items-center justify-center overflow-hidden">
+                  <div className="flex items-center justify-between p-4 bg-theme-bg border-2 border-theme-border rounded-2xl mb-8 shadow-sm">
+                    <div className="flex items-center gap-4">
+                      <div className="w-14 h-14 bg-theme-surface border-2 border-theme-border rounded-xl text-theme-muted flex items-center justify-center overflow-hidden p-1">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img src={image} alt="preview" className="w-full h-full object-contain" />
                       </div>
-                      <div className="text-sm font-bold text-slate-700">Макет загружен</div>
+                      <div className="text-sm font-black text-theme-text">Макет загружен</div>
                     </div>
-                    <button onClick={clearImage} className="text-xs font-bold text-red-500 hover:text-red-600 px-3 py-1 bg-red-50 rounded-lg">Удалить</button>
+                    <button onClick={clearImage} className="p-2 bg-rose-500/10 text-rose-500 hover:bg-rose-500/20 hover:scale-110 rounded-xl transition-all border-2 border-rose-500/20" title="Удалить">
+                      <Trash2 size={20} strokeWidth={2.5} />
+                    </button>
                   </div>
                 )}
-                
+
                 <input 
                   type="file" 
                   ref={fileInputRef} 
@@ -81,115 +95,109 @@ export default function MockupGenerator() {
                   onChange={handleImageUpload} 
                 />
 
-                <div className="space-y-6 opacity-100">
+                <div className={`space-y-8 transition-opacity duration-300 ${!image ? 'opacity-50 pointer-events-none' : 'opacity-100'}`}>
                   <div>
-                    <label className="block text-sm font-bold text-slate-700 mb-3 uppercase tracking-wider">Тип акрила</label>
-                    <div className="grid grid-cols-2 gap-2">
-                      <button 
-                        onClick={() => setAcrylicType('clear')}
-                        className={`py-2 px-3 rounded-xl border-2 text-sm font-bold transition-all ${acrylicType === 'clear' ? 'border-reef-blue bg-reef-light/30 text-reef-dark' : 'border-slate-100 text-slate-600 hover:border-reef-cyan/50'}`}
-                      >
-                        Прозрачный
-                      </button>
-                      <button 
-                        onClick={() => setAcrylicType('holo')}
-                        className={`py-2 px-3 rounded-xl border-2 text-sm font-bold transition-all ${acrylicType === 'holo' ? 'border-purple-500 bg-purple-50 text-purple-700' : 'border-slate-100 text-slate-600 hover:border-purple-300'}`}
-                      >
-                        Голография
-                      </button>
-                      <button 
-                        onClick={() => setAcrylicType('glitter')}
-                        className={`py-2 px-3 rounded-xl border-2 text-sm font-bold transition-all ${acrylicType === 'glitter' ? 'border-amber-500 bg-amber-50 text-amber-700' : 'border-slate-100 text-slate-600 hover:border-amber-300'}`}
-                      >
-                        Блестки
-                      </button>
-                      <button 
-                        onClick={() => setAcrylicType('epoxy')}
-                        className={`py-2 px-3 rounded-xl border-2 text-sm font-bold transition-all ${acrylicType === 'epoxy' ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-slate-100 text-slate-600 hover:border-blue-300'}`}
-                      >
-                        Эпоксидка
-                      </button>
+                    <label className="block text-sm font-black text-theme-muted mb-4 uppercase tracking-widest">Тип акрила</label>
+                    <div className="grid grid-cols-2 gap-3">
+                      {[
+                        { id: 'clear', label: 'Прозрачный' },
+                        { id: 'holo', label: 'Голография' },
+                        { id: 'glitter', label: 'Блестки' },
+                        { id: 'epoxy', label: 'Эпоксидка' }
+                      ].map(type => (
+                        <button 
+                          key={type.id}
+                          onClick={() => setAcrylicType(type.id)}
+                          className={`py-3 px-4 rounded-2xl border-2 text-sm font-black transition-all ${
+                            acrylicType === type.id 
+                              ? 'border-theme-highlight bg-theme-highlight/10 text-theme-text shadow-[0_4px_0_0_var(--theme-shadow-base)] -translate-y-1' 
+                              : 'border-theme-border bg-theme-bg text-theme-muted hover:border-theme-highlight/50 hover:bg-theme-surface hover:-translate-y-0.5'
+                          }`}
+                        >
+                          {type.label}
+                        </button>
+                      ))}
                     </div>
                   </div>
 
                   <div>
-                    <div className="flex items-center justify-between mb-3">
-                      <label className="text-sm font-bold text-slate-700 uppercase tracking-wider">Толщина (мм)</label>
-                      <span className="font-bold text-reef-dark bg-reef-light px-2 py-0.5 rounded text-xs">{thickness} мм</span>
+                    <div className="flex items-center justify-between mb-4">
+                      <label className="text-sm font-black text-theme-muted uppercase tracking-widest">Толщина</label>
+                      <span className="font-black text-theme-text bg-theme-bg border-2 border-theme-border px-3 py-1 rounded-xl text-sm">{thickness} мм</span>
                     </div>
                     <input 
                       type="range" 
                       min="2" max="5" step="1" 
                       value={thickness} 
                       onChange={(e) => setThickness(parseInt(e.target.value))}
-                      className="w-full accent-reef-blue"
+                      className="w-full accent-theme-accent h-3 bg-theme-bg rounded-full appearance-none outline-none anime-border shadow-sm cursor-pointer mt-2"
                     />
                   </div>
 
                   <div>
-                    <label className="flex items-center p-3 rounded-xl border border-slate-100 hover:bg-slate-50 cursor-pointer">
+                    <label className="flex items-center p-4 rounded-2xl border-2 border-theme-border bg-theme-bg hover:border-theme-highlight/50 cursor-pointer transition-colors">
                       <input 
                         type="checkbox" 
                         checked={shadow} 
                         onChange={(e) => setShadow(e.target.checked)} 
-                        className="mr-3 accent-reef-blue w-4 h-4 rounded" 
+                        className="mr-4 accent-theme-accent w-5 h-5 rounded" 
                       />
-                      <span className="font-medium text-slate-800">Отбрасывать тень</span>
+                      <span className="font-bold text-theme-text">Отбрасывать тень</span>
                     </label>
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Preview Stage */}
+            {/* Вьювер */}
             <div className="lg:col-span-8">
-              <div className="bg-white h-[600px] rounded-[40px] anime-border anime-shadow relative overflow-hidden flex items-center justify-center p-10 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]">
-                
-                {/* Background grid */}
-                <div className="absolute inset-0 border-[1px] border-slate-100/[0.1] bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]"></div>
+              <div className="bg-theme-surface h-[600px] rounded-[40px] anime-border anime-shadow relative overflow-hidden flex items-center justify-center p-10 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]">
+
+                {/* Сетка на фоне */}
+                <div className="absolute inset-0 border-2 border-theme-border opacity-20 bg-[linear-gradient(to_right,var(--theme-border)_2px,transparent_2px),linear-gradient(to_bottom,var(--theme-border)_2px,transparent_2px)] bg-[size:32px_32px]"></div>
 
                 {!image ? (
-                  <div className="text-center relative z-10 flex flex-col items-center">
-                    <div className="w-24 h-24 bg-reef-light/50 rounded-full flex items-center justify-center text-reef-blue/50 mb-6 border border-reef-blue/20">
-                      <ImageIcon size={40} />
+                  <div className="text-center relative z-10 flex flex-col items-center bg-theme-surface/80 p-12 rounded-[40px] anime-border backdrop-blur-sm border-2">
+                    <div className="w-24 h-24 bg-theme-bg rounded-full flex items-center justify-center text-theme-muted mb-6 border-2 border-theme-border shadow-inner">
+                      <ImageIcon size={48} strokeWidth={2} />
                     </div>
-                    <div className="text-2xl font-display font-bold text-slate-300">Загрузите макет для превью</div>
+                    <div className="text-3xl font-display font-black text-theme-muted">Загрузите макет для превью</div>
                   </div>
                 ) : (
-                  <div className="relative w-full h-full flex items-center justify-center perspective-[1000px]">
+                  <div className="relative w-full h-full flex items-center justify-center perspective-[1200px]">
                     <div 
-                      className={`relative transition-all duration-500 ease-out preserve-3d group cursor-grab active:cursor-grabbing hover:scale-105`}
+                      className="relative transition-all duration-500 ease-out preserve-3d group cursor-grab active:cursor-grabbing hover:scale-105"
                       style={{ 
-                        transform: 'rotateX(15deg) rotateY(-15deg)',
-                        filter: shadow ? 'drop-shadow(-20px 20px 25px rgba(0,0,0,0.15))' : 'none'
+                        transform: 'rotateX(15deg) rotateY(-20deg)',
+                        filter: shadow ? 'drop-shadow(-25px 25px 30px rgba(0,0,0,0.25))' : 'none'
                       }}
                     >
-                      {/* Base print layer */}
+                      {/* Фронтальный слой принта */}
                       {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={image} alt="Print" className="relative z-10 max-h-[400px] object-contain drop-shadow-sm pointer-events-none select-none" />
-                      
-                      {/* White base (simulated) */}
+                      <img src={image} alt="Print" className="relative z-10 max-h-[400px] object-contain drop-shadow-md pointer-events-none select-none" />
+
+                      {/* Задняя белая подложка */}
                       {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={image} alt="White base" className="absolute top-[1px] left-[1px] z-0 max-h-[400px] object-contain brightness-0 invert opacity-95 translate-z-[-1px]" />
-                      
-                      {/* Acrylic body depth */}
+                      <img src={image} alt="White base" className="absolute top-[1px] left-[1px] z-0 max-h-[400px] object-contain brightness-0 invert opacity-100 translate-z-[-2px]" />
+
+                      {/* Слои толщины акрила */}
                       {Array.from({ length: thickness * 2 }).map((_, i) => (
-                        /* eslint-disable-next-line @next/next/no-img-element */
+                        // eslint-disable-next-line @next/next/no-img-element
                         <img 
                           key={i}
                           src={image} 
                           alt="Acrylic depth" 
-                          className={`absolute z-20 max-h-[400px] object-contain mix-blend-screen opacity-40`}
+                          className="absolute z-20 max-h-[400px] object-contain mix-blend-screen opacity-50"
                           style={{
                             top: `-${(i + 1) * 0.5}px`,
                             left: `${(i + 1) * 0.5}px`,
-                            filter: 'brightness(100) blur(1px)',
+                            filter: 'brightness(100) blur(2px)',
                             transform: `translateZ(${(i + 1) * 0.5}px)`
                           }}
                         />
                       ))}
 
-                      {/* Acrylic surface reflections & effects */}
+                      {/* Эффекты материалов поверх фронтального слоя */}
                       <div className="absolute inset-0 z-30 pointer-events-none" style={{
                          maskImage: `url(${image})`,
                          WebkitMaskImage: `url(${image})`,
@@ -200,21 +208,23 @@ export default function MockupGenerator() {
                          maskPosition: 'center',
                          WebkitMaskPosition: 'center'
                       }}>
-                        {/* Edge highlight */}
-                        <div className="absolute inset-0 border-2 border-white/40 rounded-[20%]"></div>
-                        
-                        {/* Glare */}
-                        <div className="absolute top-0 right-0 w-[150%] h-[150%] bg-gradient-to-tr from-transparent via-white/40 to-transparent -translate-x-1/3 -translate-y-1/3 rotate-45 transform-gpu opacity-0 group-hover:opacity-100 group-hover:translate-x-1/3 transition-all duration-700"></div>
+                        {/* Фаска / Блик по краю */}
+                        <div className="absolute inset-0 border-4 border-white/50 rounded-[20%] mix-blend-overlay"></div>
 
-                        {/* Effects by type */}
+                        {/* Динамический блик */}
+                        <div className="absolute top-0 right-0 w-[150%] h-[150%] bg-gradient-to-tr from-transparent via-white/50 to-transparent -translate-x-1/3 -translate-y-1/3 rotate-45 transform-gpu opacity-0 group-hover:opacity-100 group-hover:translate-x-1/3 transition-all duration-[1.5s]"></div>
+
+                        {/* Голография */}
                         {acrylicType === 'holo' && (
-                          <div className="absolute inset-0 mix-blend-overlay opacity-60 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] bg-gradient-to-tr from-pink-300 via-cyan-300 to-purple-300 animate-pulse"></div>
+                          <div className="absolute inset-0 mix-blend-color-dodge opacity-70 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] bg-gradient-to-tr from-pink-400 via-cyan-300 to-purple-400 animate-pulse"></div>
                         )}
+                        {/* Блестки */}
                         {acrylicType === 'glitter' && (
-                          <div className="absolute inset-0 mix-blend-overlay opacity-50 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] bg-amber-200"></div>
+                          <div className="absolute inset-0 mix-blend-overlay opacity-60 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] bg-amber-300"></div>
                         )}
+                        {/* Эпоксидка */}
                         {acrylicType === 'epoxy' && (
-                          <div className="absolute inset-0 shadow-[inset_0_0_20px_rgba(255,255,255,0.8)] backdrop-blur-sm mix-blend-overlay opacity-70"></div>
+                          <div className="absolute inset-0 shadow-[inset_0_0_30px_rgba(255,255,255,0.9)] backdrop-blur-md mix-blend-overlay opacity-80"></div>
                         )}
                       </div>
                     </div>
@@ -222,10 +232,11 @@ export default function MockupGenerator() {
                 )}
               </div>
             </div>
+
           </div>
         </div>
       </main>
-      
+
       <Footer />
     </div>
   );
