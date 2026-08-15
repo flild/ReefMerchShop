@@ -75,14 +75,14 @@ export function CalculatorClient({ dbMaterials, dbAccessories }: CalculatorClien
         className="flex-1 bg-theme-surface rounded-[40px] p-8 md:p-10 anime-border anime-shadow relative"
       >
         <div className="flex items-center gap-4 mb-10 text-theme-text">
-          <div className="p-4 bg-theme-bg rounded-3xl anime-border text-reef-cyan">
+          <div className="p-4 bg-theme-bg rounded-3xl anime-border text-theme-highlight">
             <Calculator size={36} strokeWidth={2.5} />
           </div>
           <h1 className="text-4xl font-display font-black">Сборка заказа</h1>
         </div>
 
-        <div className="mb-10 p-6 bg-reef-cyan/10 border-2 border-reef-cyan/30 rounded-[24px] text-theme-text font-medium leading-relaxed flex gap-4 items-start">
-          <AlertCircle className="text-reef-cyan shrink-0 mt-1" size={24} />
+        <div className="mb-10 p-6 bg-theme-highlight/10 border-2 border-theme-highlight/30 rounded-[24px] text-theme-text font-medium leading-relaxed flex gap-4 items-start">
+          <AlertCircle className="text-theme-highlight shrink-0 mt-1" size={24} />
           <p>
             <span className="font-bold">Обратите внимание:</span> составные изделия (например, брелок с дополнительной подвеской) рассчитываются как два независимых макета по их фактическому размеру.
           </p>
@@ -103,7 +103,7 @@ export function CalculatorClient({ dbMaterials, dbAccessories }: CalculatorClien
                   className={`p-5 rounded-[24px] border-2 text-center transition-all font-bold text-lg shadow-sm ${
                     productType === type.id 
                       ? 'border-theme-accent bg-theme-accent/10 text-theme-accent shadow-[0_4px_0_0_var(--theme-btn-shadow)] -translate-y-1' 
-                      : 'border-theme-border text-theme-muted hover:border-reef-cyan/50 hover:bg-theme-bg hover:-translate-y-1'
+                      : 'border-theme-border text-theme-muted hover:border-theme-highlight/50 hover:bg-theme-bg hover:-translate-y-1'
                   }`}
                 >
                   {type.name}
@@ -123,7 +123,7 @@ export function CalculatorClient({ dbMaterials, dbAccessories }: CalculatorClien
                   className={`p-5 rounded-[24px] border-2 text-left transition-all font-bold text-lg shadow-sm flex justify-between items-center ${
                     materialId === mat.id 
                       ? 'border-theme-accent bg-theme-accent/10 text-theme-accent shadow-[0_4px_0_0_var(--theme-btn-shadow)] -translate-y-1' 
-                      : 'border-theme-border text-theme-muted hover:border-reef-cyan/50 hover:bg-theme-bg hover:-translate-y-1'
+                      : 'border-theme-border text-theme-muted hover:border-theme-highlight/50 hover:bg-theme-bg hover:-translate-y-1'
                   }`}
                 >
                   <span>{stripEmojis(mat.name)}</span>
@@ -146,11 +146,11 @@ export function CalculatorClient({ dbMaterials, dbAccessories }: CalculatorClien
                   className={`p-4 rounded-[20px] border-2 text-center transition-all font-bold text-sm shadow-sm flex flex-col items-center gap-2 ${
                     accessoryId === acc.id 
                       ? 'border-theme-accent bg-theme-accent/10 text-theme-accent shadow-[0_4px_0_0_var(--theme-btn-shadow)] -translate-y-1' 
-                      : 'border-theme-border text-theme-muted hover:border-reef-cyan/50 hover:bg-theme-bg hover:-translate-y-1'
+                      : 'border-theme-border text-theme-muted hover:border-theme-highlight/50 hover:bg-theme-bg hover:-translate-y-1'
                   }`}
                 >
                   <span>{stripEmojis(acc.name)}</span>
-                  <span className="text-xs opacity-70">+{acc.price} ₽</span>
+                  <span className="text-xs opacity-70">{acc.price} ₽</span>
                 </button>
               ))}
             </div>
@@ -207,7 +207,7 @@ export function CalculatorClient({ dbMaterials, dbAccessories }: CalculatorClien
       >
         <div className="sticky top-28 bg-theme-surface rounded-[40px] p-8 md:p-10 anime-border anime-shadow">
           <h3 className="text-2xl font-display font-black mb-8 flex items-center gap-3 text-theme-text">
-            <div className="p-3 bg-theme-bg rounded-2xl anime-border text-reef-cyan">
+            <div className="p-3 bg-theme-bg rounded-2xl anime-border text-theme-highlight">
               <ShoppingBag size={28} />
             </div>
             Предварительная смета
@@ -221,7 +221,7 @@ export function CalculatorClient({ dbMaterials, dbAccessories }: CalculatorClien
             {productType === 'keychain' && (
               <div className="flex justify-between border-b-2 border-theme-border pb-4">
                 <span className="text-theme-muted">Фурнитура</span>
-                <span>{accessoryCost > 0 ? `+${accessoryCost} ₽` : 'Включено'}</span>
+                <span>{accessoryCost > 0 ? `${accessoryCost} ₽` : 'Включено'}</span>
               </div>
             )}
             <div className="flex justify-between border-b-2 border-theme-border pb-4">

@@ -42,16 +42,16 @@ export default async function MaterialsPage() {
       <Header />
 
       <main className="flex-1 py-24 bg-theme-bg manga-dots">
-        <div className="container mx-auto px-4 max-w-6xl">
+        <div className="container mx-auto px-4 max-w-6xl relative z-10">
           
           <nav className="flex items-center gap-2 text-sm text-theme-muted mb-8 font-medium" aria-label="Breadcrumb">
-            <Link href="/" className="hover:text-theme-accent transition-colors">Главная</Link>
+            <Link href="/" className="hover:text-theme-highlight transition-colors">Главная</Link>
             <ChevronRight size={14} />
             <span className="text-theme-text" aria-current="page">Материалы</span>
           </nav>
 
           <header className="mb-20 text-center">
-            <div className="inline-flex items-center gap-2 px-6 py-3 bg-theme-surface rounded-full anime-border mb-6 text-theme-accent font-bold text-sm tracking-wide shadow-sm">
+            <div className="inline-flex items-center gap-2 px-6 py-3 bg-theme-surface rounded-full anime-border mb-6 text-theme-highlight font-bold text-sm tracking-wide shadow-sm">
               <Sparkles size={16} />
               Каталог материалов
             </div>
@@ -70,7 +70,7 @@ export default async function MaterialsPage() {
           />
         </div>
       </main>
-      
+
       <Footer />
     </div>
   );

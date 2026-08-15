@@ -17,13 +17,12 @@ export const metadata: Metadata = {
 };
 
 export default async function CollectsPage() {
-  // Забираем данные из БД по-честному, сортируем по дедлайну
+
   const activeCollects = await db
     .select()
     .from(collects)
     .orderBy(desc(collects.deadline));
 
-  // JSON-LD для SEO (Хлебные крошки)
   const breadcrumbData = {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
@@ -43,16 +42,15 @@ export default async function CollectsPage() {
 
       <main className="flex-1 py-24 bg-theme-bg manga-dots">
         <div className="container mx-auto px-4 max-w-5xl">
-          
-          {/* Семантические хлебные крошки (UI) */}
+
           <nav className="flex items-center gap-2 text-sm text-theme-muted mb-8 font-medium" aria-label="Breadcrumb">
-            <Link href="/" className="hover:text-theme-accent transition-colors">Главная</Link>
+            <Link href="/" className="hover:text-theme-highlight transition-colors">Главная</Link>
             <ChevronRight size={14} />
             <span className="text-theme-text" aria-current="page">Коллекты</span>
           </nav>
 
           <header className="mb-20 text-center">
-            <div className="inline-flex items-center gap-2 px-6 py-3 bg-theme-surface rounded-full anime-border mb-6 text-theme-accent font-bold text-sm tracking-wide">
+            <div className="inline-flex items-center gap-2 px-6 py-3 bg-theme-surface rounded-full anime-border mb-6 text-theme-highlight font-bold text-sm tracking-wide shadow-[2px_2px_0_0_var(--theme-border)] rotate-[-1deg]">
               <Sparkles size={16} />
               Совместные закупки
             </div>
@@ -62,9 +60,11 @@ export default async function CollectsPage() {
             <p className="text-xl md:text-2xl text-theme-muted max-w-3xl mx-auto font-medium leading-relaxed mb-6">
               Объединяйтесь с другими авторами для производства мерча. Больший общий тираж — меньшая цена для каждого!
             </p>
-            
-            <div className="max-w-2xl mx-auto p-6 bg-theme-surface anime-border anime-shadow text-theme-text font-medium leading-relaxed">
-              <span className="font-bold block mb-2 text-theme-accent">Система скидок:</span>
+
+            <div className="max-w-2xl mx-auto p-6 bg-theme-surface anime-border anime-shadow text-theme-text font-medium leading-relaxed mt-10 text-left">
+              <span className="font-bold flex items-center gap-2 mb-2 text-theme-highlight text-lg">
+                <Sparkles size={20} /> Система скидок:
+              </span>
               При общем заказе от 50 тыс. руб. добавляется скидка 5%, и за каждые 50 тыс. добавляется также 5%, но максимальная скидка 15% (то есть 150к надо набрать для макс. скидки).
             </div>
           </header>

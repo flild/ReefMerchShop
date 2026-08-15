@@ -2,7 +2,7 @@
 
 import { motion } from 'motion/react';
 import Image from 'next/image';
-import { CheckCircle2, AlertCircle, XCircle, Sparkles, Image as ImageIcon } from 'lucide-react';
+import { Sparkles, Image as ImageIcon } from 'lucide-react';
 import type { InferSelectModel } from 'drizzle-orm';
 import { materials, accessories } from '@/db/schema';
 
@@ -17,6 +17,7 @@ interface MaterialsListProps {
 
 function getColorClass(name: string) {
   const l = name.toLowerCase();
+  // Физические цвета материалов оставляем как есть, так как это репрезентация товара
   if (l.includes('прозрачный')) return 'bg-theme-bg opacity-80 backdrop-blur-md';
   if (l.includes('белый')) return 'bg-white border-theme-border';
   if (l.includes('черный')) return 'bg-black border-theme-border';
@@ -104,7 +105,7 @@ function MaterialCard({ item, index }: { item: Material; index: number }) {
       </div>
 
       <div className="mt-4 pt-4 border-t border-theme-border flex items-center justify-between">
-        <div className="font-black text-xl text-theme-accent">
+        <div className="font-black text-xl text-theme-highlight">
           {item.pricePerCm2}₽ <span className="text-sm font-medium text-theme-muted">/ см²</span>
         </div>
         <StatusBadge available={item.inStock} />
@@ -124,11 +125,11 @@ function AccessoryCard({ item, index }: { item: Accessory; index: number }) {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.05, duration: 0.4 }}
-      className="bg-theme-surface rounded-[24px] p-5 anime-border flex flex-col group hover:-translate-y-1 hover:border-theme-accent transition-all shadow-sm hover:shadow-md"
+      className="bg-theme-surface rounded-[24px] p-5 anime-border anime-shadow flex flex-col group hover:-translate-y-2 hover:anime-shadow-hover transition-all"
     >
-      <div className="w-full h-32 rounded-xl mb-4 bg-theme-bg flex items-center justify-center border border-theme-border overflow-hidden relative">
+      <div className="w-full h-32 rounded-xl mb-4 bg-theme-bg flex items-center justify-center border-2 border-theme-border overflow-hidden relative">
         {item.imageUrl ? (
-          <Image src={item.imageUrl} alt={item.name} fill className="object-cover mix-blend-multiply" />
+          <Image src={item.imageUrl} alt={item.name} fill className="object-contain p-2" />
         ) : (
           <ImageIcon size={32} className="text-theme-muted opacity-50 group-hover:opacity-100 transition-opacity" />
         )}
@@ -137,7 +138,7 @@ function AccessoryCard({ item, index }: { item: Accessory; index: number }) {
       <h3 className="text-lg font-bold text-theme-text mb-1 leading-tight">{item.name}</h3>
 
       <div className="mt-auto pt-4 flex items-center justify-between">
-        <div className="font-bold text-theme-accent">
+        <div className="font-bold text-theme-highlight">
           {item.price}₽ <span className="text-sm font-normal text-theme-muted">/ шт</span>
         </div>
         <StockBadge status={status} stock={stockLevel} />
@@ -149,14 +150,14 @@ function AccessoryCard({ item, index }: { item: Accessory; index: number }) {
 function StatusBadge({ available }: { available: boolean }) {
   if (available) {
     return (
-      <div className="flex items-center gap-1.5 px-3 py-1 bg-theme-bg text-theme-text rounded-full text-xs font-bold uppercase tracking-wider border border-theme-border">
-        <CheckCircle2 size={14} className="text-theme-accent" /> В наличии
+      <div className="px-3 py-1 bg-theme-green-bg text-theme-green-text rounded-full text-xs font-black uppercase tracking-wider border-2 border-theme-border shadow-[2px_2px_0_0_var(--theme-border)] rotate-[-3deg]">
+        В наличии
       </div>
     );
   }
   return (
-    <div className="flex items-center gap-1.5 px-3 py-1 bg-theme-bg text-theme-muted rounded-full text-xs font-bold uppercase tracking-wider border border-theme-border opacity-80">
-      <XCircle size={14} /> Под заказ
+    <div className="px-3 py-1 bg-theme-gray-bg text-theme-gray-text rounded-full text-xs font-black uppercase tracking-wider border-2 border-theme-border shadow-[2px_2px_0_0_var(--theme-border)] rotate-[3deg]">
+      Под заказ
     </div>
   );
 }
@@ -164,21 +165,21 @@ function StatusBadge({ available }: { available: boolean }) {
 function StockBadge({ status, stock }: { status: string; stock: number }) {
   if (status === 'out_of_stock') {
     return (
-      <div className="flex items-center gap-1 text-theme-muted text-xs font-bold">
-        <XCircle size={14} /> Нет
+      <div className="px-3 py-1 bg-theme-gray-bg text-theme-gray-text rounded-full text-xs font-black uppercase tracking-wider border-2 border-theme-border shadow-[2px_2px_0_0_var(--theme-border)] rotate-[3deg]">
+        Нет
       </div>
     );
   }
   if (status === 'low_stock') {
     return (
-      <div className="flex items-center gap-1 text-theme-text text-xs font-bold" title={`Осталось: ${stock} шт.`}>
-        <AlertCircle size={14} className="text-theme-accent" /> Мало ({stock})
+      <div className="px-3 py-1 bg-theme-yellow-bg text-theme-yellow-text rounded-full text-xs font-black uppercase tracking-wider border-2 border-theme-border shadow-[2px_2px_0_0_var(--theme-border)] rotate-[-2deg]">
+        Мало ({stock})
       </div>
     );
   }
   return (
-    <div className="flex items-center gap-1 text-theme-text text-xs font-bold" title={`В наличии: ${stock} шт.`}>
-      <CheckCircle2 size={14} className="text-theme-accent" /> {stock > 100 ? 'Много' : stock}
+    <div className="px-3 py-1 bg-theme-green-bg text-theme-green-text rounded-full text-xs font-black uppercase tracking-wider border-2 border-theme-border shadow-[2px_2px_0_0_var(--theme-border)] rotate-[-2deg]">
+      {stock > 100 ? 'Много' : stock + ' шт'}
     </div>
   );
 }
