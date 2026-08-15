@@ -7,8 +7,8 @@ import { Calculator, Send, Users } from 'lucide-react';
 export function CtaSection() {
   return (
     <section className="py-24 bg-theme-accent relative overflow-hidden border-t-4 border-theme-border">
-      {/* Манга-фон, который подстраивается под акцентный цвет */}
-      <div className="absolute inset-0 opacity-20" style={{ backgroundImage: 'radial-gradient(var(--theme-text-main) 2px, transparent 2px)', backgroundSize: '20px 20px' }} />
+      {/* Манга-фон на чистом Tailwind v4 без инлайн-костылей */}
+      <div className="absolute inset-0 opacity-20 bg-[radial-gradient(var(--color-theme-text)_2px,transparent_2px)] bg-[length:20px_20px]" />
       
       <div className="container mx-auto px-4 relative z-10">
         <div className="max-w-4xl mx-auto bg-theme-surface rounded-[48px] p-10 md:p-16 anime-border anime-shadow-hover text-center">

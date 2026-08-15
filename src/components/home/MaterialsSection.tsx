@@ -24,12 +24,21 @@ export function MaterialsSection({ items }: MaterialsSectionProps) {
 
   const getStockStatus = (material: MaterialItem) => {
     if (!material.inStock || material.stock <= 0) {
-      return { label: 'Нет в наличии', classes: 'bg-slate-200 text-slate-500 border-slate-300 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700' };
+      return { 
+        label: 'Нет в наличии', 
+        classes: 'bg-theme-gray-bg text-theme-gray-text' 
+      };
     }
     if (material.stock <= material.minStock) {
-      return { label: 'Осталось мало', classes: 'bg-yellow-100 text-yellow-800 border-yellow-300 dark:bg-yellow-900 dark:text-yellow-200 dark:border-yellow-700' };
+      return { 
+        label: 'Осталось мало', 
+        classes: 'bg-theme-yellow-bg text-theme-yellow-text' 
+      };
     }
-    return { label: 'В наличии', classes: 'bg-green-100 text-green-800 border-green-300 dark:bg-green-900 dark:text-green-200 dark:border-green-700' };
+    return { 
+      label: 'В наличии', 
+      classes: 'bg-theme-green-bg text-theme-green-text' 
+    };
   };
 
   return (
@@ -58,8 +67,8 @@ export function MaterialsSection({ items }: MaterialsSectionProps) {
                 transition={{ delay: index * 0.1, duration: 0.5 }}
                 className="bg-theme-surface rounded-[32px] p-6 anime-border anime-shadow hover:anime-shadow-hover hover:-translate-y-2 transition-all flex flex-col group relative cursor-pointer"
               >
-                {/* Бейдж статуса */}
-                <div className={`absolute top-4 right-4 z-10 px-3 py-1 rounded-full text-xs font-bold border-2 shadow-sm ${status.classes}`}>
+                {/* Бейдж статуса в виде стикера */}
+                <div className={`absolute top-4 right-4 z-10 px-3 py-1.5 rounded-full text-xs font-black border-2 border-theme-border shadow-[3px_3px_0_0_var(--theme-border)] rotate-[-3deg] ${status.classes}`}>
                   {status.label}
                 </div>
 

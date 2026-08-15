@@ -1,55 +1,127 @@
 @import "tailwindcss";
 @import url('https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700;800&family=Nunito:wght@400;600;700;800&display=swap');
 
+/* ==========================================================================
+   🚨 AI INSTRUCTIONS & DESIGN SYSTEM RULES (DO NOT IGNORE) 🚨
+   1. НЕ ИСПОЛЬЗУЙ хардкод цветов (типа bg-blue-500, text-gray-900) в компонентах!
+   2. ЗАПРЕЩЕНО использовать префикс dark: в React-компонентах (за редкими исключениями).
+      Вся магия тем происходит здесь, через CSS-переменные.
+   3. ЦВЕТОВАЯ ПАЛИТРА: Морская/аниме тематика. Основа — синие, голубые, белые и темные (slate) тона.
+      Никаких коричневых, грязно-желтых или левых оттенков вне системы.
+   ========================================================================== */
+
 /* 1. Фундамент: семантические переменные для тем */
 :root {
-  --theme-bg-main: #e6f6fb; /* reef-light */
-  --theme-bg-surface: #e6f6fb;
-  --theme-text-main: #1e293b; /* slate-800 */
-  --theme-text-muted: #475569; /* slate-600 */
+  /* --- ФОНЫ --- */
+  /* Используй для главного фона страницы (body, main) */
+  --theme-bg-main: #e6f6fb; 
+  /* Используй для карточек, плашек, хедеров и модалок */
+  --theme-bg-surface: #e6f6fb; 
   
+  /* --- ТЕКСТ --- */
+  /* Основные заголовки и абзацы */
+  --theme-text-main: #1e293b; 
+  /* Второстепенный текст, описания, плейсхолдеры */
+  --theme-text-muted: #475569; 
+  
+  /* --- АКЦЕНТЫ И ГРАНИЦЫ --- */
+  /* Обводки карточек, инпутов, разделители (всегда с прозрачностью) */
   --theme-border: rgba(42, 139, 242, 0.2);
+  /* Яркий акцент для ховеров, ссылок, иконок (тот самый reef-cyan) */
+  --theme-highlight: #4bd3e5;
   
+  /* --- ТЕНИ (Anime Style) --- */
+  /* Базовая смещенная тень для карточек (без размытия) */
   --theme-shadow-base: rgba(42, 139, 242, 0.2);
+  /* Тень при наведении (hover) - чуть плотнее */
   --theme-shadow-hover: rgba(42, 139, 242, 0.3);
   
+  /* --- КНОПКИ (Primary Actions) --- */
+  /* Основной фон кнопки (reef-blue) */
   --theme-btn-bg: #2a8bf2;
+  /* Текст на кнопке */
   --theme-btn-text: #FFFFFF;
+  /* Нижняя граница/тень кнопки для эффекта нажатия */
   --theme-btn-shadow: #093f8e;
+
+  /* --- СТАТУСЫ (Бейджи, стикеры, склад) --- */
+  /* Успех / В наличии */
+  --theme-status-green-bg: #c6f6d5;
+  --theme-status-green-text: #1c4532;
+  /* Предупреждение / Осталось мало (Единственный легальный желтый в проекте) */
+  --theme-status-yellow-bg: #feebc8;
+  --theme-status-yellow-text: #5f370e;
+  /* Неактивно / Нет в наличии */
+  --theme-status-gray-bg: #e2e8f0;
+  --theme-status-gray-text: #334155;
 }
 
 .dark {
-  --theme-bg-main: #0f172a; /* slate-900 */
-  --theme-bg-surface: #1e293b; /* slate-800 */
-  --theme-text-main: #f1f5f9; /* slate-100 */
-  --theme-text-muted: #94a3b8; /* slate-400 */
+  /* Инверсия фонов в темные slate-оттенки */
+  --theme-bg-main: #0f172a; 
+  --theme-bg-surface: #1e293b; 
   
+  /* Инверсия текста в светлые тона */
+  --theme-text-main: #f1f5f9; 
+  --theme-text-muted: #94a3b8; 
+  
+  /* Подсветка остается яркой для контраста */
+  --theme-highlight: #4bd3e5;
+
+  /* Границы и тени становятся неоново-голубыми */
   --theme-border: rgba(75, 211, 229, 0.3);
-  
   --theme-shadow-base: rgba(75, 211, 229, 0.2);
   --theme-shadow-hover: rgba(75, 211, 229, 0.3);
   
+  /* Кнопки меняют инверсию: фон светлый акцентный, текст темный */
   --theme-btn-bg: #4bd3e5;
   --theme-btn-text: #0f172a;
   --theme-btn-shadow: #2a8bf2;
+
+  /* Статусы: темный фон, светлый ядовитый текст */
+  --theme-status-green-bg: #1c4532;
+  --theme-status-green-text: #c6f6d5;
+  --theme-status-yellow-bg: #5f370e;
+  --theme-status-yellow-text: #feebc8;
+  --theme-status-gray-bg: #334155;
+  --theme-status-gray-text: #e2e8f0;
 }
 
 /* 2. Скармливаем переменные Tailwind v4 */
 @theme {
+  /* Хардкодные референсные цвета бренда (использовать редко, в основном для лого или градиентов) */
   --color-reef-dark: #093f8e;
   --color-reef-blue: #2a8bf2;
   --color-reef-cyan: #4bd3e5;
   --color-reef-light: #e6f6fb;
   --color-reef-white: #FFFFFF;
   
-  /* Наши динамические цвета */
+  /* === ОСНОВНЫЕ СЕМАНТИЧЕСКИЕ КЛАССЫ (ИСПОЛЬЗОВАТЬ ИСКЛЮЧИТЕЛЬНО ИХ ВМЕСТО bg-blue-500 и т.д.) === */
+  
+  /* Фоны: bg-theme-bg, bg-theme-surface */
   --color-theme-bg: var(--theme-bg-main);
   --color-theme-surface: var(--theme-bg-surface);
+  
+  /* Текст: text-theme-text, text-theme-muted */
   --color-theme-text: var(--theme-text-main);
   --color-theme-muted: var(--theme-text-muted);
-  --color-theme-border: var(--theme-border);
-  --color-theme-accent: var(--theme-btn-bg);
   
+  /* Обводки: border-theme-border */
+  --color-theme-border: var(--theme-border);
+  
+  /* Акценты: bg-theme-accent, text-theme-highlight */
+  --color-theme-accent: var(--theme-btn-bg);
+  --color-theme-highlight: var(--theme-highlight);
+
+  /* Статусы (для бейджей): bg-theme-green-bg, text-theme-green-text и т.д. */
+  --color-theme-green-bg: var(--theme-status-green-bg);
+  --color-theme-green-text: var(--theme-status-green-text);
+  --color-theme-yellow-bg: var(--theme-status-yellow-bg);
+  --color-theme-yellow-text: var(--theme-status-yellow-text);
+  --color-theme-gray-bg: var(--theme-status-gray-bg);
+  --color-theme-gray-text: var(--theme-status-gray-text);
+    
+  /* Шрифты */
   --font-sans: 'Nunito', system-ui, sans-serif;
   --font-display: 'M PLUS Rounded 1c', 'Nunito', system-ui, sans-serif;
 }
@@ -75,6 +147,7 @@
     border-radius: 40px;
   }
   
+  /* Кастомная анимешная кнопка */
   .anime-button {
     background-color: var(--theme-btn-bg);
     color: var(--theme-btn-text);
@@ -95,12 +168,13 @@
     transform: translateY(6px) scale(0.95);
   }
   
-  /* Точки для фона манги адаптируются под цвет рамки */
+  /* Точки для фона манги адаптируются под цвет рамки (скринтоны) */
   .manga-dots {
     background-image: radial-gradient(var(--theme-border) 2px, transparent 2px);
     background-size: 20px 20px;
   }
   
+  /* Нестандартная форма (пузырь/капля) для декоративных элементов */
   .bubble-shape {
     border-radius: 48% 52% 68% 32% / 43% 38% 62% 57%;
   }

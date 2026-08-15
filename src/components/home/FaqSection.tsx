@@ -33,9 +33,9 @@ export function FaqSection() {
               transition={{ delay: i * 0.1 }}
               className="group bg-theme-surface rounded-2xl anime-border shadow-sm overflow-hidden open:anime-shadow transition-all"
             >
-              <summary className="flex items-center justify-between p-6 cursor-pointer list-none text-xl font-bold text-theme-text hover:text-reef-cyan transition-colors outline-none [&::-webkit-details-marker]:hidden">
+              <summary className="flex items-center justify-between p-6 cursor-pointer list-none text-xl font-bold text-theme-text hover:text-theme-highlight transition-colors outline-none [&::-webkit-details-marker]:hidden">
                 {faq.q}
-                <span className="transition-transform group-open:rotate-180 bg-theme-bg rounded-full p-2 text-reef-cyan shrink-0 ml-4">
+                <span className="transition-transform group-open:rotate-180 bg-theme-bg rounded-full p-2 text-theme-highlight shrink-0 ml-4">
                   <ChevronDown size={24} />
                 </span>
               </summary>
