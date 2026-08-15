@@ -1,70 +1,51 @@
-import { Header } from '@/components/layout/Header';
-import { Footer } from '@/components/layout/Footer';
-import AdminDashboard from './AdminDashboard';
-import { db } from '@/db';
-import { orders, materials, accessories, users } from '@/db/schema';
-import { desc, eq } from 'drizzle-orm';
-import { format } from 'date-fns';
-import { ru } from 'date-fns/locale';
-
-export const metadata = {
-  title: 'Панель администратора | Reef',
-};
-
 export const dynamic = 'force-dynamic';
 
-export default async function AdminPage() {
-  let mappedOrders: any[] = [];
-  let lowStockItems: { id: string, type: 'material' | 'accessory', name: string, current: number, minimum: number }[] = [];
-
-  try {
-    const dbOrders = await db.select({
-      id: orders.id,
-      orderNumber: orders.orderNumber,
-      status: orders.status,
-      total: orders.total,
-      createdAt: orders.createdAt,
-      customerEmail: users.email,
-    })
-    .from(orders)
-    .leftJoin(users, eq(orders.userId, users.id))
-    .orderBy(desc(orders.createdAt));
-
-    mappedOrders = dbOrders.map(o => ({
-      id: o.id,
-      orderNumber: o.orderNumber,
-      customer: o.customerEmail || 'Unknown',
-      date: o.createdAt ? format(o.createdAt, 'dd MMM, HH:mm', { locale: ru }) : 'Unknown',
-      status: o.status,
-      total: o.total,
-    }));
-
-    const dbMaterials = await db.select().from(materials);
-    const dbAccessories = await db.select().from(accessories);
-
-    dbMaterials.forEach(m => {
-      if (m.stock < 100) {
-        lowStockItems.push({ id: m.id, type: 'material', name: m.name, current: m.stock, minimum: 100 });
-      }
-    });
-
-    dbAccessories.forEach(a => {
-      if (a.stock < a.minStock) {
-        lowStockItems.push({ id: a.id, type: 'accessory', name: a.name, current: a.stock, minimum: a.minStock });
-      }
-    });
-  } catch (error) {
-    console.error('Failed to load admin data:', error);
-  }
-
+export default async function AdminDashboard() {
+  // Позже здесь будут серверные запросы статистики к БД
+  
   return (
-    <div className="min-h-screen flex flex-col font-sans bg-slate-50">
-      <Header />
-      
-      <main className="flex-1 py-8">
-        <AdminDashboard orders={mappedOrders} lowStockItems={lowStockItems} />
-      </main>
-      
+    <div className="flex flex-col gap-8">
+      <header>
+        <h1 className="text-4xl font-display font-extrabold mb-2">Обзорная сводка</h1>
+        <p className="text-theme-muted font-bold text-lg">
+          Добро пожаловать в панель управления. Пора навести здесь суету.
+        </p>
+      </header>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {/* Пример карточек статистики */}
+        {[
+          { label: 'Новых заказов', value: '12' },
+          { label: 'Требуют внимания', value: '3', alert: true },
+          { label: 'Заканчивается акрил', value: '2', alert: true },
+          { label: 'Выручка за месяц', value: '142 500 ₽' },
+        ].map((stat, i) => (
+          <div 
+            key={i} 
+            className="bg-theme-surface anime-border anime-shadow rounded-[32px] p-6 flex flex-col justify-between h-40"
+          >
+            <span className="text-theme-muted font-bold">{stat.label}</span>
+            <span className={`text-5xl font-display font-extrabold ${stat.alert ? 'text-theme-highlight' : 'text-theme-text'}`}>
+              {stat.value}
+            </span>
+          </div>
+        ))}
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-4">
+        <div className="lg:col-span-2 bg-theme-surface anime-border anime-shadow rounded-[40px] p-8 min-h-[400px]">
+          <h2 className="text-2xl font-display font-extrabold mb-6">Последние заказы</h2>
+          <div className="flex items-center justify-center h-full pb-12 text-theme-muted font-bold">
+            Здесь будет таблица последних заказов
+          </div>
+        </div>
+        <div className="bg-theme-surface anime-border anime-shadow rounded-[40px] p-8 min-h-[400px]">
+          <h2 className="text-2xl font-display font-extrabold mb-6">Складские алерты</h2>
+          <div className="flex items-center justify-center h-full pb-12 text-theme-muted font-bold">
+            Здесь будет список пустых позиций
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
