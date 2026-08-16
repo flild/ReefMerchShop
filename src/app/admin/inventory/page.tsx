@@ -2,6 +2,7 @@ import { db } from '@/db';
 import { materials, materialCategories } from '@/db/schema';
 import { eq, desc } from 'drizzle-orm';
 import { StockUpdater } from '@/components/admin/inventory/StockUpdater';
+import Link from 'next/link';
 
 export const dynamic = 'force-dynamic';
 
@@ -40,9 +41,9 @@ export default async function InventoryPage() {
             Управление остатками акрила и материалов
           </p>
         </div>
-        <button className="anime-button px-6 py-3 text-lg">
-          + Добавить материал
-        </button>
+        <Link href="/admin/inventory/new" className="anime-button px-6 py-3 text-lg block">
+        + Добавить материал
+        </Link>
       </header>
 
       <div className="bg-theme-surface anime-border anime-shadow rounded-[40px] overflow-hidden">
