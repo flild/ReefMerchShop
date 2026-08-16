@@ -1,8 +1,9 @@
 import { db } from '@/db';
-import { templates } from '@/db/schema';
+import { templates, checklistRules } from '@/db/schema'; 
 import { desc } from 'drizzle-orm';
 import Link from 'next/link';
 import { DeleteTemplateButton } from '@/components/admin/content/DeleteTemplateButton';
+import { RuleStatusToggle, DeleteRuleButton } from '@/components/admin/content/RuleActions';
 
 export const dynamic = 'force-dynamic';
 
@@ -12,6 +13,10 @@ export default async function ContentAdminPage() {
     .from(templates)
     .orderBy(desc(templates.updatedAt));
 
+    const rulesList = await db
+    .select()
+    .from(checklistRules)
+    .orderBy(desc(checklistRules.productType));
   return (
     <div className="flex flex-col gap-8">
       <header className="flex items-center justify-between">
@@ -82,16 +87,53 @@ export default async function ContentAdminPage() {
         </div>
       </section>
 
-      {/* Заглушка под правила чеклиста */}
+     {/* Секция Правил чеклиста */}
       <section className="bg-theme-surface anime-border anime-shadow rounded-[40px] p-8 flex flex-col gap-6">
         <div className="flex items-center justify-between">
           <h2 className="text-2xl font-display font-extrabold text-theme-text">Правила проверки (Чеклист)</h2>
-          <button className="anime-button px-6 py-3 text-sm opacity-50 cursor-not-allowed">
+          <Link href="/admin/content/rules/new" className="anime-button px-6 py-3 text-sm block">
             + Добавить правило
-          </button>
+          </Link>
         </div>
-        <div className="text-theme-muted font-bold text-center py-8 border-2 border-theme-border border-dashed rounded-[24px] bg-theme-bg">
-          Список правил (checklistRules) реализуем на следующем этапе.
+
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="border-b-2 border-theme-border text-theme-muted text-sm uppercase tracking-wider">
+                <th className="p-4 font-extrabold">Тип изделия</th>
+                <th className="p-4 font-extrabold">Параметр</th>
+                <th className="p-4 font-extrabold">Ожидается</th>
+                <th className="p-4 font-extrabold w-1/3">Сообщение об ошибке</th>
+                <th className="p-4 font-extrabold text-right">Действия</th>
+              </tr>
+            </thead>
+            <tbody>
+              {rulesList.map((rule) => (
+                <tr key={rule.id} className="border-b border-theme-border/50 hover:bg-theme-bg/50 transition-colors">
+                  <td className="p-4 font-extrabold text-theme-text">{rule.productType}</td>
+                  <td className="p-4 font-bold text-theme-text">{rule.parameter}</td>
+                  <td className="p-4">
+                    <span className="px-2 py-1 bg-theme-bg border border-theme-border rounded-md text-sm font-bold text-theme-highlight">
+                      {rule.expectedValue}
+                    </span>
+                  </td>
+                  <td className="p-4 text-theme-muted font-bold text-sm">{rule.warningMessage}</td>
+                  <td className="p-4 flex items-center justify-end gap-3">
+                    <RuleStatusToggle id={rule.id} isActive={rule.isActive} />
+                    <DeleteRuleButton id={rule.id} />
+                  </td>
+                </tr>
+              ))}
+              
+              {rulesList.length === 0 && (
+                <tr>
+                  <td colSpan={5} className="p-8 text-center text-theme-muted font-bold">
+                    Правила не заданы. Добавь первое, чтобы чеклист заработал.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
         </div>
       </section>
     </div>
