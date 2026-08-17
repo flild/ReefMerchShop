@@ -11,6 +11,20 @@ export const users = sqliteTable('users', {
   vkId: text('vk_id'),
   createdAt: integer('created_at', { mode: 'timestamp' }).default(sql`(strftime('%s', 'now'))`),
 });
+export const articles = sqliteTable('articles', {
+  id: text('id').primaryKey(),
+  slug: text('slug').notNull().unique(), // Для красивых URL типа /guides/kak-sdelat-brelok
+  title: text('title').notNull(),
+  coverImage: text('cover_image'), // Заглавное фото
+  contentMd: text('content_md').notNull().default(''), // Текст в Markdown
+  viewsCount: integer('views_count').notNull().default(0),
+  readsCount: integer('reads_count').notNull().default(0), // Срабатывает, когда доскроллили до конца
+  likesCount: integer('likes_count').notNull().default(0),
+  dislikesCount: integer('dislikes_count').notNull().default(0),
+  isPublished: integer('is_published', { mode: 'boolean' }).notNull().default(false), // Черновик или опубликовано
+  createdAt: integer('created_at', { mode: 'timestamp' }).default(sql`(strftime('%s', 'now'))`),
+  updatedAt: integer('updated_at', { mode: 'timestamp' }).default(sql`(strftime('%s', 'now'))`),
+});
 
 export const files = sqliteTable('files', {
   id: text('id').primaryKey(),
