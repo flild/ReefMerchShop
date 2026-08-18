@@ -120,7 +120,7 @@
 │   │   └── client/         # Клиентские экшены (создание заказа, обновление профиля)
 │   │
 │   ├── app/                # Next.js App Router (Маршрутизация)
-│   │   ├── (auth)/         # Группа роутов авторизации (login, register) - без префикса
+│   │   ├── (auth)/         # Группа роутов авторизации (login, register) - без префикса ещё не реализован
 │   │   ├── admin/          # Защищенная зона (inventory, orders, collects, users, content)
 │   │   ├── api/            # REST-эндпоинты (исключительно для webhooks S3/TG/СДЭК и auth)
 │   │   ├── tools/          # Инструменты художников (mockup, check, checklist)
