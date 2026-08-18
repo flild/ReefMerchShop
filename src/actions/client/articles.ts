@@ -14,3 +14,29 @@ export async function incrementViewCount(slug: string) {
     console.error('Ошибка обновления просмотров:', error);
   }
 }
+
+export async function incrementReadCount(slug: string) {
+  try {
+    await db.update(articles)
+      .set({ readsCount: sql`${articles.readsCount} + 1` })
+      .where(eq(articles.slug, slug));
+  } catch (error) {
+    console.error('Ошибка обновления дочитываний:', error);
+  }
+}
+
+export async function rateArticle(slug: string, isLike: boolean) {
+  try {
+    if (isLike) {
+      await db.update(articles)
+        .set({ likesCount: sql`${articles.likesCount} + 1` })
+        .where(eq(articles.slug, slug));
+    } else {
+      await db.update(articles)
+        .set({ dislikesCount: sql`${articles.dislikesCount} + 1` })
+        .where(eq(articles.slug, slug));
+    }
+  } catch (error) {
+    console.error('Ошибка оценки статьи:', error);
+  }
+}

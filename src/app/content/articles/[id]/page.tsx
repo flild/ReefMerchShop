@@ -2,7 +2,7 @@ import { db } from '@/db';
 import { articles } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 import { notFound } from 'next/navigation';
-import { ArticleEditorForm } from '@/components/admin/articles/ArticleEditorForm';
+import { ArticleEditorForm } from '@/components/admin/guides/ArticleEditorForm';
 
 export const dynamic = 'force-dynamic';
 

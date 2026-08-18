@@ -1,4 +1,4 @@
-import { CreateArticleForm } from '@/components/admin/articles/CreateArticleForm';
+import { CreateArticleForm } from '@/components/admin/guides/CreateArticleForm';
 
 export const dynamic = 'force-dynamic';
 

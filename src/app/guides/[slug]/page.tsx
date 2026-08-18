@@ -5,6 +5,8 @@ import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import { MarkdownRenderer } from '@/components/guides/MarkdownRenderer';
 import { ViewTracker } from '@/components/guides/ViewTracker';
+import { ReadTracker } from '@/components/guides/ReadTracker';
+import { ArticleFeedback } from '@/components/guides/ArticleFeedback';
 
 export const dynamic = 'force-dynamic';
 
@@ -76,10 +78,10 @@ export default async function GuideDetailsPage({ params }: PageProps) {
         <MarkdownRenderer content={article.contentMd} />
       </article>
 
-      {/* Заглушки под трекер дочитываний и блок оценки */}
-      <div id="read-tracker-placeholder" className="h-10" />
-      <div id="feedback-placeholder" className="bg-theme-surface anime-border anime-shadow rounded-[40px] p-8 text-center text-theme-muted font-bold border-dashed border-2">
-      </div>
+      {/* Трекер должен быть сразу после контента, чтобы зафиксировать реальное дочитывание */}
+      <ReadTracker slug={article.slug} />
+
+      <ArticleFeedback slug={article.slug} />
     </main>
   );
 }

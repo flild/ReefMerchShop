@@ -2,7 +2,7 @@ import { db } from '@/db';
 import { articles } from '@/db/schema';
 import { desc } from 'drizzle-orm';
 import Link from 'next/link';
-import { PublishToggle, DeleteArticleButton } from '@/components/admin/articles/ArticleActions';
+import { PublishToggle, DeleteArticleButton } from '@/components/admin/guides/ArticleActions';
 
 export const dynamic = 'force-dynamic';
 
