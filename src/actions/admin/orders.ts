@@ -8,10 +8,8 @@ import { redirect } from 'next/navigation';
 
 export async function updateOrderStatus(orderId: string, status: string) {
   try {
-    // Обновляем сам заказ
     await db.update(orders).set({ status }).where(eq(orders.id, orderId));
     
-    // Обязательно пишем в историю, чтобы на странице заказа был лог
     await db.insert(orderStatusHistory).values({
       id: crypto.randomUUID(),
       orderId,
@@ -33,6 +31,8 @@ export async function createOrder(formData: FormData) {
   const status = formData.get('status') as string || 'new';
   const totalStr = formData.get('total') as string;
   const details = formData.get('details') as string;
+  const customClientName = formData.get('customClientName') as string;
+  const customClientContact = formData.get('customClientContact') as string;
 
   const total = parseInt(totalStr, 10);
 
@@ -40,7 +40,6 @@ export async function createOrder(formData: FormData) {
     return { error: 'Сумма должна быть адекватным числом' };
   }
 
-  // Генерируем красивый 6-значный номер заказа
   const orderNumber = `ORD-${Math.floor(100000 + Math.random() * 900000)}`;
   const orderId = crypto.randomUUID();
 
@@ -51,17 +50,19 @@ export async function createOrder(formData: FormData) {
       userId: userId || null,
       status,
       total,
-      detailsJson: JSON.stringify({ managerNote: details || '' }),
+      detailsJson: JSON.stringify({ 
+        managerNote: details || '',
+        customClientName: customClientName || '',
+        customClientContact: customClientContact || ''
+      }),
     });
 
-    // Делаем первую запись в историю
     await db.insert(orderStatusHistory).values({
       id: crypto.randomUUID(),
       orderId,
       status,
       comment: 'Заказ создан через панель администратора',
     });
-
   } catch (error) {
     console.error('Ошибка создания заказа:', error);
     return { error: 'Не удалось создать заказ в базе данных' };
@@ -69,7 +70,38 @@ export async function createOrder(formData: FormData) {
 
   revalidatePath('/admin/orders');
   revalidatePath('/admin');
-  
-  // Редиректим админа сразу на страницу свежесозданного заказа
   redirect(`/admin/orders/${orderId}`);
+}
+
+export async function updateOrder(id: string, formData: FormData) {
+  const userId = formData.get('userId') as string;
+  const totalStr = formData.get('total') as string;
+  const details = formData.get('details') as string;
+  const customClientName = formData.get('customClientName') as string;
+  const customClientContact = formData.get('customClientContact') as string;
+
+  const total = parseInt(totalStr, 10);
+
+  if (isNaN(total) || total < 0) {
+    return { error: 'Сумма должна быть адекватным числом' };
+  }
+
+  try {
+    await db.update(orders).set({
+      userId: userId || null,
+      total,
+      detailsJson: JSON.stringify({ 
+        managerNote: details || '',
+        customClientName: customClientName || '',
+        customClientContact: customClientContact || ''
+      }),
+    }).where(eq(orders.id, id));
+  } catch (error) {
+    console.error('Ошибка обновления заказа:', error);
+    return { error: 'Не удалось обновить заказ в базе данных' };
+  }
+
+  revalidatePath('/admin/orders');
+  revalidatePath(`/admin/orders/${id}`);
+  redirect(`/admin/orders/${id}`);
 }

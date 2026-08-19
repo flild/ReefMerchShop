@@ -1,7 +1,6 @@
 import { db } from '@/db';
 import { orderProofs } from '@/db/schema';
 import Image from 'next/image';
-import { ProofUploader } from '@/components/admin/orders/ProofUploader';
 import { 
   orders, 
   orderItems, 
@@ -60,6 +59,15 @@ export default async function OrderDetailsPage({ params }: PageProps) {
     notFound();
   }
   const order = orderResult[0];
+  let parsedDetails = { customClientName: '', customClientContact: '', managerNote: '' };
+  if (order.detailsJson) {
+    try {
+      parsedDetails = JSON.parse(order.detailsJson);
+    } catch (e) {}
+  }
+
+  const displayName = parsedDetails.customClientName || order.clientName || 'Гость / Без имени';
+  const displayContact = parsedDetails.customClientContact || order.clientEmail || 'Контакты не указаны';
 
   const items = await db
     .select({
@@ -88,12 +96,20 @@ export default async function OrderDetailsPage({ params }: PageProps) {
   return (
     <div className="flex flex-col gap-8">
       <header className="flex items-center gap-4">
-        <Link 
-          href="/admin/orders" 
-          className="p-3 bg-theme-surface anime-border anime-shadow hover:anime-shadow-hover hover:-translate-y-1 transition-all text-theme-text"
-        >
-          ← Назад
-        </Link>
+        <div className="flex items-center gap-2">
+          <Link 
+            href="/admin/orders" 
+            className="p-3 bg-theme-surface anime-border anime-shadow hover:anime-shadow-hover hover:-translate-y-1 transition-all text-theme-text"
+          >
+            ← Назад
+          </Link>
+          <Link 
+            href={`/admin/orders/${order.id}/edit`} 
+            className="p-3 bg-theme-highlight/10 border-2 border-theme-highlight text-theme-highlight font-bold rounded-[16px] hover:bg-theme-highlight hover:text-theme-bg transition-colors"
+          >
+            Редактировать
+          </Link>
+        </div>
         <div>
           <h1 className="text-4xl font-display font-extrabold mb-1">
             Заказ #{order.orderNumber}
@@ -110,10 +126,16 @@ export default async function OrderDetailsPage({ params }: PageProps) {
           <section className="bg-theme-surface anime-border anime-shadow rounded-[40px] p-8 flex flex-col sm:flex-row justify-between gap-6">
             <div className="flex flex-col gap-2">
               <span className="text-theme-muted font-bold">Клиент</span>
-              <div className="text-xl font-extrabold text-theme-text">{order.clientName || 'Без имени'}</div>
-              <div className="text-sm font-bold text-theme-muted">{order.clientEmail || '—'}</div>
-              {order.clientTelegram && (
+              <div className="text-xl font-extrabold text-theme-text">{displayName}</div>
+              <div className="text-sm font-bold text-theme-muted">{displayContact}</div>
+              {order.clientTelegram && !parsedDetails.customClientContact && (
                 <div className="text-sm font-bold text-theme-highlight">TG: {order.clientTelegram}</div>
+              )}
+              {parsedDetails.managerNote && (
+                <div className="mt-2 p-3 bg-theme-bg border-2 border-theme-border rounded-[16px] text-sm font-bold text-theme-text">
+                  <span className="text-theme-muted block mb-1">Заметка:</span>
+                  {parsedDetails.managerNote}
+                </div>
               )}
             </div>
 
@@ -222,64 +244,6 @@ export default async function OrderDetailsPage({ params }: PageProps) {
                 <div className="pl-8 text-theme-muted font-bold text-sm">История пуста.</div>
               )}
             </div>
-          </section>
-
-          <section className="bg-theme-surface anime-border anime-shadow rounded-[40px] p-8">
-            <h2 className="text-2xl font-display font-extrabold mb-2">Цветопробы</h2>
-            <p className="text-theme-muted font-bold text-sm mb-6">
-              Загрузите фото первого отпечатанного экземпляра (пилотного образца). Уведомление уйдет клиенту — печать всей партии начнется только после его согласия.
-            </p>
-
-            <div className="flex flex-col gap-6">
-              {proofs.map((proof) => (
-                <div key={proof.id} className="flex flex-col gap-3 bg-theme-bg border-2 border-theme-border rounded-[24px] p-4">
-                  <div className="flex items-center justify-between">
-                    <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-widest ${
-                      proof.status === 'approved' ? 'bg-theme-green-bg text-theme-green-text' :
-                      proof.status === 'rejected' ? 'bg-theme-yellow-bg text-theme-yellow-text' :
-                      'bg-theme-gray-bg text-theme-gray-text'
-                    }`}>
-                      {proof.status === 'pending' ? 'Ожидает ответа' : proof.status}
-                    </span>
-                    <span className="text-theme-muted font-bold text-xs">
-                      {proof.createdAt instanceof Date ? proof.createdAt.toLocaleString('ru-RU') : ''}
-                    </span>
-                  </div>
-
-                  {proof.fileUrl && (
-                    <div className="relative w-full aspect-video rounded-[16px] overflow-hidden border-2 border-theme-border">
-                      <Image 
-                        src={proof.fileUrl}
-                        alt="Цветопроба"
-                        fill
-                        className="object-cover"
-                        unoptimized
-                      />
-                    </div>
-                  )}
-
-                  {proof.managerComment && (
-                    <div className="text-sm font-bold text-theme-text mt-2">
-                      <span className="text-theme-muted">Менеджер:</span> {proof.managerComment}
-                    </div>
-                  )}
-
-                  {proof.clientComment && (
-                    <div className="text-sm font-bold text-theme-highlight">
-                      <span className="text-theme-muted">Клиент:</span> {proof.clientComment}
-                    </div>
-                  )}
-                </div>
-              ))}
-
-              {proofs.length === 0 && (
-                <div className="text-center text-theme-muted font-bold p-4">
-                  Цветопробы еще не загружались.
-                </div>
-              )}
-            </div>
-
-            <ProofUploader orderId={order.id} />
           </section>
         </div>
       </div>
