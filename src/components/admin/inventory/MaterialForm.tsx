@@ -1,7 +1,7 @@
 'use client';
 
 import { useActionState } from 'react';
-import { createMaterial } from '@/actions/admin/inventory';
+import { createMaterial, updateMaterial } from '@/actions/admin/inventory';
 import Link from 'next/link';
 
 interface Category {
@@ -9,10 +9,29 @@ interface Category {
   name: string;
 }
 
-export function MaterialForm({ categories }: { categories: Category[] }) {
-  // Используем useActionState для обработки ошибок сабмита, если они будут
+interface MaterialData {
+  id: string;
+  name: string;
+  type: string;
+  categoryId: string | null;
+  pricePerCm2: number;
+  minStock: number;
+  stock: number;
+}
+
+interface MaterialFormProps {
+  categories: Category[];
+  initialData?: MaterialData;
+}
+
+export function MaterialForm({ categories, initialData }: MaterialFormProps) {
+  const isEditing = !!initialData?.id;
+
   const [state, formAction, isPending] = useActionState(
     async (prevState: any, formData: FormData) => {
+      if (isEditing) {
+        return await updateMaterial(initialData.id, formData);
+      }
       return await createMaterial(formData);
     },
     null
@@ -32,6 +51,7 @@ export function MaterialForm({ categories }: { categories: Category[] }) {
           type="text" 
           name="name" 
           required
+          defaultValue={initialData?.name || ''}
           placeholder="Например: Прозрачный 3мм"
           className="bg-theme-bg border-2 border-theme-border rounded-[20px] px-5 py-3 font-bold text-theme-text outline-none focus:border-theme-highlight anime-shadow transition-all"
         />
@@ -43,11 +63,13 @@ export function MaterialForm({ categories }: { categories: Category[] }) {
           <select 
             name="type" 
             required
-            className="bg-theme-bg border-2 border-theme-border rounded-[20px] px-5 py-3 font-bold text-theme-text outline-none focus:border-theme-highlight anime-shadow appearance-none"
+            defaultValue={initialData?.type || 'acrylic'}
+            className="bg-theme-bg border-2 border-theme-border rounded-[20px] px-5 py-3 font-bold text-theme-text outline-none focus:border-theme-highlight anime-shadow appearance-none cursor-pointer"
           >
             <option value="acrylic">Акрил</option>
             <option value="holography">Голография</option>
             <option value="wood">Дерево</option>
+            {/* Добавь сюда новые типы, если понадобятся */}
           </select>
         </div>
 
@@ -55,7 +77,8 @@ export function MaterialForm({ categories }: { categories: Category[] }) {
           <label className="font-extrabold text-theme-text ml-2">Категория</label>
           <select 
             name="categoryId"
-            className="bg-theme-bg border-2 border-theme-border rounded-[20px] px-5 py-3 font-bold text-theme-text outline-none focus:border-theme-highlight anime-shadow appearance-none"
+            defaultValue={initialData?.categoryId || ''}
+            className="bg-theme-bg border-2 border-theme-border rounded-[20px] px-5 py-3 font-bold text-theme-text outline-none focus:border-theme-highlight anime-shadow appearance-none cursor-pointer"
           >
             <option value="">Без категории</option>
             {categories.map(c => (
@@ -72,25 +95,28 @@ export function MaterialForm({ categories }: { categories: Category[] }) {
             type="number" 
             name="pricePerCm2" 
             step="0.1"
-            defaultValue="0"
+            min="0"
+            defaultValue={initialData?.pricePerCm2 ?? 0}
             className="bg-theme-bg border-2 border-theme-border rounded-[20px] px-5 py-3 font-bold text-theme-text outline-none focus:border-theme-highlight anime-shadow transition-all"
           />
         </div>
         <div className="flex flex-col gap-2">
-          <label className="font-extrabold text-theme-text ml-2">Текущий остаток</label>
+          <label className="font-extrabold text-theme-text ml-2">Остаток</label>
           <input 
             type="number" 
             name="stock" 
-            defaultValue="0"
+            min="0"
+            defaultValue={initialData?.stock ?? 0}
             className="bg-theme-bg border-2 border-theme-border rounded-[20px] px-5 py-3 font-bold text-theme-text outline-none focus:border-theme-highlight anime-shadow transition-all"
           />
         </div>
         <div className="flex flex-col gap-2">
-          <label className="font-extrabold text-theme-text ml-2">Мин. остаток (алерт)</label>
+          <label className="font-extrabold text-theme-text ml-2">Мин. остаток</label>
           <input 
             type="number" 
             name="minStock" 
-            defaultValue="1000"
+            min="0"
+            defaultValue={initialData?.minStock ?? 1000}
             className="bg-theme-bg border-2 border-theme-border rounded-[20px] px-5 py-3 font-bold text-theme-text outline-none focus:border-theme-highlight anime-shadow transition-all"
           />
         </div>
@@ -102,7 +128,7 @@ export function MaterialForm({ categories }: { categories: Category[] }) {
           disabled={isPending}
           className="anime-button px-8 py-3 text-lg disabled:opacity-50"
         >
-          {isPending ? 'Создаем...' : 'Сохранить материал'}
+          {isPending ? 'Сохраняем...' : (isEditing ? 'Обновить' : 'Сохранить')}
         </button>
         <Link 
           href="/admin/inventory"

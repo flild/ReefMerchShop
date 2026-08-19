@@ -2,7 +2,9 @@ import { db } from '@/db';
 import { materials, materialCategories } from '@/db/schema';
 import { eq, desc } from 'drizzle-orm';
 import { StockUpdater } from '@/components/admin/inventory/StockUpdater';
+import { DeleteMaterialButton } from '@/components/admin/inventory/DeleteMaterialButton';
 import Link from 'next/link';
+import { Pencil } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
 
@@ -17,7 +19,6 @@ function StockBadge({ stock, minStock }: { stock: number; minStock: number }) {
 }
 
 export default async function InventoryPage() {
-  // Тянем материалы + джоиним названия категорий
   const materialsList = await db
     .select({
       id: materials.id,
@@ -34,15 +35,15 @@ export default async function InventoryPage() {
 
   return (
     <div className="flex flex-col gap-8">
-      <header className="flex items-center justify-between">
+      <header className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-4xl font-display font-extrabold mb-2">Склад</h1>
           <p className="text-theme-muted font-bold text-lg">
             Управление остатками акрила и материалов
           </p>
         </div>
-        <Link href="/admin/inventory/new" className="anime-button px-6 py-3 text-lg block">
-        + Добавить материал
+        <Link href="/admin/inventory/new" className="anime-button px-6 py-3 text-lg block text-center whitespace-nowrap">
+          + Добавить материал
         </Link>
       </header>
 
@@ -55,6 +56,7 @@ export default async function InventoryPage() {
                 <th className="p-5 font-extrabold">Категория / Тип</th>
                 <th className="p-5 font-extrabold">Статус</th>
                 <th className="p-5 font-extrabold">Остаток (см²)</th>
+                <th className="p-5 font-extrabold text-right">Действия</th>
               </tr>
             </thead>
             <tbody>
@@ -85,12 +87,24 @@ export default async function InventoryPage() {
                   <td className="p-5">
                     <StockUpdater id={item.id} currentStock={item.stock} />
                   </td>
+                  <td className="p-5 text-right">
+                    <div className="flex items-center justify-end gap-2 shrink-0">
+                      <Link
+                        href={`/admin/inventory/${item.id}/edit`}
+                        className="p-2 bg-theme-bg border-2 border-theme-border rounded-full text-theme-muted hover:text-theme-highlight hover:border-theme-highlight transition-all"
+                        title="Редактировать"
+                      >
+                        <Pencil className="w-5 h-5" />
+                      </Link>
+                      <DeleteMaterialButton id={item.id} />
+                    </div>
+                  </td>
                 </tr>
               ))}
-              
+
               {materialsList.length === 0 && (
                 <tr>
-                  <td colSpan={4} className="p-12 text-center text-theme-muted font-bold text-lg">
+                  <td colSpan={5} className="p-12 text-center text-theme-muted font-bold text-lg">
                     Материалы не найдены. Создай первый.
                   </td>
                 </tr>
