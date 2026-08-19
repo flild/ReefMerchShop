@@ -4,6 +4,7 @@ import { eq, desc } from 'drizzle-orm';
 import Link from 'next/link';
 import Image from 'next/image';
 import { DeletePortfolioButton } from '@/components/admin/portfolio/DeletePortfolioButton';
+import { Pencil } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
 
@@ -71,7 +72,27 @@ export default async function PortfolioAdminPage() {
                 </div>
                 
                 {/* Кнопка удаления */}
-                <DeletePortfolioButton id={item.id} />
+                <div className="flex items-start justify-between gap-4">
+                <div>
+                  <h3 className="text-2xl font-extrabold text-theme-text line-clamp-1">
+                    {item.title}
+                  </h3>
+                  <div className="text-theme-muted font-bold text-sm mt-1">
+                    {item.categoryName || 'Без категории'}
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 shrink-0">
+                  <Link
+                    href={`/admin/portfolio/${item.id}/edit`}
+                    className="p-2 bg-theme-bg border-2 border-theme-border rounded-full text-theme-muted hover:text-theme-highlight hover:border-theme-highlight transition-all"
+                    title="Редактировать"
+                  >
+                    <Pencil className="w-5 h-5" />
+                  </Link>
+                  <DeletePortfolioButton id={item.id} />
+                </div>
+              </div>
               </div>
 
               {item.authorName && (

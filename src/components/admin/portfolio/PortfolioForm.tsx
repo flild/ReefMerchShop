@@ -1,7 +1,7 @@
 'use client';
 
 import { useActionState } from 'react';
-import { createPortfolioItem } from '@/actions/admin/portfolio';
+import { createPortfolioItem, updatePortfolioItem } from '@/actions/admin/portfolio';
 import Link from 'next/link';
 
 interface Category {
@@ -9,9 +9,28 @@ interface Category {
   name: string;
 }
 
-export function PortfolioForm({ categories }: { categories: Category[] }) {
+interface PortfolioItemData {
+  id: string;
+  title: string;
+  categoryId: string | null;
+  authorName: string | null;
+  imageUrl: string;
+  description: string | null;
+}
+
+interface PortfolioFormProps {
+  categories: Category[];
+  initialData?: PortfolioItemData;
+}
+
+export function PortfolioForm({ categories, initialData }: PortfolioFormProps) {
+  const isEditing = !!initialData?.id;
+
   const [state, formAction, isPending] = useActionState(
     async (prevState: any, formData: FormData) => {
+      if (isEditing) {
+        return await updatePortfolioItem(initialData.id, formData);
+      }
       return await createPortfolioItem(formData);
     },
     null
@@ -31,6 +50,7 @@ export function PortfolioForm({ categories }: { categories: Category[] }) {
           type="text" 
           name="title" 
           required
+          defaultValue={initialData?.title || ''}
           placeholder="Например: Акриловый стенд Cyberpunk"
           className="bg-theme-bg border-2 border-theme-border rounded-[20px] px-5 py-3 font-bold text-theme-text outline-none focus:border-theme-highlight anime-shadow transition-all"
         />
@@ -41,6 +61,7 @@ export function PortfolioForm({ categories }: { categories: Category[] }) {
           <label className="font-extrabold text-theme-text ml-2">Категория</label>
           <select 
             name="categoryId"
+            defaultValue={initialData?.categoryId || ''}
             className="bg-theme-bg border-2 border-theme-border rounded-[20px] px-5 py-3 font-bold text-theme-text outline-none focus:border-theme-highlight anime-shadow appearance-none"
           >
             <option value="">Без категории</option>
@@ -55,6 +76,7 @@ export function PortfolioForm({ categories }: { categories: Category[] }) {
           <input 
             type="text" 
             name="authorName" 
+            defaultValue={initialData?.authorName || ''}
             placeholder="Имя или псевдоним"
             className="bg-theme-bg border-2 border-theme-border rounded-[20px] px-5 py-3 font-bold text-theme-text outline-none focus:border-theme-highlight anime-shadow transition-all"
           />
@@ -67,6 +89,7 @@ export function PortfolioForm({ categories }: { categories: Category[] }) {
           type="url" 
           name="imageUrl" 
           required
+          defaultValue={initialData?.imageUrl || ''}
           placeholder="https://..."
           className="bg-theme-bg border-2 border-theme-border rounded-[20px] px-5 py-3 font-bold text-theme-text outline-none focus:border-theme-highlight anime-shadow transition-all"
         />
@@ -77,6 +100,7 @@ export function PortfolioForm({ categories }: { categories: Category[] }) {
         <textarea 
           name="description" 
           rows={4}
+          defaultValue={initialData?.description || ''}
           placeholder="Пару слов о проекте..."
           className="bg-theme-bg border-2 border-theme-border rounded-[20px] px-5 py-3 font-bold text-theme-text outline-none focus:border-theme-highlight anime-shadow transition-all resize-none"
         />
@@ -88,7 +112,7 @@ export function PortfolioForm({ categories }: { categories: Category[] }) {
           disabled={isPending}
           className="anime-button px-8 py-3 text-lg disabled:opacity-50"
         >
-          {isPending ? 'Загружаем...' : 'Сохранить работу'}
+          {isPending ? 'Сохраняем...' : (isEditing ? 'Обновить работу' : 'Сохранить работу')}
         </button>
         <Link 
           href="/admin/portfolio"

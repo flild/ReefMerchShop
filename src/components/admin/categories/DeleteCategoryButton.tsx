@@ -1,0 +1,28 @@
+'use client';
+
+import { useTransition } from 'react';
+import { deleteCategory } from '@/actions/admin/categories';
+import { Trash2 } from 'lucide-react';
+
+export function DeleteCategoryButton({ id }: { id: string }) {
+  const [isPending, startTransition] = useTransition();
+
+  const handleDelete = () => {
+    if (!confirm('Точно удалить категорию? Работы в портфолио останутся, но без этой категории.')) return;
+    
+    startTransition(async () => {
+      await deleteCategory(id);
+    });
+  };
+
+  return (
+    <button
+      onClick={handleDelete}
+      disabled={isPending}
+      className="p-2 bg-theme-bg border-2 border-theme-border rounded-full text-theme-muted hover:text-theme-yellow-text hover:border-theme-yellow-text transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+      title="Удалить"
+    >
+      <Trash2 className="w-5 h-5" />
+    </button>
+  );
+}

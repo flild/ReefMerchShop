@@ -45,3 +45,31 @@ export async function createPortfolioItem(formData: FormData) {
   revalidatePath('/admin/portfolio');
   redirect('/admin/portfolio');
 }
+
+export async function updatePortfolioItem(id: string, formData: FormData) {
+  const title = formData.get('title') as string;
+  const categoryId = formData.get('categoryId') as string;
+  const imageUrl = formData.get('imageUrl') as string;
+  const authorName = formData.get('authorName') as string;
+  const description = formData.get('description') as string;
+
+  if (!title || !imageUrl) {
+    return { error: 'Название и ссылка на изображение обязательны' };
+  }
+
+  try {
+    await db.update(portfolioItems).set({
+      title,
+      categoryId: categoryId || null,
+      imageUrl,
+      authorName: authorName || null,
+      description: description || null,
+    }).where(eq(portfolioItems.id, id));
+  } catch (error) {
+    console.error('Ошибка обновления работы:', error);
+    return { error: 'Не удалось обновить работу в базе данных' };
+  }
+
+  revalidatePath('/admin/portfolio');
+  redirect('/admin/portfolio');
+}
