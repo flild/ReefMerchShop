@@ -6,6 +6,20 @@ import { OrderStatusSelect } from '@/components/admin/orders/OrderStatusSelect';
 
 export const dynamic = 'force-dynamic';
 
+// Хелпер для определения цвета статуса по дизайн-системе
+function getStatusColorClass(status: string) {
+  switch (status) {
+    case 'completed':
+      return 'bg-theme-green-bg border-theme-green-text';
+    case 'proofing':
+      return 'bg-theme-yellow-bg border-theme-yellow-text';
+    case 'new':
+      return 'bg-theme-bg border-theme-highlight';
+    default:
+      return 'bg-theme-gray-bg border-theme-gray-text';
+  }
+}
+
 export default async function OrdersAdminPage() {
   const ordersList = await db
     .select({
@@ -23,13 +37,16 @@ export default async function OrdersAdminPage() {
 
   return (
     <div className="flex flex-col gap-8">
-      <header className="flex items-center justify-between">
+      <header className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-4xl font-display font-extrabold mb-2">Заказы</h1>
           <p className="text-theme-muted font-bold text-lg">
             Управление текущими заказами и статусами производства
           </p>
         </div>
+        <Link href="/admin/orders/new" className="anime-button px-6 py-3 text-lg block text-center whitespace-nowrap">
+          + Создать заказ
+        </Link>
       </header>
 
       <div className="bg-theme-surface anime-border anime-shadow rounded-[40px] overflow-hidden">
@@ -68,11 +85,15 @@ export default async function OrdersAdminPage() {
                       {order.total.toLocaleString('ru-RU')} ₽
                     </div>
                   </td>
-                  <td className="p-5">
+                  <td className="p-5 flex items-center gap-3">
+                    {/* Цветной индикатор статуса */}
+                    <span className={`w-3 h-3 rounded-full border-2 ${getStatusColorClass(order.status)}`} />
                     <OrderStatusSelect orderId={order.id} currentStatus={order.status} />
                   </td>
                   <td className="p-5 text-theme-muted font-bold text-sm">
-                    {order.createdAt ? new Date(order.createdAt).toLocaleDateString('ru-RU') : '—'}
+                    {order.createdAt instanceof Date 
+                      ? order.createdAt.toLocaleDateString('ru-RU') 
+                      : '—'}
                   </td>
                   <td className="p-5 text-right">
                     <Link 
@@ -84,7 +105,7 @@ export default async function OrdersAdminPage() {
                   </td>
                 </tr>
               ))}
-              
+
               {ordersList.length === 0 && (
                 <tr>
                   <td colSpan={6} className="p-12 text-center text-theme-muted font-bold text-lg">

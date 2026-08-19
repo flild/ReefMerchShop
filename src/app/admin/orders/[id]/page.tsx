@@ -18,14 +18,13 @@ import { OrderStatusSelect } from '@/components/admin/orders/OrderStatusSelect';
 
 export const dynamic = 'force-dynamic';
 
-
 interface PageProps {
   params: Promise<{ id: string }>;
 }
 
 export default async function OrderDetailsPage({ params }: PageProps) {
   const { id } = await params;
-  // 4. Получаем список цветопроб
+
   const proofs = await db
     .select({
       id: orderProofs.id,
@@ -40,7 +39,6 @@ export default async function OrderDetailsPage({ params }: PageProps) {
     .where(eq(orderProofs.orderId, id))
     .orderBy(desc(orderProofs.createdAt));
 
-  // 1. Получаем основную инфу о заказе
   const orderResult = await db
     .select({
       id: orders.id,
@@ -63,7 +61,6 @@ export default async function OrderDetailsPage({ params }: PageProps) {
   }
   const order = orderResult[0];
 
-  // 2. Получаем состав заказа (товары)
   const items = await db
     .select({
       id: orderItems.id,
@@ -82,7 +79,6 @@ export default async function OrderDetailsPage({ params }: PageProps) {
     .leftJoin(files, eq(orderItems.fileId, files.id))
     .where(eq(orderItems.orderId, id));
 
-  // 3. Получаем историю статусов
   const history = await db
     .select()
     .from(orderStatusHistory)
@@ -103,16 +99,14 @@ export default async function OrderDetailsPage({ params }: PageProps) {
             Заказ #{order.orderNumber}
           </h1>
           <p className="text-theme-muted font-bold">
-            от {order.createdAt ? new Date(order.createdAt).toLocaleString('ru-RU') : '—'}
+            от {order.createdAt instanceof Date ? order.createdAt.toLocaleString('ru-RU') : '—'}
           </p>
         </div>
       </header>
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
-        {/* ЛЕВАЯ КОЛОНКА: Инфо и состав заказа */}
+        
         <div className="xl:col-span-2 flex flex-col gap-8">
-          
-          {/* Сводка по заказу */}
           <section className="bg-theme-surface anime-border anime-shadow rounded-[40px] p-8 flex flex-col sm:flex-row justify-between gap-6">
             <div className="flex flex-col gap-2">
               <span className="text-theme-muted font-bold">Клиент</span>
@@ -122,7 +116,7 @@ export default async function OrderDetailsPage({ params }: PageProps) {
                 <div className="text-sm font-bold text-theme-highlight">TG: {order.clientTelegram}</div>
               )}
             </div>
-            
+
             <div className="flex flex-col gap-2">
               <span className="text-theme-muted font-bold">Итоговая стоимость</span>
               <div className="text-3xl font-display font-extrabold text-theme-text">
@@ -136,7 +130,6 @@ export default async function OrderDetailsPage({ params }: PageProps) {
             </div>
           </section>
 
-          {/* Состав заказа */}
           <section className="bg-theme-surface anime-border anime-shadow rounded-[40px] p-8">
             <h2 className="text-2xl font-display font-extrabold mb-6">Состав заказа</h2>
             <div className="flex flex-col gap-4">
@@ -145,7 +138,7 @@ export default async function OrderDetailsPage({ params }: PageProps) {
                   <div className="flex items-center justify-center w-12 h-12 bg-theme-surface border-2 border-theme-border rounded-full font-extrabold text-theme-text shrink-0">
                     {index + 1}
                   </div>
-                  
+
                   <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="flex flex-col">
                       <span className="font-extrabold text-theme-text text-lg uppercase tracking-wide">
@@ -200,13 +193,11 @@ export default async function OrderDetailsPage({ params }: PageProps) {
           </section>
         </div>
 
-        {/* ПРАВАЯ КОЛОНКА: История и Цветопробы */}
         <div className="flex flex-col gap-8">
           
-          {/* История статусов */}
           <section className="bg-theme-surface anime-border anime-shadow rounded-[40px] p-8">
             <h2 className="text-2xl font-display font-extrabold mb-6">История изменений</h2>
-            
+
             <div className="flex flex-col gap-6 relative before:absolute before:inset-y-0 before:left-[11px] before:w-0.5 before:bg-theme-border">
               {history.map((entry) => (
                 <div key={entry.id} className="relative pl-8">
@@ -216,25 +207,29 @@ export default async function OrderDetailsPage({ params }: PageProps) {
                       {entry.status}
                     </span>
                     <span className="text-theme-muted font-bold text-xs">
-                      {entry.createdAt ? new Date(entry.createdAt).toLocaleString('ru-RU') : '—'}
+                      {entry.createdAt instanceof Date ? entry.createdAt.toLocaleString('ru-RU') : '—'}
                     </span>
-                    <p className="text-theme-text font-bold text-sm mt-2 p-3 bg-theme-bg border-2 border-theme-border rounded-[16px] bubble-shape">
-                      {entry.comment}
-                    </p>
+                    {entry.comment && (
+                      <p className="text-theme-text font-bold text-sm mt-2 p-3 bg-theme-bg border-2 border-theme-border rounded-[16px] bubble-shape">
+                        {entry.comment}
+                      </p>
+                    )}
                   </div>
                 </div>
               ))}
-              
+
               {history.length === 0 && (
                 <div className="pl-8 text-theme-muted font-bold text-sm">История пуста.</div>
               )}
             </div>
           </section>
 
-          {/* Цветопробы */}
           <section className="bg-theme-surface anime-border anime-shadow rounded-[40px] p-8">
-            <h2 className="text-2xl font-display font-extrabold mb-6">Цветопробы</h2>
-            
+            <h2 className="text-2xl font-display font-extrabold mb-2">Цветопробы</h2>
+            <p className="text-theme-muted font-bold text-sm mb-6">
+              Загрузите фото первого отпечатанного экземпляра (пилотного образца). Уведомление уйдет клиенту — печать всей партии начнется только после его согласия.
+            </p>
+
             <div className="flex flex-col gap-6">
               {proofs.map((proof) => (
                 <div key={proof.id} className="flex flex-col gap-3 bg-theme-bg border-2 border-theme-border rounded-[24px] p-4">
@@ -247,7 +242,7 @@ export default async function OrderDetailsPage({ params }: PageProps) {
                       {proof.status === 'pending' ? 'Ожидает ответа' : proof.status}
                     </span>
                     <span className="text-theme-muted font-bold text-xs">
-                      {proof.createdAt ? new Date(proof.createdAt).toLocaleString('ru-RU') : ''}
+                      {proof.createdAt instanceof Date ? proof.createdAt.toLocaleString('ru-RU') : ''}
                     </span>
                   </div>
 
@@ -268,7 +263,7 @@ export default async function OrderDetailsPage({ params }: PageProps) {
                       <span className="text-theme-muted">Менеджер:</span> {proof.managerComment}
                     </div>
                   )}
-                  
+
                   {proof.clientComment && (
                     <div className="text-sm font-bold text-theme-highlight">
                       <span className="text-theme-muted">Клиент:</span> {proof.clientComment}
@@ -278,7 +273,7 @@ export default async function OrderDetailsPage({ params }: PageProps) {
               ))}
 
               {proofs.length === 0 && (
-                <div className="text-center text-theme-muted font-bold">
+                <div className="text-center text-theme-muted font-bold p-4">
                   Цветопробы еще не загружались.
                 </div>
               )}
