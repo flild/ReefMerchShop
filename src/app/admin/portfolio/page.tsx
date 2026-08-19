@@ -30,9 +30,14 @@ export default async function PortfolioAdminPage() {
             Управление галереей готовых работ
           </p>
         </div>
-        <Link href="/admin/portfolio/new" className="anime-button px-6 py-3 text-lg block">
-          + Загрузить работу
-        </Link>
+        <div className="flex gap-4">
+          <Link href="/admin/categories" className="px-6 py-3 text-lg font-bold text-theme-muted hover:text-theme-text transition-colors flex items-center bg-theme-surface anime-border rounded-full">
+            📁 Категории
+          </Link>
+          <Link href="/admin/portfolio/new" className="anime-button px-6 py-3 text-lg block">
+            + Загрузить работу
+          </Link>
+        </div>
       </header>
 
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">

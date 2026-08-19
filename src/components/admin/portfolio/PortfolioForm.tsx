@@ -44,6 +44,10 @@ export function PortfolioForm({ categories, initialData }: PortfolioFormProps) {
         </div>
       )}
 
+      {isEditing && (
+        <input type="hidden" name="existingImageUrl" value={initialData.imageUrl} />
+      )}
+
       <div className="flex flex-col gap-2">
         <label className="font-extrabold text-theme-text ml-2">Название работы</label>
         <input 
@@ -84,15 +88,19 @@ export function PortfolioForm({ categories, initialData }: PortfolioFormProps) {
       </div>
 
       <div className="flex flex-col gap-2">
-        <label className="font-extrabold text-theme-text ml-2">URL изображения</label>
+        <label className="font-extrabold text-theme-text ml-2">Фотография (файл)</label>
         <input 
-          type="url" 
-          name="imageUrl" 
-          required
-          defaultValue={initialData?.imageUrl || ''}
-          placeholder="https://..."
-          className="bg-theme-bg border-2 border-theme-border rounded-[20px] px-5 py-3 font-bold text-theme-text outline-none focus:border-theme-highlight anime-shadow transition-all"
+          type="file" 
+          name="image" 
+          accept="image/*"
+          required={!isEditing}
+          className="bg-theme-bg border-2 border-theme-border rounded-[20px] px-5 py-3 font-bold text-theme-text outline-none focus:border-theme-highlight anime-shadow transition-all file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-bold file:bg-theme-highlight file:text-theme-bg hover:file:cursor-pointer"
         />
+        {isEditing && (
+          <p className="text-sm font-bold text-theme-muted ml-2 mt-1">
+            Загрузи новый файл, если хочешь заменить текущую пикчу.
+          </p>
+        )}
       </div>
 
       <div className="flex flex-col gap-2">
