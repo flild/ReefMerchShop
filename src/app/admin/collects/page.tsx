@@ -5,7 +5,7 @@ import { desc } from 'drizzle-orm';
 import Link from 'next/link';
 import { CollectStatusBadge } from '@/components/admin/collects/CollectStatusBadge';
 import { CollectStatusManager } from '@/components/admin/collects/CollectStatusManager';
-import { calculateDiscount } from '@/lib/collects';
+import { calculateDiscount } from '../../../../lib/collects';
 
 export const dynamic = 'force-dynamic';
 

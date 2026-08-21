@@ -71,3 +71,38 @@ export async function updateParticipantStatus(participantId: string, newStatus: 
     return { success: false, error: 'Не удалось обновить статус' };
   }
 }
+
+export async function addParticipant(prevState: any, formData: FormData) {
+  const collectId = formData.get('collectId') as string;
+  const userId = formData.get('userId') as string;
+  const fileId = formData.get('fileId') as string;
+  const quantity = Number(formData.get('quantity'));
+  const totalPrice = Number(formData.get('totalPrice'));
+
+  if (!collectId || !userId || !fileId || isNaN(quantity) || isNaN(totalPrice)) {
+    return { error: 'Заполнены не все поля или данные некорректны' };
+  }
+
+  if (quantity < 10) {
+    return { error: 'Минимальный тираж — 10 шт. на макет' };
+  }
+
+  try {
+    await db.insert(collectParticipants).values({
+      id: crypto.randomUUID(),
+      collectId,
+      userId,
+      fileId,
+      quantity,
+      totalPrice,
+      status: 'pending_payment',
+    });
+  } catch (error) {
+    console.error('Ошибка добавления участника:', error);
+    return { error: 'База данных подавилась. Не удалось добавить участника.' };
+  }
+
+  // Обновляем кеш страницы коллекта, чтобы пересчитались суммы и скидки
+  revalidatePath(`/admin/collects/${collectId}`);
+  redirect(`/admin/collects/${collectId}`);
+}
