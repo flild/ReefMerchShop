@@ -2,7 +2,7 @@ import { db } from '@/db';
 import { materials, materialCategories, accessories, blanks } from '@/db/schema';
 import { eq, desc } from 'drizzle-orm';
 import { StockUpdater } from '@/components/admin/inventory/StockUpdater';
-import { DeleteMaterialButton } from '@/components/admin/inventory/DeleteMaterialButton';
+import { DeleteButton } from '@/components/admin/inventory/DeleteButton';
 import Link from 'next/link';
 import { Pencil } from 'lucide-react';
 
@@ -24,11 +24,10 @@ export default async function InventoryPage({
   searchParams: Promise<{ tab?: string }>;
 }) {
   const { tab } = await searchParams;
-  const activeTab = tab || 'materials';
+  const activeTab = (tab || 'materials') as 'materials' | 'accessories' | 'blanks';
 
-  // --- Запросы данных в зависимости от вкладки ---
   let listData: any[] = [];
-  
+
   if (activeTab === 'materials') {
     listData = await db
       .select({
@@ -59,12 +58,29 @@ export default async function InventoryPage({
       .orderBy(desc(blanks.stock));
   }
 
-  // --- Конфиг вкладок ---
   const tabs = [
     { id: 'materials', label: 'Материалы (Форматники)' },
     { id: 'accessories', label: 'Фурнитура' },
     { id: 'blanks', label: 'Заготовки' },
   ];
+
+  // Маппинг путей для редактирования, чтобы не писать if-else лапшу
+  const getEditPath = (id: string, tab: string) => {
+    switch(tab) {
+      case 'accessories': return `/admin/inventory/accessories/${id}/edit`;
+      case 'blanks': return `/admin/inventory/blanks/${id}/edit`;
+      default: return `/admin/inventory/${id}/edit`;
+    }
+  };
+  
+  // Маппинг типа для экшена удаления
+  const getItemType = (tab: string) => {
+    switch(tab) {
+      case 'accessories': return 'accessory';
+      case 'blanks': return 'blank';
+      default: return 'material';
+    }
+  };
 
   return (
     <div className="flex flex-col gap-8">
@@ -75,8 +91,7 @@ export default async function InventoryPage({
             Управление инвентаризацией. Ввод вручную (в штуках).
           </p>
         </div>
-        
-        {/* Кнопка добавления меняет ссылку в зависимости от вкладки */}
+
         {activeTab === 'materials' && (
           <Link href="/admin/inventory/new" className="anime-button px-6 py-3 text-lg block text-center whitespace-nowrap">
             + Добавить материал
@@ -94,7 +109,6 @@ export default async function InventoryPage({
         )}
       </header>
 
-      {/* Навигация по вкладкам */}
       <div className="flex flex-wrap gap-2">
         {tabs.map(t => (
           <Link 
@@ -134,9 +148,8 @@ export default async function InventoryPage({
                       {item.name}
                     </div>
                   </td>
-                  
+
                   <td className="p-5">
-                    {/* Разный рендер характеристик в зависимости от вкладки */}
                     {activeTab === 'materials' && (
                       <>
                         <div className="font-bold text-theme-text">{item.categoryName || 'Без категории'}</div>
@@ -157,29 +170,25 @@ export default async function InventoryPage({
                   <td className="p-5">
                     <StockBadge stock={item.stock} minStock={item.minStock} />
                   </td>
-                  
+
                   <td className="p-5">
                     <StockUpdater 
                       id={item.id} 
                       currentStock={item.stock} 
-                      type={activeTab as 'material' | 'accessory' | 'blank'} 
+                      type={getItemType(activeTab) as 'material' | 'accessory' | 'blank'} 
                     />
                   </td>
-                  
+
                   <td className="p-5 text-right">
                     <div className="flex items-center justify-end gap-2 shrink-0">
-                      {activeTab === 'materials' && (
-                        <>
-                          <Link href={`/admin/inventory/${item.id}/edit`} className="p-2 bg-theme-bg border-2 border-theme-border rounded-full text-theme-muted hover:text-theme-highlight hover:border-theme-highlight transition-all" title="Редактировать">
-                            <Pencil className="w-5 h-5" />
-                          </Link>
-                          <DeleteMaterialButton id={item.id} />
-                        </>
-                      )}
-                      {/* Для заготовок и фурнитуры пока просто заглушки действий, добавим их формы позже */}
-                      {activeTab !== 'materials' && (
-                        <span className="text-sm font-bold text-theme-muted">Редакт. в разработке</span>
-                      )}
+                      <Link 
+                        href={getEditPath(item.id, activeTab)} 
+                        className="p-2 bg-theme-bg border-2 border-theme-border rounded-full text-theme-muted hover:text-theme-highlight hover:border-theme-highlight transition-all" 
+                        title="Редактировать"
+                      >
+                        <Pencil className="w-5 h-5" />
+                      </Link>
+                      <DeleteButton id={item.id} type={getItemType(activeTab) as 'material' | 'accessory' | 'blank'} />
                     </div>
                   </td>
                 </tr>

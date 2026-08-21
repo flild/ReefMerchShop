@@ -150,13 +150,107 @@ export async function createBlank(formData: FormData) {
   redirect('/admin/inventory?tab=blanks');
 }
 
-export async function deleteMaterial(id: string) {
+export async function deleteItem(id: string, type: 'material' | 'accessory' | 'blank') {
   try {
-    await db.delete(materials).where(eq(materials.id, id));
+    if (type === 'material') {
+      await db.delete(materials).where(eq(materials.id, id));
+    } else if (type === 'accessory') {
+      const { accessories } = await import('@/db/schema');
+      await db.delete(accessories).where(eq(accessories.id, id));
+    } else if (type === 'blank') {
+      const { blanks } = await import('@/db/schema');
+      await db.delete(blanks).where(eq(blanks.id, id));
+    }
+    
     revalidatePath('/admin/inventory');
     return { success: true };
   } catch (error) {
-    console.error('Ошибка удаления материала:', error);
-    return { success: false, error: 'Не удалось удалить материал (возможно, он используется в заказах)' };
+    console.error(`Ошибка удаления ${type}:`, error);
+    return { success: false, error: 'База шлет нахер. Скорее всего, позиция уже привязана к заказам.' };
   }
+}
+
+// Добавь экшен для обновления заготовки
+export async function updateBlank(id: string, formData: FormData) {
+  const name = formData.get('name') as string;
+  const materialId = formData.get('materialId') as string;
+  const size = formData.get('size') as string;
+  const stock = Number(formData.get('stock'));
+  const minStock = Number(formData.get('minStock'));
+
+  if (!name || !materialId) {
+    return { error: 'Название и исходный материал обязательны' };
+  }
+
+  try {
+    const { blanks } = await import('@/db/schema');
+    await db.update(blanks).set({
+      name,
+      materialId,
+      size: size || null,
+      stock: isNaN(stock) ? 0 : stock,
+      minStock: isNaN(minStock) ? 50 : minStock,
+    }).where(eq(blanks.id, id));
+  } catch (error) {
+    console.error('Ошибка обновления заготовки:', error);
+    return { error: 'Не удалось обновить заготовку' };
+  }
+
+  revalidatePath('/admin/inventory');
+  redirect('/admin/inventory?tab=blanks');
+}
+
+export async function createAccessory(formData: FormData) {
+  const name = formData.get('name') as string;
+  const price = Number(formData.get('price'));
+  const stock = Number(formData.get('stock'));
+  const minStock = Number(formData.get('minStock'));
+
+  if (!name) {
+    return { error: 'Название обязательно' };
+  }
+
+  try {
+    const { accessories } = await import('@/db/schema');
+    await db.insert(accessories).values({
+      id: crypto.randomUUID(),
+      name,
+      price: isNaN(price) ? 0 : price,
+      stock: isNaN(stock) ? 0 : stock,
+      minStock: isNaN(minStock) ? 50 : minStock,
+    });
+  } catch (error) {
+    console.error('Ошибка создания фурнитуры:', error);
+    return { error: 'Не удалось сохранить фурнитуру' };
+  }
+
+  revalidatePath('/admin/inventory');
+  redirect('/admin/inventory?tab=accessories');
+}
+
+export async function updateAccessory(id: string, formData: FormData) {
+  const name = formData.get('name') as string;
+  const price = Number(formData.get('price'));
+  const stock = Number(formData.get('stock'));
+  const minStock = Number(formData.get('minStock'));
+
+  if (!name) {
+    return { error: 'Название обязательно' };
+  }
+
+  try {
+    const { accessories } = await import('@/db/schema');
+    await db.update(accessories).set({
+      name,
+      price: isNaN(price) ? 0 : price,
+      stock: isNaN(stock) ? 0 : stock,
+      minStock: isNaN(minStock) ? 50 : minStock,
+    }).where(eq(accessories.id, id));
+  } catch (error) {
+    console.error('Ошибка обновления фурнитуры:', error);
+    return { error: 'Не удалось обновить фурнитуру' };
+  }
+
+  revalidatePath('/admin/inventory');
+  redirect('/admin/inventory?tab=accessories');
 }

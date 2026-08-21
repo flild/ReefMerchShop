@@ -1,17 +1,18 @@
+// src/components/admin/inventory/DeleteButton.tsx
 'use client';
 
 import { useTransition } from 'react';
-import { deleteMaterial } from '@/actions/admin/inventory';
+import { deleteItem } from '@/actions/admin/inventory';
 import { Trash2 } from 'lucide-react';
 
-export function DeleteMaterialButton({ id }: { id: string }) {
+export function DeleteButton({ id, type }: { id: string, type: 'material' | 'accessory' | 'blank' }) {
   const [isPending, startTransition] = useTransition();
 
   const handleDelete = () => {
-    if (!confirm('Точно удалить этот материал? Если он привязан к существующим заказам, база может послать тебя нахер.')) return;
+    if (!confirm('Точно удалить? Если оно привязано к заказам, будет ошибка.')) return;
     
     startTransition(async () => {
-      await deleteMaterial(id);
+      await deleteItem(id, type);
     });
   };
 
