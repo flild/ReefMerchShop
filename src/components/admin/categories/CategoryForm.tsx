@@ -9,7 +9,6 @@ interface CategoryData {
   name: string;
   slug: string;
   description: string | null;
-  coverImage: string | null;
 }
 
 interface CategoryFormProps {
@@ -37,10 +36,6 @@ export function CategoryForm({ initialData }: CategoryFormProps) {
         </div>
       )}
 
-      {isEditing && initialData.coverImage && (
-        <input type="hidden" name="existingImageUrl" value={initialData.coverImage} />
-      )}
-
       <div className="grid grid-cols-2 gap-6">
         <div className="flex flex-col gap-2">
           <label className="font-extrabold text-theme-text ml-2">Название</label>
@@ -64,21 +59,6 @@ export function CategoryForm({ initialData }: CategoryFormProps) {
             className="bg-theme-bg border-2 border-theme-border rounded-[20px] px-5 py-3 font-bold text-theme-text outline-none focus:border-theme-highlight anime-shadow transition-all"
           />
         </div>
-      </div>
-
-      <div className="flex flex-col gap-2">
-        <label className="font-extrabold text-theme-text ml-2">Обложка (файл)</label>
-        <input 
-          type="file" 
-          name="image" 
-          accept="image/*"
-          className="bg-theme-bg border-2 border-theme-border rounded-[20px] px-5 py-3 font-bold text-theme-text outline-none focus:border-theme-highlight anime-shadow transition-all file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-bold file:bg-theme-highlight file:text-theme-bg hover:file:cursor-pointer"
-        />
-        {isEditing && (
-          <p className="text-sm font-bold text-theme-muted ml-2 mt-1">
-            Загрузи новый файл, если хочешь заменить текущую пикчу.
-          </p>
-        )}
       </div>
 
       <div className="flex flex-col gap-2">

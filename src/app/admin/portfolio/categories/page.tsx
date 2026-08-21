@@ -1,14 +1,12 @@
 import { db } from '@/db';
 import { categories } from '@/db/schema';
 import Link from 'next/link';
-import Image from 'next/image';
 import { Pencil } from 'lucide-react';
 import { DeleteCategoryButton } from '@/components/admin/categories/DeleteCategoryButton';
 
 export const dynamic = 'force-dynamic';
 
 export default async function CategoriesAdminPage() {
-  // Вытаскиваем все категории из базы
   const items = await db.select().from(categories);
 
   return (
@@ -30,40 +28,28 @@ export default async function CategoriesAdminPage() {
         </div>
       </header>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
-        {items.map((item) => (
-          <article 
-            key={item.id} 
-            className="bg-theme-surface anime-border anime-shadow rounded-[40px] overflow-hidden flex flex-col group"
-          >
-            <div className="relative w-full h-48 border-b-2 border-theme-border bg-theme-bg overflow-hidden">
-              {item.coverImage ? (
-                <Image 
-                  src={item.coverImage} 
-                  alt={item.name}
-                  fill
-                  className="object-cover group-hover:scale-105 transition-transform duration-500"
-                  unoptimized 
-                />
-              ) : (
-                <div className="absolute inset-0 flex items-center justify-center text-theme-muted font-bold">
-                  Нет обложки
-                </div>
-              )}
-            </div>
-
-            <div className="p-6 flex flex-col gap-2 relative">
-              <div className="flex items-start justify-between gap-4">
-                <div>
-                  <h3 className="text-2xl font-extrabold text-theme-text line-clamp-1">
-                    {item.name}
-                  </h3>
-                  <div className="text-theme-muted font-bold text-sm mt-1">
-                    slug: {item.slug}
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-2 shrink-0">
+      <div className="bg-theme-surface anime-border anime-shadow rounded-[40px] overflow-hidden">
+        <table className="w-full text-left border-collapse">
+          <thead>
+            <tr className="border-b-2 border-theme-border bg-theme-bg">
+              <th className="p-5 font-extrabold text-theme-text w-1/4">Название</th>
+              <th className="p-5 font-extrabold text-theme-text w-1/4">Slug</th>
+              <th className="p-5 font-extrabold text-theme-text">Описание</th>
+              <th className="p-5 font-extrabold text-theme-text w-32 text-right">Действия</th>
+            </tr>
+          </thead>
+          <tbody>
+            {items.map((item) => (
+              <tr 
+                key={item.id} 
+                className="border-b-2 border-theme-border last:border-0 hover:bg-theme-bg/50 transition-colors"
+              >
+                <td className="p-5 font-bold text-theme-text text-lg">{item.name}</td>
+                <td className="p-5 text-theme-muted font-bold text-sm">{item.slug}</td>
+                <td className="p-5 text-sm font-medium text-theme-text max-w-xs truncate">
+                  {item.description || '—'}
+                </td>
+                <td className="p-5 flex justify-end gap-2">
                   <Link
                     href={`/admin/portfolio/categories/${item.id}/edit`}
                     className="p-2 bg-theme-bg border-2 border-theme-border rounded-full text-theme-muted hover:text-theme-highlight hover:border-theme-highlight transition-all"
@@ -72,23 +58,19 @@ export default async function CategoriesAdminPage() {
                     <Pencil className="w-5 h-5" />
                   </Link>
                   <DeleteCategoryButton id={item.id} />
-                </div>
-              </div>
-
-              {item.description && (
-                <p className="mt-2 text-theme-text font-medium text-sm line-clamp-2">
-                  {item.description}
-                </p>
-              )}
-            </div>
-          </article>
-        ))}
-
-        {items.length === 0 && (
-          <div className="col-span-full py-20 text-center bg-theme-surface anime-border rounded-[40px]">
-            <p className="text-theme-muted font-bold text-xl">Категорий пока нет.</p>
-          </div>
-        )}
+                </td>
+              </tr>
+            ))}
+            
+            {items.length === 0 && (
+              <tr>
+                <td colSpan={4} className="py-20 text-center">
+                  <p className="text-theme-muted font-bold text-xl">Категорий пока нет.</p>
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
       </div>
     </div>
   );
