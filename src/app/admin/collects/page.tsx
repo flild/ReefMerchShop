@@ -1,8 +1,11 @@
+// src/app/admin/collects/page.tsx
 import { db } from '@/db';
 import { collects } from '@/db/schema';
 import { desc } from 'drizzle-orm';
 import Link from 'next/link';
-import { CollectStatusToggle } from '@/components/admin/collects/CollectStatusToggle';
+import { CollectStatusBadge } from '@/components/admin/collects/CollectStatusBadge';
+import { CollectStatusManager } from '@/components/admin/collects/CollectStatusManager';
+import { calculateDiscount } from '@/lib/collects';
 
 export const dynamic = 'force-dynamic';
 
@@ -29,24 +32,30 @@ export default async function CollectsAdminPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
         {items.map((collect) => {
           const isExpired = new Date(collect.deadline) < new Date();
-          const progress = Math.min((collect.currentCount / collect.minCount) * 100, 100);
+          const progress = Math.min((collect.currentSum / 200000) * 100, 100);
+          const currentDiscount = calculateDiscount(collect.currentSum);
 
           return (
             <article 
               key={collect.id} 
               className="bg-theme-surface anime-border anime-shadow rounded-[40px] p-6 flex flex-col gap-4 relative overflow-hidden"
             >
-              {/* Полоса прогресса на фоне (легкий акцент) */}
+              {/* Прогресс-бар по сумме (до 200к) */}
               <div 
                 className="absolute bottom-0 left-0 h-2 bg-theme-highlight transition-all"
                 style={{ width: `${progress}%` }}
               />
 
               <div className="flex items-start justify-between gap-4">
-                <h3 className="text-2xl font-extrabold text-theme-text line-clamp-1">
+                <h3 className="text-2xl font-extrabold text-theme-text line-clamp-1 flex-1">
                   {collect.title}
                 </h3>
-                <CollectStatusToggle id={collect.id} status={collect.status} />
+                <CollectStatusBadge status={collect.status} />
+              </div>
+
+              <div className="flex items-center justify-between bg-theme-bg p-3 border-2 border-theme-border rounded-[20px]">
+                <span className="text-theme-muted font-bold text-sm">Управление:</span>
+                <CollectStatusManager id={collect.id} currentStatus={collect.status} />
               </div>
 
               <p className="text-theme-muted font-bold text-sm line-clamp-2">
@@ -62,15 +71,31 @@ export default async function CollectsAdminPage() {
                 </div>
                 <div className="flex flex-col p-3 bg-theme-bg border-2 border-theme-border rounded-[20px]">
                   <span className="text-theme-muted font-bold text-xs uppercase">Производство</span>
-                  <span className="font-extrabold text-theme-text">
+                  <span className="font-extrabold text-theme-text line-clamp-1">
                     {collect.productionDate}
+                  </span>
+                </div>
+              </div>
+
+              {/* Блок суммы и скидки */}
+              <div className="flex items-center justify-between p-3 bg-theme-bg border-2 border-theme-border rounded-[20px]">
+                <div className="flex flex-col">
+                  <span className="text-theme-muted font-bold text-xs uppercase">Собрано (₽)</span>
+                  <span className="font-extrabold text-theme-text">
+                    {collect.currentSum.toLocaleString('ru-RU')}
+                  </span>
+                </div>
+                <div className="flex flex-col text-right">
+                  <span className="text-theme-muted font-bold text-xs uppercase">Скидка</span>
+                  <span className="font-extrabold text-theme-highlight">
+                    {currentDiscount}%
                   </span>
                 </div>
               </div>
 
               <div className="flex items-center justify-between mt-2 pt-4 border-t-2 border-theme-border">
                 <div className="flex flex-col">
-                  <span className="text-theme-muted font-bold text-xs uppercase">Собрано</span>
+                  <span className="text-theme-muted font-bold text-xs uppercase">Позиций</span>
                   <span className="font-extrabold text-theme-text text-xl">
                     {collect.currentCount} / {collect.minCount}
                   </span>
@@ -79,7 +104,7 @@ export default async function CollectsAdminPage() {
                   href={`/admin/collects/${collect.id}`}
                   className="anime-button px-5 py-2 text-sm"
                 >
-                  Участники →
+                  Детали →
                 </Link>
               </div>
             </article>

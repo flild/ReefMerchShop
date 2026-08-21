@@ -136,7 +136,10 @@ export const collects = sqliteTable('collects', {
   productionDate: text('production_date').notNull(),
   minCount: integer('min_count').notNull(),
   currentCount: integer('current_count').notNull().default(0),
-  status: text('status').notNull().default('open'), 
+  // Новые поля
+  currentSum: integer('current_sum').notNull().default(0), // Для расчета скидок
+  driveLink: text('drive_link'), // Ссылка на папку
+  status: text('status').notNull().default('open'), // open, review, in_progress, completed
 });
 
 export const collectParticipants = sqliteTable('collect_participants', {
@@ -144,8 +147,9 @@ export const collectParticipants = sqliteTable('collect_participants', {
   collectId: text('collect_id').notNull().references(() => collects.id),
   userId: text('user_id').notNull().references(() => users.id),
   quantity: integer('quantity').notNull().default(1),
+  totalPrice: integer('total_price').notNull().default(0),
   fileId: text('file_id').notNull().references(() => files.id),
-  status: text('status').notNull().default('pending_payment'), // pending_payment, paid, production
+  status: text('status').notNull().default('pending_payment'),
   createdAt: integer('created_at', { mode: 'timestamp' }).default(sql`(strftime('%s', 'now'))`),
 });
 

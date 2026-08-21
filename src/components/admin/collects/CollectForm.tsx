@@ -32,8 +32,18 @@ export function CollectForm() {
           name="description" 
           required
           rows={3}
-          placeholder="Скидка 10% от 50 штук..."
+          placeholder="Скидка 5% за каждые 50к. Максимум 20% при 200к!"
           className="bg-theme-bg border-2 border-theme-border rounded-[20px] px-5 py-3 font-bold text-theme-text outline-none focus:border-theme-highlight anime-shadow transition-all resize-none"
+        />
+      </div>
+
+      <div className="flex flex-col gap-2">
+        <label className="font-extrabold text-theme-text ml-2">Общая ссылка на Google Диск</label>
+        <input 
+          type="url" 
+          name="driveLink" 
+          placeholder="https://drive.google.com/drive/folders/..."
+          className="bg-theme-bg border-2 border-theme-border rounded-[20px] px-5 py-3 font-bold text-theme-text outline-none focus:border-theme-highlight anime-shadow transition-all"
         />
       </div>
 

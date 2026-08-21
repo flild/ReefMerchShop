@@ -1,25 +1,24 @@
 'use server';
 
 import { db } from '@/db';
-import { collects } from '@/db/schema';
+import { collects, collectParticipants } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
-import { collectParticipants } from '@/db/schema'; 
 
-export async function toggleCollectStatus(id: string, currentStatus: string) {
+// Новый метод для обновления статуса на любой из доступных
+export async function updateCollectStatus(id: string, newStatus: string) {
   try {
-    const newStatus = currentStatus === 'open' ? 'closed' : 'open';
-    
     await db.update(collects)
       .set({ status: newStatus })
       .where(eq(collects.id, id));
       
     revalidatePath('/admin/collects');
+    revalidatePath(`/admin/collects/${id}`);
     return { success: true };
   } catch (error) {
     console.error('Ошибка смены статуса коллекта:', error);
-    return { success: false, error: 'БД подавилась запросом обновления статуса' };
+    return { success: false, error: 'Ошибка обновления статуса в БД' };
   }
 }
 
@@ -29,6 +28,7 @@ export async function createCollect(prevState: any, formData: FormData) {
   const deadlineStr = formData.get('deadline') as string;
   const productionDate = formData.get('productionDate') as string;
   const minCount = Number(formData.get('minCount'));
+  const driveLink = formData.get('driveLink') as string;
 
   if (!title || !deadlineStr || !productionDate || isNaN(minCount)) {
     return { error: 'Заполнены не все обязательные поля' };
@@ -45,6 +45,8 @@ export async function createCollect(prevState: any, formData: FormData) {
       productionDate,
       minCount,
       currentCount: 0,
+      currentSum: 0,
+      driveLink: driveLink || null,
       status: 'open',
     });
   } catch (error) {
