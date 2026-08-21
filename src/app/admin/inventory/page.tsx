@@ -85,6 +85,13 @@ export default async function InventoryPage({
   return (
     <div className="flex flex-col gap-8">
       <header className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+
+        <Link 
+          href="/admin/inventory?tab=materials" 
+          className="p-3 bg-theme-surface anime-border anime-shadow hover:anime-shadow-hover hover:-translate-y-1 transition-all text-theme-text"
+        >
+          ← Назад
+        </Link>
         <div>
           <h1 className="text-4xl font-display font-extrabold mb-2">Склад</h1>
           <p className="text-theme-muted font-bold text-lg">
