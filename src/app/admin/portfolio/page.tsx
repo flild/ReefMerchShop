@@ -1,6 +1,6 @@
 import { db } from '@/db';
 import { portfolioItems, categories } from '@/db/schema';
-import { eq, desc, like, and } from 'drizzle-orm';
+import { eq, desc } from 'drizzle-orm'; // like, or, and, sql больше не нужны
 import Link from 'next/link';
 import Image from 'next/image';
 import { DeletePortfolioButton } from '@/components/admin/portfolio/DeletePortfolioButton';
@@ -20,22 +20,17 @@ export default async function PortfolioAdminPage({
   // Забираем все категории для вывода вкладок
   const allCategories = await db.select().from(categories);
 
-  // Динамические условия фильтрации
-  const conditions = [];
-  if (q) {
-    conditions.push(like(portfolioItems.title, `%${q}%`));
-  }
-  if (currentCategory) {
-    conditions.push(eq(portfolioItems.categoryId, currentCategory));
-  }
+  // Для базы оставляем только фильтр по категории
+  const whereClause = currentCategory 
+    ? eq(portfolioItems.categoryId, currentCategory) 
+    : undefined;
 
-  const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
-
-  // Запрашиваем работы с учетом фильтров
-  const items = await db
+  // 1. Достаем работы из БД
+  let items = await db
     .select({
       id: portfolioItems.id,
       title: portfolioItems.title,
+      description: portfolioItems.description, // Обязательно достаем описание для поиска
       imageUrl: portfolioItems.imageUrl,
       authorName: portfolioItems.authorName,
       categoryName: categories.name,
@@ -44,6 +39,26 @@ export default async function PortfolioAdminPage({
     .leftJoin(categories, eq(portfolioItems.categoryId, categories.id))
     .where(whereClause)
     .orderBy(desc(portfolioItems.createdAt));
+
+  // 2. Фильтруем кириллицу средствами JavaScript
+  if (q) {
+    const normalizedQ = q.toLowerCase();
+    const words = normalizedQ.split(/\s+/).filter(w => w.trim().length > 0);
+    
+    if (words.length > 0) {
+      items = items.filter(item => {
+        // Собираем все текстовые поля карточки в одну строку и опускаем регистр
+        const searchableText = `
+          ${item.title || ''} 
+          ${item.authorName || ''} 
+          ${item.description || ''}
+        `.toLowerCase();
+        
+        // Проверяем, что КАЖДОЕ слово из запроса есть в нашей строке
+        return words.every(word => searchableText.includes(word));
+      });
+    }
+  }
 
   return (
     <div className="flex flex-col gap-8">
