@@ -8,8 +8,7 @@ export function DeleteCategoryButton({ id }: { id: string }) {
   const [isPending, startTransition] = useTransition();
 
   const handleDelete = () => {
-    if (!confirm('Точно удалить категорию? Работы в портфолио останутся, но без этой категории.')) return;
-    
+    if (!confirm('Грохнуть категорию? Учти, что файлы обложки тоже удалятся с диска.')) return;
     startTransition(async () => {
       await deleteCategory(id);
     });
@@ -19,7 +18,7 @@ export function DeleteCategoryButton({ id }: { id: string }) {
     <button
       onClick={handleDelete}
       disabled={isPending}
-      className="p-2 bg-theme-bg border-2 border-theme-border rounded-full text-theme-muted hover:text-theme-yellow-text hover:border-theme-yellow-text transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+      className="p-2 bg-theme-bg border-2 border-theme-border rounded-full text-theme-muted hover:text-theme-highlight hover:border-theme-highlight transition-all disabled:opacity-50 disabled:cursor-not-allowed"
       title="Удалить"
     >
       <Trash2 className="w-5 h-5" />

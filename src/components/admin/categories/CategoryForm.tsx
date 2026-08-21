@@ -37,38 +37,48 @@ export function CategoryForm({ initialData }: CategoryFormProps) {
         </div>
       )}
 
-      <div className="flex flex-col gap-2">
-        <label className="font-extrabold text-theme-text ml-2">Название категории</label>
-        <input 
-          type="text" 
-          name="name" 
-          required
-          defaultValue={initialData?.name || ''}
-          placeholder="Например: Акриловые брелоки"
-          className="bg-theme-bg border-2 border-theme-border rounded-[20px] px-5 py-3 font-bold text-theme-text outline-none focus:border-theme-highlight anime-shadow transition-all"
-        />
+      {isEditing && initialData.coverImage && (
+        <input type="hidden" name="existingImageUrl" value={initialData.coverImage} />
+      )}
+
+      <div className="grid grid-cols-2 gap-6">
+        <div className="flex flex-col gap-2">
+          <label className="font-extrabold text-theme-text ml-2">Название</label>
+          <input 
+            type="text" 
+            name="name" 
+            required
+            defaultValue={initialData?.name || ''}
+            placeholder="Например: Акриловые стенды"
+            className="bg-theme-bg border-2 border-theme-border rounded-[20px] px-5 py-3 font-bold text-theme-text outline-none focus:border-theme-highlight anime-shadow transition-all"
+          />
+        </div>
+
+        <div className="flex flex-col gap-2">
+          <label className="font-extrabold text-theme-text ml-2">Slug (ЧПУ)</label>
+          <input 
+            type="text" 
+            name="slug" 
+            defaultValue={initialData?.slug || ''}
+            placeholder="Оставь пустым для генерации"
+            className="bg-theme-bg border-2 border-theme-border rounded-[20px] px-5 py-3 font-bold text-theme-text outline-none focus:border-theme-highlight anime-shadow transition-all"
+          />
+        </div>
       </div>
 
       <div className="flex flex-col gap-2">
-        <label className="font-extrabold text-theme-text ml-2">Slug (URL)</label>
+        <label className="font-extrabold text-theme-text ml-2">Обложка (файл)</label>
         <input 
-          type="text" 
-          name="slug" 
-          defaultValue={initialData?.slug || ''}
-          placeholder="Оставь пустым для автогенерации"
-          className="bg-theme-bg border-2 border-theme-border rounded-[20px] px-5 py-3 font-bold text-theme-text outline-none focus:border-theme-highlight anime-shadow transition-all"
+          type="file" 
+          name="image" 
+          accept="image/*"
+          className="bg-theme-bg border-2 border-theme-border rounded-[20px] px-5 py-3 font-bold text-theme-text outline-none focus:border-theme-highlight anime-shadow transition-all file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-bold file:bg-theme-highlight file:text-theme-bg hover:file:cursor-pointer"
         />
-      </div>
-
-      <div className="flex flex-col gap-2">
-        <label className="font-extrabold text-theme-text ml-2">URL обложки</label>
-        <input 
-          type="url" 
-          name="coverImage" 
-          defaultValue={initialData?.coverImage || ''}
-          placeholder="https://..."
-          className="bg-theme-bg border-2 border-theme-border rounded-[20px] px-5 py-3 font-bold text-theme-text outline-none focus:border-theme-highlight anime-shadow transition-all"
-        />
+        {isEditing && (
+          <p className="text-sm font-bold text-theme-muted ml-2 mt-1">
+            Загрузи новый файл, если хочешь заменить текущую пикчу.
+          </p>
+        )}
       </div>
 
       <div className="flex flex-col gap-2">
@@ -77,7 +87,7 @@ export function CategoryForm({ initialData }: CategoryFormProps) {
           name="description" 
           rows={3}
           defaultValue={initialData?.description || ''}
-          placeholder="Описание для категории..."
+          placeholder="Пару слов о категории..."
           className="bg-theme-bg border-2 border-theme-border rounded-[20px] px-5 py-3 font-bold text-theme-text outline-none focus:border-theme-highlight anime-shadow transition-all resize-none"
         />
       </div>
