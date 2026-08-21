@@ -66,7 +66,7 @@ export async function deleteCategory(id: string) {
       await deleteFileLocally(item.coverImage);
     }
 
-    revalidatePath('/admin/categories');
+    revalidatePath('/admin/portfolio/categories');
     revalidatePath('/admin/portfolio');
     return { success: true };
   } catch (error) {
@@ -108,9 +108,9 @@ export async function createCategory(formData: FormData) {
     return { error: 'Не удалось сохранить. Возможно, slug уже существует.' };
   }
 
-  revalidatePath('/admin/categories');
+  revalidatePath('/admin/portfolio/categories');
   revalidatePath('/admin/portfolio');
-  redirect('/admin/categories');
+  redirect('/admin/portfolio/categories');
 }
 
 export async function updateCategory(id: string, formData: FormData) {
@@ -152,7 +152,7 @@ export async function updateCategory(id: string, formData: FormData) {
     return { error: 'Не удалось обновить. Возможно, slug занят.' };
   }
 
-  revalidatePath('/admin/categories');
+  revalidatePath('/admin/portfolio/categories');
   revalidatePath('/admin/portfolio');
-  redirect('/admin/categories');
+  redirect('/admin/portfolio/categories');
 }

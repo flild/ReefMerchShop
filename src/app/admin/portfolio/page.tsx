@@ -56,7 +56,7 @@ export default async function PortfolioAdminPage({
           </p>
         </div>
         <div className="flex gap-4">
-          <Link href="/admin/categories" className="px-6 py-3 text-lg font-bold text-theme-muted hover:text-theme-text transition-colors flex items-center bg-theme-surface anime-border rounded-full">
+          <Link href="/admin/portfolio/categories" className="px-6 py-3 text-lg font-bold text-theme-muted hover:text-theme-text transition-colors flex items-center bg-theme-surface anime-border rounded-full">
             📁 Категории
           </Link>
           <Link href="/admin/portfolio/new" className="anime-button px-6 py-3 text-lg block">

@@ -100,8 +100,7 @@ export function CategoryForm({ initialData }: CategoryFormProps) {
         >
           {isPending ? 'Сохраняем...' : (isEditing ? 'Обновить' : 'Создать')}
         </button>
-        <Link 
-          href="/admin/categories"
+        <Link href="/admin/portfolio/categories"
           className="px-8 py-3 rounded-full font-bold text-theme-muted hover:text-theme-text transition-colors"
         >
           Отмена

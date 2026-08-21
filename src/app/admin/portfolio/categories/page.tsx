@@ -24,7 +24,7 @@ export default async function CategoriesAdminPage() {
           <Link href="/admin/portfolio" className="px-6 py-3 text-lg font-bold text-theme-muted hover:text-theme-text transition-colors flex items-center">
             ← Назад в портфолио
           </Link>
-          <Link href="/admin/categories/new" className="anime-button px-6 py-3 text-lg block">
+          <Link href="/admin/portfolio/categories/new" className="anime-button px-6 py-3 text-lg block">
             + Создать категорию
           </Link>
         </div>
@@ -65,7 +65,7 @@ export default async function CategoriesAdminPage() {
 
                 <div className="flex items-center gap-2 shrink-0">
                   <Link
-                    href={`/admin/categories/${item.id}/edit`}
+                    href={`/admin/portfolio/categories/${item.id}/edit`}
                     className="p-2 bg-theme-bg border-2 border-theme-border rounded-full text-theme-muted hover:text-theme-highlight hover:border-theme-highlight transition-all"
                     title="Редактировать"
                   >

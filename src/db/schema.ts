@@ -49,9 +49,7 @@ export const categories = sqliteTable('categories', {
   name: text('name').notNull(),
   slug: text('slug').notNull().unique(),
   description: text('description'),
-  coverImage: text('cover_image'),
 });
-
 export const portfolioItems = sqliteTable('portfolio_items', {
   id: text('id').primaryKey(),
   categoryId: text('category_id').references(() => categories.id),
