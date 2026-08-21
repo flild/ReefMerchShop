@@ -1,14 +1,15 @@
 'use client';
 
 import { useTransition } from 'react';
-import { updateMaterialStock } from '@/actions/admin/inventory';
+import { updateStock } from '@/actions/admin/inventory';
 
 interface StockUpdaterProps {
   id: string;
   currentStock: number;
+  type: 'material' | 'accessory' | 'blank';
 }
 
-export function StockUpdater({ id, currentStock }: StockUpdaterProps) {
+export function StockUpdater({ id, currentStock, type }: StockUpdaterProps) {
   const [isPending, startTransition] = useTransition();
 
   const handleUpdate = (e: React.FormEvent<HTMLFormElement>) => {
@@ -19,7 +20,7 @@ export function StockUpdater({ id, currentStock }: StockUpdaterProps) {
     if (isNaN(stockValue) || stockValue < 0) return;
 
     startTransition(async () => {
-      await updateMaterialStock(id, stockValue);
+      await updateStock(id, stockValue, type);
     });
   };
 
@@ -30,7 +31,7 @@ export function StockUpdater({ id, currentStock }: StockUpdaterProps) {
         name="stock" 
         defaultValue={currentStock}
         min="0"
-        className="w-24 bg-theme-bg border-2 border-theme-border rounded-full px-4 py-2 font-bold text-center text-theme-text outline-none focus:border-theme-highlight transition-colors anime-shadow"
+        className="w-24 bg-theme-bg border-2 border-theme-border rounded-full px-4 py-2 font-bold text-center text-theme-text outline-none focus:border-theme-highlight transition-colors anime-shadow [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield]"
       />
       <button 
         type="submit" 

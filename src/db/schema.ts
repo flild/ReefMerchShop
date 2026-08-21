@@ -25,6 +25,14 @@ export const articles = sqliteTable('articles', {
   createdAt: integer('created_at', { mode: 'timestamp' }).default(sql`(strftime('%s', 'now'))`),
   updatedAt: integer('updated_at', { mode: 'timestamp' }).default(sql`(strftime('%s', 'now'))`),
 });
+export const blanks = sqliteTable('blanks', {
+  id: text('id').primaryKey(),
+  materialId: text('material_id').references(() => materials.id), // Из какого форматника нарезано
+  name: text('name').notNull(), // Например: "Основа 50х50"
+  size: text('size'), // Например: "50x50 мм"
+  stock: integer('stock').notNull().default(0), // шт
+  minStock: integer('min_stock').notNull().default(50),
+});
 
 export const files = sqliteTable('files', {
   id: text('id').primaryKey(),
