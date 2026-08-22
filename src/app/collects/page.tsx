@@ -17,7 +17,6 @@ export const metadata: Metadata = {
 };
 
 export default async function CollectsPage() {
-
   const activeCollects = await db
     .select()
     .from(collects)
@@ -42,7 +41,6 @@ export default async function CollectsPage() {
 
       <main className="flex-1 py-24 bg-theme-bg manga-dots">
         <div className="container mx-auto px-4 max-w-5xl">
-
           <nav className="flex items-center gap-2 text-sm text-theme-muted mb-8 font-medium" aria-label="Breadcrumb">
             <Link href="/" className="hover:text-theme-highlight transition-colors">Главная</Link>
             <ChevronRight size={14} />
@@ -58,14 +56,16 @@ export default async function CollectsPage() {
               Коллекты
             </h1>
             <p className="text-xl md:text-2xl text-theme-muted max-w-3xl mx-auto font-medium leading-relaxed mb-6">
-              Объединяйтесь с другими авторами для производства мерча. Больший общий тираж — меньшая цена для каждого!
+              Объединяйтесь с другими авторами для производства мерча. Больший общий заказ — меньшая цена для каждого!
             </p>
 
             <div className="max-w-2xl mx-auto p-6 bg-theme-surface anime-border anime-shadow text-theme-text font-medium leading-relaxed mt-10 text-left">
               <span className="font-bold flex items-center gap-2 mb-2 text-theme-highlight text-lg">
-                <Sparkles size={20} /> Система скидок:
+                <Sparkles size={20} /> Система скидок и условия:
               </span>
-              При общем заказе от 50 тыс. руб. добавляется скидка 5%, и за каждые 50 тыс. добавляется также 5%, но максимальная скидка 15% (то есть 150к надо набрать для макс. скидки).
+              Изначальная цена чуть выше, но за каждые набранные <strong>50 000 ₽</strong> добавляется скидка <strong>5%</strong>. Максимальная скидка составляет <strong>20%</strong> (при достижении общего банка в 200 000 ₽). 
+              <br/><br/>
+              <span className="text-theme-muted">⚠️ Минимальный заказ — 10 шт. на один макет любого размера.</span>
             </div>
           </header>
 

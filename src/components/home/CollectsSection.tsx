@@ -2,7 +2,8 @@
 
 import Link from 'next/link';
 import { motion } from 'motion/react';
-import { Users, Calendar, ArrowRight } from 'lucide-react';
+import { Users, Calendar, ArrowRight, Percent, Wallet } from 'lucide-react';
+import { calculateDiscount } from '../../../lib/collects';
 
 interface Collect {
   id: string;
@@ -10,6 +11,7 @@ interface Collect {
   description: string;
   minCount: number;
   currentCount: number;
+  currentSum: number;
   deadline: Date;
   productionDate: string;
 }
@@ -31,13 +33,15 @@ export function CollectsSection({ items }: { items: Collect[] }) {
           </div>
           <h2 className="text-4xl md:text-5xl font-display font-black text-theme-text mb-6">Впишись в коллект</h2>
           <p className="text-xl text-theme-muted max-w-2xl mx-auto font-medium">
-            Объединяемся, чтобы печатать мерч дешевле. Меньше минималок, больше выгоды.
+            Объединяемся, чтобы печатать мерч дешевле. Больше общий банк — выше скидка для всех.
           </p>
         </motion.div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
           {items.map((collect, i) => {
-            const progress = Math.min((collect.currentCount / collect.minCount) * 100, 100);
+            // Прогресс теперь считаем по деньгам, как и на основной странице
+            const progress = Math.min((collect.currentSum / 200000) * 100, 100);
+            const currentDiscount = calculateDiscount(collect.currentSum);
             
             return (
               <motion.div 
@@ -48,7 +52,13 @@ export function CollectsSection({ items }: { items: Collect[] }) {
                 transition={{ delay: i * 0.1 }}
                 className="bg-theme-surface rounded-[40px] p-8 anime-border anime-shadow hover:anime-shadow-hover hover:-translate-y-2 transition-all flex flex-col group"
               >
-                <h3 className="text-2xl font-black text-theme-text mb-2 uppercase">{collect.title}</h3>
+                <div className="flex items-start justify-between gap-4 mb-2">
+                  <h3 className="text-2xl font-black text-theme-text uppercase">{collect.title}</h3>
+                  <div className="bg-theme-bg px-3 py-1 rounded-full border-2 border-theme-border text-theme-highlight font-extrabold flex items-center gap-1 shrink-0">
+                    <Percent size={16} /> {currentDiscount}%
+                  </div>
+                </div>
+                
                 <p className="text-theme-muted mb-6 font-medium line-clamp-2">{collect.description}</p>
                 
                 <div className="space-y-4 mb-8 flex-1">
@@ -57,12 +67,16 @@ export function CollectsSection({ items }: { items: Collect[] }) {
                     <span>Сбор до {new Date(collect.deadline).toLocaleDateString('ru-RU')}</span>
                   </div>
                   <div className="flex items-center gap-3 text-theme-text font-bold">
-                    <Users className="text-theme-accent" size={24} />
-                    <span>Собрано: {collect.currentCount} из {collect.minCount} шт.</span>
+                    <Wallet className="text-theme-accent" size={24} />
+                    <span>Банк: {collect.currentSum.toLocaleString('ru-RU')} ₽</span>
+                  </div>
+                  <div className="flex items-center gap-3 text-theme-text font-bold opacity-75">
+                    <Users className="text-theme-accent" size={20} />
+                    <span className="text-sm">Собрано позиций: {collect.currentCount} из {collect.minCount} шт.</span>
                   </div>
                 </div>
 
-                {/* Прогресс-бар в манга-стиле */}
+                {/* Прогресс-бар в манга-стиле (до 200к) */}
                 <div className="w-full h-6 bg-theme-bg rounded-full border-2 border-theme-border overflow-hidden mb-6 relative">
                   <motion.div 
                     initial={{ width: 0 }}
@@ -75,7 +89,8 @@ export function CollectsSection({ items }: { items: Collect[] }) {
                   </motion.div>
                 </div>
 
-                <Link href={`/collects/${collect.id}`} className="anime-button w-full py-4 text-center text-lg flex items-center justify-center gap-2 group-hover:-translate-y-1 transition-transform">
+                {/* Пока ссылка ведет на общую страницу коллектов, так как публичной деталки у нас еще нет */}
+                <Link href="/collects" className="anime-button w-full py-4 text-center text-lg flex items-center justify-center gap-2 group-hover:-translate-y-1 transition-transform">
                   Участвовать 
                   <ArrowRight size={24} className="group-hover:translate-x-1 transition-transform" />
                 </Link>

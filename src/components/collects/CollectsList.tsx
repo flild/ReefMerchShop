@@ -1,11 +1,11 @@
 'use client';
 
 import { motion } from 'motion/react';
-import { Package, Clock, Users, ArrowRight } from 'lucide-react';
+import { Package, Clock, ArrowRight, Percent } from 'lucide-react';
 import type { InferSelectModel } from 'drizzle-orm';
 import { collects } from '@/db/schema';
+import { calculateDiscount } from '../../../lib/collects';
 
-// Строгая типизация через схему БД
 type Collect = InferSelectModel<typeof collects>;
 
 interface CollectsListProps {
@@ -24,9 +24,10 @@ export function CollectsList({ initialCollects }: CollectsListProps) {
   return (
     <div className="grid grid-cols-1 gap-12">
       {initialCollects.map((collect, index) => {
-        const progress = Math.min(100, (collect.currentCount / collect.minCount) * 100);
+        // Прогресс теперь завязан на сумму до 200к
+        const progress = Math.min(100, (collect.currentSum / 200000) * 100);
+        const currentDiscount = calculateDiscount(collect.currentSum);
         
-        // Форматирование даты
         const formattedDeadline = new Intl.DateTimeFormat('ru-RU', { 
           day: 'numeric', 
           month: 'long' 
@@ -40,12 +41,13 @@ export function CollectsList({ initialCollects }: CollectsListProps) {
             transition={{ delay: index * 0.1, duration: 0.4 }}
             className="bg-theme-surface rounded-[40px] p-8 md:p-12 anime-border anime-shadow flex flex-col md:flex-row gap-10 relative overflow-hidden group hover:anime-shadow-hover hover:-translate-y-2 transition-all"
           >
-            {/* Декоративный паттерн под тему */}
             <div className="absolute top-0 right-0 w-80 h-80 bg-theme-accent opacity-5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 group-hover:opacity-10 transition-opacity" />
 
             <div className="flex-1 z-10">
               <div className="inline-flex px-5 py-2 bg-theme-bg text-theme-highlight font-black rounded-full text-sm uppercase tracking-widest mb-6 anime-border shadow-[2px_2px_0_0_var(--theme-border)] rotate-[-1deg]">
-                {collect.status === 'open' ? 'Открыт' : 'Завершен'}
+                {collect.status === 'open' ? 'Открыт' : 
+                 collect.status === 'review' ? 'На проверке' :
+                 collect.status === 'in_progress' ? 'В производстве' : 'Завершен'}
               </div>
 
               <h2 className="text-4xl font-display font-black text-theme-text mb-6 drop-shadow-sm">
@@ -79,17 +81,16 @@ export function CollectsList({ initialCollects }: CollectsListProps) {
             </div>
 
             <div className="w-full md:w-96 bg-theme-accent rounded-[32px] p-8 anime-border z-10 flex flex-col justify-between text-[var(--theme-btn-text)] anime-shadow relative overflow-hidden">
-              {/* Фоновые точки используют цвет текста кнопки (белые на синем фоне, темные на светлом) */}
               <div className="absolute inset-0 opacity-10 bg-[radial-gradient(var(--theme-btn-text)_2px,transparent_2px)] [background-size:20px_20px]" />
               
               <div className="relative z-10">
                 <div className="flex items-center justify-between mb-6">
                   <div className="flex items-center gap-2 font-black text-lg">
-                    <Users size={24} strokeWidth={2.5} />
-                    Участники
+                    <Percent size={24} strokeWidth={2.5} />
+                    Скидка
                   </div>
-                  <div className="font-black text-xl bg-theme-bg/30 px-4 py-1.5 rounded-full backdrop-blur-sm">
-                    {collect.currentCount} / {collect.minCount}
+                  <div className="font-black text-2xl bg-theme-bg/30 px-4 py-1.5 rounded-full backdrop-blur-sm">
+                    {currentDiscount}%
                   </div>
                 </div>
 
@@ -100,15 +101,17 @@ export function CollectsList({ initialCollects }: CollectsListProps) {
                   />
                 </div>
 
-                <div className="text-center mb-8 bg-theme-bg/10 p-6 rounded-3xl backdrop-blur-sm border border-theme-bg/20 shadow-sm">
-                  <div className="text-sm font-bold opacity-90 mb-2 uppercase tracking-wider">Статус сбора</div>
-                  <div className="text-2xl font-display font-black drop-shadow-md">
-                    {progress >= 100 ? 'Цель достигнута' : 'В процессе'}
+                <div className="text-center mb-8 bg-theme-bg/10 p-6 rounded-3xl backdrop-blur-sm border border-theme-bg/20 shadow-sm flex flex-col gap-1">
+                  <div className="text-sm font-bold opacity-90 mb-1 uppercase tracking-wider">Общий банк</div>
+                  <div className="text-3xl font-display font-black drop-shadow-md">
+                    {collect.currentSum.toLocaleString('ru-RU')} ₽
+                  </div>
+                  <div className="text-sm font-bold opacity-75 mt-2">
+                    Собрано {collect.currentCount} из {collect.minCount} шт.
                   </div>
                 </div>
               </div>
 
-              {/* Кастомная кнопка участия, адаптированная под акцентный фон */}
               <button className="w-full py-5 rounded-[24px] font-black text-xl flex items-center justify-center gap-3 relative z-10 bg-theme-surface text-theme-text hover:text-theme-highlight anime-border border-2 shadow-[0_6px_0_0_var(--theme-shadow-base)] hover:shadow-[0_4px_0_0_var(--theme-shadow-base)] hover:translate-y-[2px] active:shadow-none active:translate-y-[6px] transition-all">
                 Участвовать <ArrowRight size={24} strokeWidth={3} />
               </button>
