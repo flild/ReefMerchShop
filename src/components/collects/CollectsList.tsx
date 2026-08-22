@@ -4,7 +4,7 @@ import { motion } from 'motion/react';
 import { Package, Clock, ArrowRight, Percent } from 'lucide-react';
 import type { InferSelectModel } from 'drizzle-orm';
 import { collects } from '@/db/schema';
-import { calculateDiscount } from '../../../lib/collects';
+import { calculateDiscount } from '../../lib/collects';
 
 type Collect = InferSelectModel<typeof collects>;
 

@@ -100,14 +100,15 @@ export const orders = sqliteTable('orders', {
 
 export const orderItems = sqliteTable('order_items', {
   id: text('id').primaryKey(),
-  orderId: text('order_id').notNull().references(() => orders.id),
-  productType: text('product_type').notNull(), // например, 'keychain'
+  orderId: text('order_id').notNull().references(() => orders.id, { onDelete: 'cascade' }),
+  name: text('name'), // Название макета (например, "Брелок Аянами Рэй")
+  productType: text('product_type').notNull(), // 'keychain', 'stand', etc.
   quantity: integer('quantity').notNull().default(1),
   materialId: text('material_id').references(() => materials.id),
   accessoryId: text('accessory_id').references(() => accessories.id),
   areaCm2: real('area_cm2'), // Площадь для списания акрила
   price: integer('price').notNull(),
-  fileId: text('file_id').references(() => files.id), // Ссылка на макет
+  fileId: text('file_id').references(() => files.id), // Ссылка на исходный макет
 });
 
 export const orderStatusHistory = sqliteTable('order_status_history', {
@@ -120,8 +121,9 @@ export const orderStatusHistory = sqliteTable('order_status_history', {
 
 export const orderProofs = sqliteTable('order_proofs', {
   id: text('id').primaryKey(),
-  orderId: text('order_id').notNull().references(() => orders.id),
-  fileId: text('file_id').notNull().references(() => files.id),
+  orderId: text('order_id').notNull().references(() => orders.id, { onDelete: 'cascade' }),
+  orderItemId: text('order_item_id').references(() => orderItems.id, { onDelete: 'cascade' }), // Привязка к конкретному товару
+  fileId: text('file_id').notNull().references(() => files.id), // Фотография пилотного образца
   status: text('status').notNull().default('pending'), // pending, approved, rejected
   managerComment: text('manager_comment'),
   clientComment: text('client_comment'),

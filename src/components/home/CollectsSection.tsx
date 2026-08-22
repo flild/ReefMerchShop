@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { motion } from 'motion/react';
 import { Users, Calendar, ArrowRight, Percent, Wallet } from 'lucide-react';
-import { calculateDiscount } from '../../../lib/collects';
+import { calculateDiscount } from '../../lib/collects';
 
 interface Collect {
   id: string;
