@@ -12,7 +12,9 @@ export const client = globalForDb.client ?? createClient({
   url: dbPath,
 });
 
+// Жестко заставляем SQLite уважать связи между таблицами
+client.execute('PRAGMA foreign_keys = ON;');
+
 if (process.env.NODE_ENV !== 'production') globalForDb.client = client;
 
 export const db = drizzle(client);
-
