@@ -12,6 +12,7 @@ interface Collect {
   minCount: number;
   currentCount: number;
   currentSum: number;
+  targetSumLimit: number;
   deadline: Date;
   productionDate: string;
 }
@@ -40,7 +41,7 @@ export function CollectsSection({ items }: { items: Collect[] }) {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
           {items.map((collect, i) => {
             // Прогресс теперь считаем по деньгам, как и на основной странице
-            const progress = Math.min((collect.currentSum / 200000) * 100, 100);
+            const progress = Math.min(100, (collect.currentSum / collect.targetSumLimit) * 100);
             const currentDiscount = calculateDiscount(collect.currentSum);
             
             return (

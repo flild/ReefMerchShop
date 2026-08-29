@@ -31,8 +31,8 @@ export default async function CollectsAdminPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
         {items.map((collect) => {
-          const isExpired = new Date(collect.deadline) < new Date();
-          const progress = Math.min((collect.currentSum / 200000) * 100, 100);
+          const isExpired = collect.deadline < new Date();
+          const progress = Math.min((collect.currentSum / collect.targetSumLimit) * 100, 100);
           const currentDiscount = calculateDiscount(collect.currentSum);
 
           return (

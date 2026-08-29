@@ -128,7 +128,7 @@ export const collects = sqliteTable('collects', {
   id: text('id').primaryKey(),
   title: text('title').notNull(),
   description: text('description').notNull(),
-  deadline: timestampMs('deadline'),
+  deadline: timestampMs('deadline').notNull(),
   productionDate: text('production_date').notNull(),
   minCount: integer('min_count').notNull(),
   currentCount: integer('current_count').notNull().default(0),

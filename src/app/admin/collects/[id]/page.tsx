@@ -34,6 +34,9 @@ export default async function CollectDetailsPage({ params }: PageProps) {
       quantity: collectParticipants.quantity,
       totalPrice: collectParticipants.totalPrice,
       status: collectParticipants.status,
+      isLayoutsUploaded: collectParticipants.isLayoutsUploaded, // <- Новое
+      nickname: collectParticipants.nickname, // <- Новое
+      vkId: collectParticipants.vkId,
       createdAt: collectParticipants.createdAt,
       clientName: users.name,
       clientEmail: users.email,
@@ -53,7 +56,7 @@ export default async function CollectDetailsPage({ params }: PageProps) {
   // но для надежности посчитаем её на лету из участников
   const calculatedSum = participants.reduce((acc, curr) => acc + (curr.totalPrice || 0), 0);
   const currentDiscount = calculateDiscount(calculatedSum);
-  const progress = Math.min((calculatedSum / 200000) * 100, 100);
+  const progress = Math.min(100, (collect.currentSum / collect.targetSumLimit) * 100);
 
   // TODO: Интегрировать Auth.js / Lucia Auth
   // Заглушка для проверки прав. Макетчице (maker) ставим false.
@@ -193,10 +196,18 @@ export default async function CollectDetailsPage({ params }: PageProps) {
                   className="border-b border-theme-border/50 hover:bg-theme-bg/50 transition-colors"
                 >
                   <td className="p-5 font-extrabold text-theme-text text-lg">
-                    {participant.clientName || 'Без имени'}
+                    {participant.nickname || participant.clientName || 'Без имени'}
+                    {participant.isLayoutsUploaded && (
+                      <span className="ml-2 text-xs bg-theme-status-green-bg text-theme-status-green-text px-2 py-1 rounded-full whitespace-nowrap">
+                        Макеты загружены
+                      </span>
+                    )}
                   </td>
                   <td className="p-5">
-                    <div className="text-theme-muted font-bold text-sm">{participant.clientEmail || '—'}</div>
+                    <div className="text-theme-muted font-bold text-sm">{participant.clientEmail || 'Нет email'}</div>
+                    {participant.vkId && (
+                      <div className="text-theme-highlight font-bold text-sm mt-1">VK: {participant.vkId}</div>
+                    )}
                     {participant.clientTelegram && (
                       <div className="text-theme-highlight font-bold text-sm mt-1">TG: {participant.clientTelegram}</div>
                     )}
@@ -226,7 +237,15 @@ export default async function CollectDetailsPage({ params }: PageProps) {
                     </td>
                   )}
 
-                  <td className="p-5">
+                  <td 
+                      className="p-5" 
+                      title={
+                        participant.status === 'new' ? 'Новая заявка, макеты еще не подгружены' :
+                        participant.status === 'layouts_uploaded' ? 'Пользователь подтвердил загрузку макетов на диск' :
+                        participant.status === 'needs_fixes' ? 'Свяжитесь с автором для правок' :
+                        'Рабочий статус'
+                      }
+                    >
                     <ParticipantStatusSelect 
                       participantId={participant.id} 
                       currentStatus={participant.status}

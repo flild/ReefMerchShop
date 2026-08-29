@@ -25,7 +25,7 @@ export function CollectsList({ initialCollects }: CollectsListProps) {
     <div className="grid grid-cols-1 gap-12">
       {initialCollects.map((collect, index) => {
         // Прогресс теперь завязан на сумму до 200к
-        const progress = Math.min(100, (collect.currentSum / 200000) * 100);
+        const progress = Math.min(100, (collect.currentSum / collect.targetSumLimit) * 100);
         const currentDiscount = calculateDiscount(collect.currentSum);
         
         const formattedDeadline = new Intl.DateTimeFormat('ru-RU', { 
