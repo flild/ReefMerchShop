@@ -1,7 +1,6 @@
 // src/lib/collects.ts
-export function calculateDiscount(currentSum: number) {
-  // За каждые 50к -> 5% скидки. Максимум 20%
-  const discountSteps = Math.floor(currentSum / 50000);
-  const discount = Math.min(discountSteps * 5, 20);
-  return discount;
+export function calculateDiscount(currentSum: number): number {
+  const maxDiscount = 20;
+  const discount = Math.floor(currentSum / 50000) * 5;
+  return Math.min(discount, maxDiscount); 
 }

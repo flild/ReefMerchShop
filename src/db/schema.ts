@@ -133,6 +133,7 @@ export const collects = sqliteTable('collects', {
   minCount: integer('min_count').notNull(),
   currentCount: integer('current_count').notNull().default(0),
   currentSum: integer('current_sum').notNull().default(0), 
+  targetSumLimit: integer('target_sum_limit').notNull().default(250000),
   driveLink: text('drive_link'), 
   status: text('status').notNull().default('open'), 
 });
@@ -140,11 +141,14 @@ export const collects = sqliteTable('collects', {
 export const collectParticipants = sqliteTable('collect_participants', {
   id: text('id').primaryKey(),
   collectId: text('collect_id').notNull().references(() => collects.id, { onDelete: 'cascade' }),
-  userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
-  quantity: integer('quantity').notNull().default(1),
+  userId: text('user_id').references(() => users.id, { onDelete: 'cascade' }), 
+  nickname: text('nickname'), 
+  vkId: text('vk_id'),
+  quantity: integer('quantity').notNull().default(0), 
   totalPrice: integer('total_price').notNull().default(0),
-  fileId: text('file_id').notNull().references(() => files.id, { onDelete: 'cascade' }),
-  status: text('status').notNull().default('pending_payment'),
+  fileId: text('file_id').references(() => files.id, { onDelete: 'cascade' }), 
+  isLayoutsUploaded: integer('is_layouts_uploaded', { mode: 'boolean' }).notNull().default(false), 
+  status: text('status').notNull().default('new'),
   createdAt: timestampMs('created_at'),
 });
 
