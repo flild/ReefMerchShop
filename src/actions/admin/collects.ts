@@ -162,3 +162,38 @@ export async function deleteCollect(id: string) {
   revalidatePath('/admin/collects');
   redirect('/admin/collects');
 }
+
+export async function updateParticipantData(
+  participantId: string, 
+  collectId: string, 
+  data: { nickname: string; vkId: string; quantity: number; totalPrice: number }
+) {
+  try {
+    await db.update(collectParticipants)
+      .set({
+        nickname: data.nickname || null,
+        vkId: data.vkId || null,
+        quantity: data.quantity,
+        totalPrice: data.totalPrice,
+      })
+      .where(eq(collectParticipants.id, participantId));
+
+    revalidatePath(`/admin/collects/${collectId}`);
+    return { success: true };
+  } catch (error) {
+    console.error('Ошибка обновления участника:', error);
+    return { error: 'Не удалось сохранить данные участника' };
+  }
+}
+
+export async function deleteParticipant(participantId: string, collectId: string) {
+  try {
+    await db.delete(collectParticipants).where(eq(collectParticipants.id, participantId));
+    
+    revalidatePath(`/admin/collects/${collectId}`);
+    return { success: true };
+  } catch (error) {
+    console.error('Ошибка удаления участника:', error);
+    return { error: 'Не удалось удалить участника' };
+  }
+}

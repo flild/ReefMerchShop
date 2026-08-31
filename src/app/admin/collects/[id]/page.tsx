@@ -8,6 +8,7 @@ import { CollectStatusBadge } from '@/components/admin/collects/CollectStatusBad
 import { CollectStatusManager } from '@/components/admin/collects/CollectStatusManager';
 import { calculateDiscount } from '../../../../lib/collects';
 import { DeleteCollectButton } from '@/components/admin/collects/DeleteCollectButton';
+import { ParticipantTableRow } from '@/components/admin/collects/ParticipantTableRow';
 
 export const dynamic = 'force-dynamic';
 
@@ -201,68 +202,12 @@ export default async function CollectDetailsPage({ params }: PageProps) {
             </thead>
             <tbody>
               {participants.map((participant) => (
-                <tr 
+                <ParticipantTableRow 
                   key={participant.id} 
-                  className="border-b border-theme-border/50 hover:bg-theme-bg/50 transition-colors"
-                >
-                  <td className="p-5 font-extrabold text-theme-text text-lg">
-                    {participant.nickname || participant.clientName || 'Без имени'}
-                    {participant.isLayoutsUploaded && (
-                      <span className="ml-2 text-xs bg-theme-status-green-bg text-theme-status-green-text px-2 py-1 rounded-full whitespace-nowrap">
-                        Макеты загружены
-                      </span>
-                    )}
-                  </td>
-                  <td className="p-5">
-                    <div className="text-theme-muted font-bold text-sm">{participant.clientEmail || 'Нет email'}</div>
-                    {participant.vkId && (
-                      <div className="text-theme-highlight font-bold text-sm mt-1">VK: {participant.vkId}</div>
-                    )}
-                    {participant.clientTelegram && (
-                      <div className="text-theme-highlight font-bold text-sm mt-1">TG: {participant.clientTelegram}</div>
-                    )}
-                  </td>
-                  <td className="p-5">
-                    {participant.filePath ? (
-                      <a 
-                        href={participant.filePath} 
-                        target="_blank" 
-                        rel="noreferrer"
-                        className="text-theme-highlight hover:underline font-bold flex items-center gap-2"
-                      >
-                        ↓ {participant.fileName || 'Скачать макет'}
-                      </a>
-                    ) : (
-                      <span className="text-theme-muted font-bold text-sm">Файл не прикреплен</span>
-                    )}
-                  </td>
-                  <td className="p-5 font-extrabold text-theme-text text-xl text-center">
-                    {participant.quantity} шт.
-                  </td>
-                  
-                  {/* Скрываем колонку с ценой, если нет прав */}
-                  {canViewFinances && (
-                    <td className="p-5 font-extrabold text-theme-text text-xl text-right">
-                      {participant.totalPrice.toLocaleString('ru-RU')} ₽
-                    </td>
-                  )}
-
-                  <td 
-                      className="p-5" 
-                      title={
-                        participant.status === 'new' ? 'Новая заявка, макеты еще не подгружены' :
-                        participant.status === 'layouts_uploaded' ? 'Пользователь подтвердил загрузку макетов на диск' :
-                        participant.status === 'needs_fixes' ? 'Свяжитесь с автором для правок' :
-                        'Рабочий статус'
-                      }
-                    >
-                    <ParticipantStatusSelect 
-                      participantId={participant.id} 
-                      currentStatus={participant.status}
-                      collectId={collect.id}
-                    />
-                  </td>
-                </tr>
+                  participant={participant} 
+                  collectId={collect.id} 
+                  canViewFinances={canViewFinances} 
+                />
               ))}
 
               {participants.length === 0 && (
