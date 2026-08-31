@@ -2,7 +2,7 @@
 
 import { db } from '@/db';
 import { collects, collectParticipants } from '@/db/schema';
-import { eq } from 'drizzle-orm';
+import { eq,sql } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 
@@ -102,12 +102,14 @@ export async function addParticipant(prevState: any, formData: FormData) {
       totalPrice,
       status: 'pending_payment',
     });
+    
+    await syncCollectTotals(collectId);
+    
   } catch (error) {
     console.error('Ошибка добавления участника:', error);
     return { error: 'База данных подавилась. Не удалось добавить участника.' };
   }
 
-  // Обновляем кеш страницы коллекта, чтобы пересчитались суммы и скидки
   revalidatePath(`/admin/collects/${collectId}`);
   redirect(`/admin/collects/${collectId}`);
 }
@@ -178,6 +180,8 @@ export async function updateParticipantData(
       })
       .where(eq(collectParticipants.id, participantId));
 
+    await syncCollectTotals(collectId);
+
     revalidatePath(`/admin/collects/${collectId}`);
     return { success: true };
   } catch (error) {
@@ -190,10 +194,33 @@ export async function deleteParticipant(participantId: string, collectId: string
   try {
     await db.delete(collectParticipants).where(eq(collectParticipants.id, participantId));
     
+    await syncCollectTotals(collectId);
+    
     revalidatePath(`/admin/collects/${collectId}`);
     return { success: true };
   } catch (error) {
     console.error('Ошибка удаления участника:', error);
     return { error: 'Не удалось удалить участника' };
   }
+}
+
+async function syncCollectTotals(collectId: string) {
+  // Получаем агрегированные данные прямо запросом (чтобы не тянуть все объекты в память)
+  const result = await db
+    .select({
+      totalSum: sql<number>`COALESCE(SUM(${collectParticipants.totalPrice}), 0)`,
+      totalCount: sql<number>`COALESCE(SUM(${collectParticipants.quantity}), 0)`,
+    })
+    .from(collectParticipants)
+    .where(eq(collectParticipants.collectId, collectId));
+
+  const totals = result[0] || { totalSum: 0, totalCount: 0 };
+
+  // Обновляем родительский коллект
+  await db.update(collects)
+    .set({
+      currentSum: totals.totalSum,
+      currentCount: totals.totalCount,
+    })
+    .where(eq(collects.id, collectId));
 }

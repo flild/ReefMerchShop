@@ -52,11 +52,9 @@ export default async function CollectDetailsPage({ params }: PageProps) {
     .where(eq(collectParticipants.collectId, id))
     .orderBy(desc(collectParticipants.createdAt));
 
-  const totalQuantity = participants.reduce((acc, curr) => acc + curr.quantity, 0);
+  const totalQuantity = collect.currentCount;
   
-  // В будущем сумма коллекта должна пересчитываться триггером или экшеном, 
-  // но для надежности посчитаем её на лету из участников
-  const calculatedSum = participants.reduce((acc, curr) => acc + (curr.totalPrice || 0), 0);
+  const calculatedSum = collect.currentSum;
   const currentDiscount = calculateDiscount(calculatedSum);
   const progress = Math.min(100, (collect.currentSum / collect.targetSumLimit) * 100);
 
