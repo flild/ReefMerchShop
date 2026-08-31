@@ -91,9 +91,11 @@ export function CollectsSection({ items }: { items: Collect[] }) {
                 </div>
 
                 {/* Пока ссылка ведет на общую страницу коллектов, так как публичной деталки у нас еще нет */}
-                <Link href="/collects" className="anime-button w-full py-4 text-center text-lg flex items-center justify-center gap-2 group-hover:-translate-y-1 transition-transform">
-                  Участвовать 
-                  <ArrowRight size={24} className="group-hover:translate-x-1 transition-transform" />
+                <Link 
+                  href={`/collects/${collect.id}/join`}
+                  className="w-full py-5 rounded-[24px] font-black text-xl flex items-center justify-center gap-3 relative z-10 bg-theme-surface text-theme-text hover:text-theme-highlight anime-border border-2 shadow-[0_6px_0_0_var(--theme-shadow-base)] hover:shadow-[0_4px_0_0_var(--theme-shadow-base)] hover:translate-y-[2px] active:shadow-none active:translate-y-[6px] transition-all"
+                >
+                  Участвовать <ArrowRight size={24} strokeWidth={3} />
                 </Link>
               </motion.div>
             );

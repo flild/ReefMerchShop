@@ -4,6 +4,7 @@ import { eq } from 'drizzle-orm';
 import { notFound } from 'next/navigation';
 import { JoinCollectForm } from '@/components/collects/JoinCollectForm';
 
+
 export const dynamic = 'force-dynamic';
 
 interface PageProps {

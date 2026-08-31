@@ -111,3 +111,54 @@ export async function addParticipant(prevState: any, formData: FormData) {
   revalidatePath(`/admin/collects/${collectId}`);
   redirect(`/admin/collects/${collectId}`);
 }
+
+export async function updateCollect(id: string, prevState: any, formData: FormData) {
+  const title = formData.get('title')?.toString();
+  const description = formData.get('description')?.toString();
+  const deadlineStr = formData.get('deadline')?.toString();
+  const productionDate = formData.get('productionDate')?.toString();
+  const driveLink = formData.get('driveLink')?.toString();
+  
+  const minCount = Number(formData.get('minCount'));
+  const targetSumLimit = Number(formData.get('targetSumLimit'));
+  const maxDiscount = Number(formData.get('maxDiscount'));
+
+  if (!title || !deadlineStr || !productionDate || isNaN(minCount)) {
+    return { error: 'Заполнены не все обязательные поля' };
+  }
+
+  try {
+    await db.update(collects)
+      .set({
+        title,
+        description: description || '',
+        deadline: new Date(deadlineStr),
+        productionDate,
+        minCount,
+        targetSumLimit: isNaN(targetSumLimit) ? 250000 : targetSumLimit,
+        driveLink: driveLink || null,
+        // maxDiscount: isNaN(maxDiscount) ? 20 : maxDiscount, // Если добавил в БД
+      })
+      .where(eq(collects.id, id));
+
+  } catch (error) {
+    console.error('Ошибка обновления коллекта:', error);
+    return { error: 'Не удалось обновить коллект' };
+  }
+
+  revalidatePath('/admin/collects');
+  revalidatePath(`/admin/collects/${id}`);
+  redirect(`/admin/collects/${id}`);
+}
+
+export async function deleteCollect(id: string) {
+  try {
+    await db.delete(collects).where(eq(collects.id, id));
+  } catch (error) {
+    console.error('Ошибка удаления коллекта:', error);
+    throw new Error('Не удалось удалить коллект');
+  }
+
+  revalidatePath('/admin/collects');
+  redirect('/admin/collects');
+}

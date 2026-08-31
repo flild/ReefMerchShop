@@ -7,6 +7,7 @@ import { ParticipantStatusSelect } from '@/components/admin/collects/Participant
 import { CollectStatusBadge } from '@/components/admin/collects/CollectStatusBadge';
 import { CollectStatusManager } from '@/components/admin/collects/CollectStatusManager';
 import { calculateDiscount } from '../../../../lib/collects';
+import { DeleteCollectButton } from '@/components/admin/collects/DeleteCollectButton';
 
 export const dynamic = 'force-dynamic';
 
@@ -93,6 +94,15 @@ export default async function CollectDetailsPage({ params }: PageProps) {
           <span className="font-bold text-theme-muted text-sm">Управление:</span>
           <CollectStatusManager id={collect.id} currentStatus={collect.status} />
         </div>
+        <div className="flex items-center gap-3">
+        <Link 
+          href={`/admin/collects/${collect.id}/edit`}
+          className="anime-button px-5 py-2 text-sm"
+        >
+          Редактировать
+        </Link>
+        <DeleteCollectButton id={collect.id} title={collect.title} />
+      </div>
       </header>
 
       <section className="bg-theme-surface anime-border anime-shadow rounded-[40px] p-8 grid grid-cols-1 xl:grid-cols-3 gap-8">

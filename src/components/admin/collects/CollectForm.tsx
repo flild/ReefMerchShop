@@ -1,13 +1,46 @@
 'use client';
 
 import { useActionState, useState } from 'react';
-import { createCollect } from '@/actions/admin/collects';
+import { createCollect, updateCollect } from '@/actions/admin/collects';
 import Link from 'next/link';
 
-// Выносим логику дат из компонента
-function getFormDefaults() {
+// Типизируем входящие данные
+export interface CollectFormData {
+  id?: string;
+  title: string;
+  description: string;
+  driveLink: string | null;
+  deadline: Date | string | null;
+  productionDate: string;
+  minCount: number;
+  targetSumLimit: number;
+  maxDiscount?: number;
+}
+
+// Чистая функция для инициализации (Создание или Редактирование)
+function getFormDefaults(initialData?: CollectFormData) {
+  // Если передали данные для редактирования — используем их
+  if (initialData) {
+    let deadlineStr = '';
+    if (initialData.deadline) {
+      const d = new Date(initialData.deadline);
+      const pad = (n: number) => n.toString().padStart(2, '0');
+      deadlineStr = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    }
+    return {
+      title: initialData.title || '',
+      deadline: deadlineStr,
+      production: initialData.productionDate || '',
+      description: initialData.description || '',
+      targetSumLimit: initialData.targetSumLimit || 250000,
+      maxDiscount: initialData.maxDiscount || 20,
+      driveLink: initialData.driveLink || '',
+      minCount: initialData.minCount || 10,
+    };
+  }
+
+  // Если создаем новый — генерируем авто-даты
   const now = new Date();
-  
   const nextMonth = new Date(now);
   nextMonth.setMonth(now.getMonth() + 1);
 
@@ -28,13 +61,22 @@ function getFormDefaults() {
     production: prodStr,
     description: 'Скидка 5% за каждые 50 000 ₽ общего банка.\nМаксимальная скидка: 20%.',
     targetSumLimit: 250000,
-    maxDiscount: 20
+    maxDiscount: 20,
+    driveLink: '',
+    minCount: 10,
   };
 }
 
-export function CollectForm() {
-  const [state, formAction, isPending] = useActionState(createCollect, null);
-  const [defaults] = useState(getFormDefaults);
+export function CollectForm({ initialData }: { initialData?: CollectFormData }) {
+  const isEditing = !!initialData?.id;
+  
+  // Выбираем нужный серверный экшен
+  const actionToUse = isEditing 
+    ? updateCollect.bind(null, initialData.id!) 
+    : createCollect;
+
+  const [state, formAction, isPending] = useActionState(actionToUse, null);
+  const [defaults] = useState(() => getFormDefaults(initialData));
 
   return (
     <form action={formAction} className="bg-theme-surface anime-border anime-shadow rounded-[40px] p-8 max-w-3xl flex flex-col gap-10">
@@ -82,6 +124,7 @@ export function CollectForm() {
           <input 
             type="url" 
             name="driveLink" 
+            defaultValue={defaults.driveLink}
             placeholder="https://drive.google.com/drive/folders/..."
             className="bg-theme-bg border-2 border-theme-border rounded-[20px] px-5 py-3 font-bold text-theme-text outline-none focus:border-theme-highlight transition-all"
           />
@@ -135,7 +178,7 @@ export function CollectForm() {
               name="minCount" 
               required
               min="1"
-              defaultValue="10"
+              defaultValue={defaults.minCount}
               className="bg-theme-bg border-2 border-theme-border rounded-[20px] px-5 py-3 font-bold text-theme-text outline-none focus:border-theme-highlight transition-all"
             />
           </div>
@@ -175,10 +218,10 @@ export function CollectForm() {
           disabled={isPending}
           className="anime-button px-8 py-4 text-lg disabled:opacity-50 w-full md:w-auto"
         >
-          {isPending ? 'Запускаем...' : '🚀 Запустить коллект'}
+          {isPending ? 'Сохраняем...' : isEditing ? '💾 Сохранить' : '🚀 Запустить коллект'}
         </button>
         <Link 
-          href="/admin/collects"
+          href={isEditing ? `/admin/collects/${initialData.id}` : "/admin/collects"}
           className="px-8 py-4 rounded-full font-bold text-theme-muted hover:text-theme-text transition-colors text-center"
         >
           Отмена
