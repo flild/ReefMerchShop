@@ -80,37 +80,41 @@ export async function updateParticipantStatus(participantId: string, newStatus: 
 
 export async function addParticipant(prevState: any, formData: FormData) {
   const collectId = formData.get('collectId') as string;
-  const userId = formData.get('userId') as string;
-  const fileId = formData.get('fileId') as string;
+  const nickname = formData.get('nickname') as string;
+  const email = formData.get('email') as string;
+  const vkId = formData.get('vkId') as string;
+  const telegram = formData.get('telegram') as string;
+  const layoutName = formData.get('layoutName') as string;
+  const layoutLink = formData.get('layoutLink') as string;
   const quantity = Number(formData.get('quantity'));
   const totalPrice = Number(formData.get('totalPrice'));
 
-  if (!collectId || !userId || !fileId || isNaN(quantity) || isNaN(totalPrice)) {
-    return { error: 'Заполнены не все поля или данные некорректны' };
+  if (!collectId || !nickname || !email || isNaN(quantity) || isNaN(totalPrice)) {
+    return { error: 'Заполнены не все обязательные поля' };
   }
 
   if (quantity < 10) {
     return { error: 'Минимальный тираж — 10 шт. на макет' };
   }
 
-  // Вытаскиваем данные пользователя из БД, чтобы закрыть обязательные поля
-  const userRecord = await db.select().from(users).where(eq(users.id, userId)).limit(1);
-  const userEmail = userRecord[0]?.email || 'no-email@admin.add';
-  const userNickname = userRecord[0]?.name || 'Добавлен админом';
-
   try {
     await db.insert(collectParticipants).values({
       id: crypto.randomUUID(),
       collectId,
-      userId,
-      fileId,
+      nickname,
+      email,
+      vkId: vkId || null,
+      telegram: telegram || null,
+      layoutName: layoutName || null,
+      layoutLink: layoutLink || null,
       quantity,
       totalPrice,
-      email: userEmail,       
-      nickname: userNickname,
       status: 'pending_payment',
+      // Если админ сразу добавил ссылку на файлы, помечаем макеты как загруженные
+      isLayoutsUploaded: !!layoutLink, 
     });
     
+    // Синхронизируем банк коллекта
     await syncCollectTotals(collectId);
     
   } catch (error) {

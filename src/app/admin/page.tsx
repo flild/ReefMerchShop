@@ -1,6 +1,6 @@
 import { db } from '@/db';
-import { orders, materials, accessories } from '@/db/schema';
-import { count, eq, lte, desc, and, gte, sql } from 'drizzle-orm';
+import { orders, materials, accessories, collects, collectParticipants } from '@/db/schema';
+import { count, eq, lte, desc, and, gte, sql, or } from 'drizzle-orm';
 import Link from 'next/link';
 
 export const dynamic = 'force-dynamic';
@@ -25,6 +25,18 @@ export default async function AdminDashboard() {
     .from(orders)
     .where(eq(orders.status, 'proofing'));
 
+  // Считаем необработанные заявки в коллектах (только созданные или с загруженными макетами)
+  const [unprocessedParticipants] = await db
+    .select({ value: count() })
+    .from(collectParticipants)
+    .where(or(eq(collectParticipants.status, 'new'), eq(collectParticipants.status, 'layouts_uploaded')));
+
+  // Проверяем наличие открытых коллектов
+  const [activeCollects] = await db
+    .select({ value: count() })
+    .from(collects)
+    .where(eq(collects.status, 'open'));
+
   const [lowMaterials] = await db
     .select({ value: count() })
     .from(materials)
@@ -39,7 +51,7 @@ export default async function AdminDashboard() {
 
   const thirtyDaysAgo = new Date();
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-  
+
   const [revenueResult] = await db
     .select({ value: sql<number>`sum(${orders.total})` })
     .from(orders)
@@ -57,9 +69,11 @@ export default async function AdminDashboard() {
     maximumFractionDigits: 0 
   }).format(revenue);
 
+  // Добавили метрику заявок и расширили грид ниже
   const stats = [
     { label: 'Новых заказов', value: newOrders.value.toString(), alert: newOrders.value > 0 },
     { label: 'Требуют внимания (Пруфы)', value: attentionOrders.value.toString(), alert: attentionOrders.value > 0 },
+    { label: 'Новые заявки (Коллекты)', value: unprocessedParticipants.value.toString(), alert: unprocessedParticipants.value > 0 },
     { label: 'Заканчивается на складе', value: totalLowStock.toString(), alert: totalLowStock > 0 },
     { label: 'Выручка (30 дней)', value: formattedRevenue, alert: false },
   ];
@@ -111,13 +125,30 @@ export default async function AdminDashboard() {
         </p>
       </header>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      {/* АЛЕРТ: Нет открытых коллектов */}
+      {activeCollects.value === 0 && (
+        <div className="bg-theme-yellow-bg text-theme-yellow-text px-6 py-5 rounded-[24px] font-bold border-2 border-theme-yellow-text flex flex-col md:flex-row gap-4 items-start md:items-center justify-between anime-shadow">
+          <span className="flex items-center gap-3">
+            <span className="text-2xl">⚠️</span>
+            В данный момент нет открытых коллектов. Авторы не могут оставлять новые заявки!
+          </span>
+          <Link 
+            href="/admin/collects/new" 
+            className="bg-theme-surface text-theme-text px-5 py-2.5 rounded-[16px] border-2 border-theme-border hover:text-theme-highlight hover:bg-theme-bg transition-colors shrink-0 whitespace-nowrap"
+          >
+            + Запустить коллект
+          </Link>
+        </div>
+      )}
+
+      {/* Изменили сетку на xl:grid-cols-5, чтобы 5 карточек красиво встали в один ряд на больших экранах */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
         {stats.map((stat, i) => (
           <div 
             key={i} 
             className="bg-theme-surface anime-border anime-shadow rounded-[32px] p-6 flex flex-col justify-between h-40"
           >
-            <span className="text-theme-muted font-bold">{stat.label}</span>
+            <span className="text-theme-muted font-bold line-clamp-2">{stat.label}</span>
             <span className={`text-5xl font-display font-extrabold ${stat.alert ? 'text-theme-highlight' : 'text-theme-text'}`}>
               {stat.value}
             </span>
@@ -133,7 +164,7 @@ export default async function AdminDashboard() {
               Смотреть все →
             </Link>
           </div>
-          
+
           {recentOrders.length > 0 ? (
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse">
@@ -151,7 +182,7 @@ export default async function AdminDashboard() {
                       ? order.createdAt.toLocaleDateString('ru-RU')
                       : '—';
                     const statusInfo = statusMap[order.status] || { label: order.status, color: 'text-theme-text' };
-                    
+
                     return (
                       <tr key={order.id} className="border-b-2 border-theme-border/50 last:border-0">
                         <td className="py-4 font-extrabold text-theme-text">{order.orderNumber}</td>
@@ -177,7 +208,7 @@ export default async function AdminDashboard() {
 
         <div className="bg-theme-surface anime-border anime-shadow rounded-[40px] p-8 min-h-[400px]">
           <h2 className="text-2xl font-display font-extrabold mb-6">Складские алерты</h2>
-          
+
           {stockAlerts.length > 0 ? (
             <div className="flex flex-col gap-4">
               {stockAlerts.map((alert) => (
