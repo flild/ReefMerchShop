@@ -5,6 +5,7 @@ import { Package, Clock, ArrowRight, Percent } from 'lucide-react';
 import type { InferSelectModel } from 'drizzle-orm';
 import { collects } from '@/db/schema';
 import { calculateDiscount } from '../../lib/collects';
+import Link from 'next/link';
 
 type Collect = InferSelectModel<typeof collects>;
 
@@ -112,9 +113,12 @@ export function CollectsList({ initialCollects }: CollectsListProps) {
                 </div>
               </div>
 
-              <button className="w-full py-5 rounded-[24px] font-black text-xl flex items-center justify-center gap-3 relative z-10 bg-theme-surface text-theme-text hover:text-theme-highlight anime-border border-2 shadow-[0_6px_0_0_var(--theme-shadow-base)] hover:shadow-[0_4px_0_0_var(--theme-shadow-base)] hover:translate-y-[2px] active:shadow-none active:translate-y-[6px] transition-all">
-                Участвовать <ArrowRight size={24} strokeWidth={3} />
-              </button>
+              <Link 
+              href={`/collects/${collect.id}/join`}
+              className="w-full py-5 rounded-[24px] font-black text-xl flex items-center justify-center gap-3 relative z-10 bg-theme-surface text-theme-text hover:text-theme-highlight anime-border border-2 shadow-[0_6px_0_0_var(--theme-shadow-base)] hover:shadow-[0_4px_0_0_var(--theme-shadow-base)] hover:translate-y-[2px] active:shadow-none active:translate-y-[6px] transition-all"
+            >
+              Участвовать <ArrowRight size={24} strokeWidth={3} />
+            </Link>
             </div>
           </motion.div>
         );

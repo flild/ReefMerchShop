@@ -134,6 +134,7 @@ export const collects = sqliteTable('collects', {
   currentCount: integer('current_count').notNull().default(0),
   currentSum: integer('current_sum').notNull().default(0), 
   targetSumLimit: integer('target_sum_limit').notNull().default(250000),
+  maxDiscount: integer('max_discount').notNull().default(20),
   driveLink: text('drive_link'), 
   status: text('status').notNull().default('open'), 
 });

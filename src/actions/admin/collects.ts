@@ -27,8 +27,11 @@ export async function createCollect(prevState: any, formData: FormData) {
   const description = formData.get('description') as string;
   const deadlineStr = formData.get('deadline') as string;
   const productionDate = formData.get('productionDate') as string;
-  const minCount = Number(formData.get('minCount'));
   const driveLink = formData.get('driveLink') as string;
+  
+  const minCount = Number(formData.get('minCount'));
+  const targetSumLimit = Number(formData.get('targetSumLimit')); // Достаем лимит
+  const maxDiscount = Number(formData.get('maxDiscount'));       // Достаем макс. скидку (если добавил в схему БД)
 
   if (!title || !deadlineStr || !productionDate || isNaN(minCount)) {
     return { error: 'Заполнены не все обязательные поля' };
@@ -44,10 +47,12 @@ export async function createCollect(prevState: any, formData: FormData) {
       deadline,
       productionDate,
       minCount,
+      targetSumLimit: isNaN(targetSumLimit) ? 250000 : targetSumLimit, // Пишем лимит
       currentCount: 0,
       currentSum: 0,
       driveLink: driveLink || null,
       status: 'open',
+      // maxDiscount: isNaN(maxDiscount) ? 20 : maxDiscount, // Раскомментируй, если добавишь maxDiscount в схему
     });
   } catch (error) {
     console.error('Ошибка создания коллекта:', error);
