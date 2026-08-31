@@ -1,10 +1,11 @@
 'use server';
 
 import { db } from '@/db';
-import { collects, collectParticipants } from '@/db/schema';
+import { collects, collectParticipants, users } from '@/db/schema';
 import { eq,sql } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
+
 
 // Новый метод для обновления статуса на любой из доступных
 export async function updateCollectStatus(id: string, newStatus: string) {
@@ -92,6 +93,11 @@ export async function addParticipant(prevState: any, formData: FormData) {
     return { error: 'Минимальный тираж — 10 шт. на макет' };
   }
 
+  // Вытаскиваем данные пользователя из БД, чтобы закрыть обязательные поля
+  const userRecord = await db.select().from(users).where(eq(users.id, userId)).limit(1);
+  const userEmail = userRecord[0]?.email || 'no-email@admin.add';
+  const userNickname = userRecord[0]?.name || 'Добавлен админом';
+
   try {
     await db.insert(collectParticipants).values({
       id: crypto.randomUUID(),
@@ -100,6 +106,8 @@ export async function addParticipant(prevState: any, formData: FormData) {
       fileId,
       quantity,
       totalPrice,
+      email: userEmail,       
+      nickname: userNickname,
       status: 'pending_payment',
     });
     
@@ -168,18 +176,32 @@ export async function deleteCollect(id: string) {
 export async function updateParticipantData(
   participantId: string, 
   collectId: string, 
-  data: { nickname: string; vkId: string; quantity: number; totalPrice: number }
+  data: { 
+    nickname: string; 
+    email: string;
+    vkId: string; 
+    telegram: string;
+    layoutName: string;
+    layoutLink: string;
+    quantity: number; 
+    totalPrice: number;
+  }
 ) {
   try {
     await db.update(collectParticipants)
       .set({
-        nickname: data.nickname || null,
+        nickname: data.nickname || '',
+        email: data.email || '',
         vkId: data.vkId || null,
+        telegram: data.telegram || null,
+        layoutName: data.layoutName || null,
+        layoutLink: data.layoutLink || null,
         quantity: data.quantity,
         totalPrice: data.totalPrice,
       })
       .where(eq(collectParticipants.id, participantId));
 
+    // Не забываем дернуть нашу функцию синхронизации банка из прошлого шага!
     await syncCollectTotals(collectId);
 
     revalidatePath(`/admin/collects/${collectId}`);

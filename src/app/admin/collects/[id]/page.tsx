@@ -36,19 +36,20 @@ export default async function CollectDetailsPage({ params }: PageProps) {
       quantity: collectParticipants.quantity,
       totalPrice: collectParticipants.totalPrice,
       status: collectParticipants.status,
-      isLayoutsUploaded: collectParticipants.isLayoutsUploaded, // <- Новое
-      nickname: collectParticipants.nickname, // <- Новое
+      isLayoutsUploaded: collectParticipants.isLayoutsUploaded, 
+      nickname: collectParticipants.nickname, 
+      email: collectParticipants.email,         
       vkId: collectParticipants.vkId,
+      telegram: collectParticipants.telegram,   
+      layoutName: collectParticipants.layoutName, 
+      layoutLink: collectParticipants.layoutLink, 
       createdAt: collectParticipants.createdAt,
+      // Эти поля можно оставить для обратной совместимости, если кто-то заходил под аккаунтом
       clientName: users.name,
       clientEmail: users.email,
-      clientTelegram: users.telegramId,
-      fileName: files.name,
-      filePath: files.path,
     })
     .from(collectParticipants)
     .leftJoin(users, eq(collectParticipants.userId, users.id))
-    .leftJoin(files, eq(collectParticipants.fileId, files.id))
     .where(eq(collectParticipants.collectId, id))
     .orderBy(desc(collectParticipants.createdAt));
 

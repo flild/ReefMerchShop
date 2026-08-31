@@ -144,14 +144,11 @@ export const collectParticipants = sqliteTable('collect_participants', {
   collectId: text('collect_id').notNull().references(() => collects.id, { onDelete: 'cascade' }),
   userId: text('user_id').references(() => users.id, { onDelete: 'cascade' }), 
   
-  // --- НОВЫЕ ПОЛЯ ---
   email: text('email').notNull(), // Обязательная почта
   telegram: text('telegram'), // Опциональный TG
   layoutName: text('layout_name'), // Название макета (например: "Брелок Аянами Рэй 5см")
   layoutLink: text('layout_link'), // Ссылка на личный Гугл/Яндекс Диск участника
-  // ------------------
-
-  nickname: text('nickname').notNull(), // Сделаем обязательным
+  nickname: text('nickname').notNull(),
   vkId: text('vk_id'),
   quantity: integer('quantity').notNull().default(0), 
   totalPrice: integer('total_price').notNull().default(0),

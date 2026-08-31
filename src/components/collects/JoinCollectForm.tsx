@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useTransition } from 'react';
-import { createParticipantRequest, confirmLayoutsUploaded } from '@/actions/client/collectActions';
-import { Check, UploadCloud, User } from 'lucide-react';
+import { createParticipantRequest, submitParticipantLayouts } from '@/actions/client/collectActions';
+import { Check, UploadCloud, User, Mail, MessageCircle, FileImage, Link as LinkIcon, Hash } from 'lucide-react';
 import Link from 'next/link';
 
 interface Props {
@@ -41,9 +41,10 @@ export function JoinCollectForm({ collectId, title, driveLink }: Props) {
     e.preventDefault();
     if (!participantId) return;
     setError(null);
+    const formData = new FormData(e.currentTarget);
 
     startTransition(async () => {
-      const res = await confirmLayoutsUploaded(participantId, collectId);
+      const res = await submitParticipantLayouts(participantId, collectId, formData);
       if (res.error) {
         setError(res.error);
         return;
@@ -91,27 +92,53 @@ export function JoinCollectForm({ collectId, title, driveLink }: Props) {
             <p className="text-theme-muted font-bold">{title}</p>
           </div>
           
-          <div className="flex flex-col gap-2">
-            <label className="font-extrabold text-theme-text ml-2 flex items-center gap-2">
-              <User size={18} /> Твой никнейм
-            </label>
-            <input 
-              name="nickname" 
-              required 
-              autoFocus
-              className="bg-theme-bg border-2 border-theme-border rounded-[20px] px-5 py-4 text-theme-text font-bold outline-none focus:border-theme-highlight transition-all" 
-              placeholder="Например: Арт-Самурай"
-            />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="flex flex-col gap-2">
+              <label className="font-extrabold text-theme-text ml-2 flex items-center gap-2">
+                <User size={18} /> Твой никнейм
+              </label>
+              <input 
+                name="nickname" 
+                required 
+                autoFocus
+                className="bg-theme-bg border-2 border-theme-border rounded-[20px] px-5 py-4 text-theme-text font-bold outline-none focus:border-theme-highlight transition-all" 
+                placeholder="Арт-Самурай"
+              />
+            </div>
+            
+            <div className="flex flex-col gap-2">
+              <label className="font-extrabold text-theme-text ml-2 flex items-center gap-2">
+                <Mail size={18} /> Email
+              </label>
+              <input 
+                name="email" 
+                type="email"
+                required 
+                className="bg-theme-bg border-2 border-theme-border rounded-[20px] px-5 py-4 text-theme-text font-bold outline-none focus:border-theme-highlight transition-all" 
+                placeholder="pochta@mail.com"
+              />
+            </div>
           </div>
-          
-          <div className="flex flex-col gap-2">
-            <label className="font-extrabold text-theme-text ml-2">ID ВКонтакте (для быстрой связи)</label>
-            <input 
-              name="vkId" 
-              required 
-              className="bg-theme-bg border-2 border-theme-border rounded-[20px] px-5 py-4 text-theme-text font-bold outline-none focus:border-theme-highlight transition-all" 
-              placeholder="vk.com/твой_айди"
-            />
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="flex flex-col gap-2">
+              <label className="font-extrabold text-theme-text ml-2 text-sm">ID ВКонтакте</label>
+              <input 
+                name="vkId" 
+                className="bg-theme-bg border-2 border-theme-border rounded-[20px] px-5 py-4 text-theme-text font-bold outline-none focus:border-theme-highlight transition-all" 
+                placeholder="vk.com/id"
+              />
+            </div>
+            <div className="flex flex-col gap-2">
+              <label className="font-extrabold text-theme-text ml-2 flex items-center gap-2 text-sm">
+                <MessageCircle size={16} /> Telegram
+              </label>
+              <input 
+                name="telegram" 
+                className="bg-theme-bg border-2 border-theme-border rounded-[20px] px-5 py-4 text-theme-text font-bold outline-none focus:border-theme-highlight transition-all" 
+                placeholder="@username"
+              />
+            </div>
           </div>
 
           <button 
@@ -124,45 +151,67 @@ export function JoinCollectForm({ collectId, title, driveLink }: Props) {
         </form>
       )}
 
-      {/* ШАГ 2: МАКЕТЫ */}
+      {/* ШАГ 2: ДАННЫЕ МАКЕТА */}
       {step === 2 && (
         <form onSubmit={handleStep2Submit} className="flex flex-col gap-8 animate-in fade-in slide-in-from-right-4">
           <div className="text-center">
-            <h2 className="text-3xl font-display font-black text-theme-text mb-2">Загрузка макетов</h2>
-            <p className="text-theme-muted font-bold">Обязательный шаг перед проверкой</p>
+            <h2 className="text-3xl font-display font-black text-theme-text mb-2">Данные макета</h2>
+            <p className="text-theme-muted font-bold">Опиши, что печатаем и прикрепи ссылку</p>
           </div>
           
-          <div className="bg-theme-bg p-6 rounded-[24px] border-2 border-theme-border">
-            <h3 className="font-black text-theme-highlight text-lg mb-3 flex items-center gap-2">
-              <Check size={20} /> Чек-лист перед загрузкой:
-            </h3>
-            <ul className="text-theme-text font-medium flex flex-col gap-3 ml-2">
-              <li className="flex items-start gap-2">
-                <span className="text-theme-highlight">•</span> Файлы в формате CMYK / 300 dpi.
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-theme-highlight">•</span> Названия файлов соответствуют шаблону (Ник_Размер_Материал_Тираж).
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-theme-highlight">•</span> Все шрифты переведены в кривые.
-              </li>
-            </ul>
+          <div className="flex flex-col gap-2">
+            <label className="font-extrabold text-theme-text ml-2 flex items-center gap-2">
+              <FileImage size={18} /> Название макета
+            </label>
+            <input 
+              name="layoutName" 
+              required 
+              autoFocus
+              className="bg-theme-bg border-2 border-theme-border rounded-[20px] px-5 py-4 text-theme-text font-bold outline-none focus:border-theme-highlight transition-all" 
+              placeholder="Например: Брелок Аянами Рэй 5см голография"
+            />
           </div>
 
-          {driveLink ? (
-            <a 
-              href={driveLink} 
-              target="_blank" 
-              rel="noreferrer"
-              className="px-6 py-5 bg-theme-surface border-2 border-theme-highlight rounded-[20px] text-theme-text font-extrabold text-center hover:bg-theme-highlight hover:text-theme-bg transition-colors flex items-center justify-center gap-3 anime-shadow"
-            >
-              <UploadCloud size={24} />
-              Открыть папку Google Диск
-            </a>
-          ) : (
-             <div className="bg-theme-yellow-bg text-theme-yellow-text border-2 border-theme-yellow-text rounded-[24px] p-4 font-bold text-center">
-                Организатор еще не прикрепил ссылку на диск.
-             </div>
+          <div className="flex flex-col gap-2">
+            <label className="font-extrabold text-theme-text ml-2 flex items-center gap-2">
+              <Hash size={18} /> Тираж (шт.)
+            </label>
+            <input 
+              name="quantity" 
+              type="number"
+              min="10"
+              required 
+              className="bg-theme-bg border-2 border-theme-border rounded-[20px] px-5 py-4 text-theme-text font-bold outline-none focus:border-theme-highlight transition-all" 
+              placeholder="10"
+            />
+            <span className="text-theme-muted text-xs font-bold ml-2">Минимальный заказ на 1 макет — 10 штук.</span>
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <label className="font-extrabold text-theme-text ml-2 flex items-center gap-2">
+              <LinkIcon size={18} /> Ссылка на файлы
+            </label>
+            <input 
+              name="layoutLink" 
+              type="url"
+              required 
+              className="bg-theme-bg border-2 border-theme-border rounded-[20px] px-5 py-4 text-theme-text font-bold outline-none focus:border-theme-highlight transition-all" 
+              placeholder="Google Диск / Яндекс Диск"
+            />
+          </div>
+
+          {driveLink && (
+            <div className="bg-theme-bg p-4 rounded-[20px] border-2 border-theme-border text-sm font-bold flex flex-col gap-2">
+              <span className="text-theme-muted">💡 Или загрузи файлы в общую папку коллекта:</span>
+              <a 
+                href={driveLink} 
+                target="_blank" 
+                rel="noreferrer"
+                className="text-theme-highlight hover:underline flex items-center gap-2"
+              >
+                <UploadCloud size={16} /> Открыть общую папку Google Диск
+              </a>
+            </div>
           )}
 
           <label className="flex items-start gap-4 cursor-pointer p-5 border-2 border-theme-border rounded-[20px] hover:border-theme-highlight transition-colors bg-theme-bg/50 group">
@@ -175,7 +224,7 @@ export function JoinCollectForm({ collectId, title, driveLink }: Props) {
               <Check size={16} strokeWidth={4} className="absolute text-theme-bg opacity-0 peer-checked:opacity-100 pointer-events-none transition-opacity" />
             </div>
             <span className="font-bold text-theme-text select-none group-hover:text-theme-highlight transition-colors leading-tight">
-              Да, я загрузил(а) макеты на Диск и проверил(а) их по чек-листу.
+              Макеты проверены по чек-листу (CMYK, 300 dpi, шрифты в кривых).
             </span>
           </label>
 
@@ -184,7 +233,7 @@ export function JoinCollectForm({ collectId, title, driveLink }: Props) {
             disabled={isPending}
             className="anime-button px-6 py-4 text-lg w-full"
           >
-            {isPending ? 'Сохраняем...' : 'Завершить регистрацию'}
+            {isPending ? 'Сохраняем...' : 'Отправить заявку'}
           </button>
         </form>
       )}
@@ -198,7 +247,7 @@ export function JoinCollectForm({ collectId, title, driveLink }: Props) {
           <div>
             <h2 className="text-3xl font-display font-black text-theme-text mb-3">Заявка отправлена!</h2>
             <p className="text-theme-muted font-bold text-lg max-w-sm mx-auto">
-              Менеджер проверит твои макеты, посчитает сумму и обновит статус заявки.
+              Менеджер проверит макеты, посчитает точную сумму и обновит статус твоей заявки.
             </p>
           </div>
           <Link href="/collects" className="anime-button px-8 py-3 mt-4">
