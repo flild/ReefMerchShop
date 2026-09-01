@@ -1,225 +1,133 @@
+// src/app/admin/collects/page.tsx
 import { db } from '@/db';
-import { collects, collectParticipants, users, files } from '@/db/schema';
-import { eq, desc } from 'drizzle-orm';
+import { collects } from '@/db/schema';
+import { desc } from 'drizzle-orm';
 import Link from 'next/link';
-import { notFound } from 'next/navigation';
-import { ParticipantStatusSelect } from '@/components/admin/collects/ParticipantStatusSelect';
 import { CollectStatusBadge } from '@/components/admin/collects/CollectStatusBadge';
 import { CollectStatusManager } from '@/components/admin/collects/CollectStatusManager';
-import { calculateDiscount } from '../../../../lib/collects';
-import { DeleteCollectButton } from '@/components/admin/collects/DeleteCollectButton';
-import { ParticipantTableRow } from '@/components/admin/collects/ParticipantTableRow';
+import { calculateDiscount } from '@/lib/collects';
+import { getSession } from '@/lib/auth'; // <-- Импортируем нашу сессию
 
 export const dynamic = 'force-dynamic';
 
-interface PageProps {
-  params: Promise<{ id: string }>;
-}
+export default async function CollectsAdminPage() {
+  // Достаем сессию пользователя прямо на сервере
+  const session = await getSession();
+  const isMaker = session?.role === 'maker'; // Проверяем, макетчица ли это
 
-export default async function CollectDetailsPage({ params }: PageProps) {
-  const { id } = await params;
-
-  const collectResult = await db
+  const items = await db
     .select()
     .from(collects)
-    .where(eq(collects.id, id))
-    .limit(1);
-
-  if (!collectResult.length) {
-    notFound();
-  }
-  const collect = collectResult[0];
-
-  const participants = await db
-    .select({
-      id: collectParticipants.id,
-      quantity: collectParticipants.quantity,
-      totalPrice: collectParticipants.totalPrice,
-      status: collectParticipants.status,
-      isLayoutsUploaded: collectParticipants.isLayoutsUploaded, 
-      nickname: collectParticipants.nickname, 
-      email: collectParticipants.email,         
-      vkId: collectParticipants.vkId,
-      telegram: collectParticipants.telegram,   
-      layoutName: collectParticipants.layoutName, 
-      layoutLink: collectParticipants.layoutLink, 
-      createdAt: collectParticipants.createdAt,
-      // Эти поля можно оставить для обратной совместимости, если кто-то заходил под аккаунтом
-      clientName: users.name,
-      clientEmail: users.email,
-    })
-    .from(collectParticipants)
-    .leftJoin(users, eq(collectParticipants.userId, users.id))
-    .where(eq(collectParticipants.collectId, id))
-    .orderBy(desc(collectParticipants.createdAt));
-
-  const totalQuantity = collect.currentCount;
-  
-  const calculatedSum = collect.currentSum;
-  const currentDiscount = calculateDiscount(calculatedSum);
-  const progress = Math.min(100, (collect.currentSum / collect.targetSumLimit) * 100);
-
-  // TODO: Интегрировать Auth.js / Lucia Auth
-  // Заглушка для проверки прав. Макетчице (maker) ставим false.
-  const currentUserRole = 'admin'; // 'admin', 'manager', 'maker'
-  const canViewFinances = currentUserRole === 'admin' || currentUserRole === 'manager';
+    .orderBy(desc(collects.deadline));
 
   return (
     <div className="flex flex-col gap-8">
-      <header className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="flex items-center gap-4">
-          <Link 
-            href="/admin/collects" 
-            className="p-3 bg-theme-surface anime-border anime-shadow hover:anime-shadow-hover hover:-translate-y-1 transition-all text-theme-text"
-          >
-            ← Назад
-          </Link>
-          <div>
-            <div className="flex items-center gap-3 mb-1">
-              <h1 className="text-4xl font-display font-extrabold">
-                {collect.title}
-              </h1>
-              <CollectStatusBadge status={collect.status} />
-            </div>
-            <p className="text-theme-muted font-bold">
-              Дедлайн: {new Date(collect.deadline).toLocaleString('ru-RU', { 
-                day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit'
-              })}
-            </p>
-          </div>
+      <header className="flex items-center justify-between">
+        <div>
+          <h1 className="text-4xl font-display font-extrabold mb-2">Коллекты</h1>
+          <p className="text-theme-muted font-bold text-lg">
+            Управление совместными заказами
+          </p>
         </div>
         
-        {/* Панель управления статусом */}
-        <div className="bg-theme-surface p-3 rounded-[24px] anime-border flex items-center gap-3">
-          <span className="font-bold text-theme-muted text-sm">Управление:</span>
-          <CollectStatusManager id={collect.id} currentStatus={collect.status} />
-        </div>
-        <div className="flex items-center gap-3">
-        <Link 
-          href={`/admin/collects/${collect.id}/edit`}
-          className="anime-button px-5 py-2 text-sm"
-        >
-          Редактировать
-        </Link>
-        <DeleteCollectButton id={collect.id} title={collect.title} />
-      </div>
+        {/* Прячем кнопку создания от макетчицы */}
+        {!isMaker && (
+          <Link href="/admin/collects/new" className="anime-button px-6 py-3 text-lg block">
+            + Создать коллект
+          </Link>
+        )}
       </header>
 
-      <section className="bg-theme-surface anime-border anime-shadow rounded-[40px] p-8 grid grid-cols-1 xl:grid-cols-3 gap-8">
-        <div className="xl:col-span-2 flex flex-col gap-6">
-          <div className="flex flex-col gap-2">
-            <span className="text-theme-muted font-bold">Описание и условия</span>
-            <p className="text-theme-text font-bold bg-theme-bg p-4 border-2 border-theme-border rounded-[24px] whitespace-pre-wrap">
-              {collect.description}
-            </p>
-          </div>
-          
-          <div className="flex flex-col gap-2">
-            <span className="text-theme-muted font-bold">Общая папка макетов</span>
-            {collect.driveLink ? (
-              <a 
-                href={collect.driveLink}
-                target="_blank"
-                rel="noreferrer"
-                className="bg-theme-bg border-2 border-theme-border rounded-[24px] p-4 font-extrabold text-theme-highlight hover:bg-theme-highlight hover:text-theme-btn-text transition-colors flex items-center gap-2 w-fit anime-shadow"
-              >
-                📁 Открыть Google Диск
-              </a>
-            ) : (
-              <div className="bg-theme-yellow-bg text-theme-yellow-text border-2 border-theme-yellow-text rounded-[24px] p-4 font-bold max-w-fit">
-                Ссылка на Google Диск не указана
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+        {items.map((collect) => {
+          const isExpired = collect.deadline < new Date();
+          const progress = Math.min((collect.currentSum / collect.targetSumLimit) * 100, 100);
+          const currentDiscount = calculateDiscount(collect.currentSum);
+
+          return (
+            <article 
+              key={collect.id} 
+              className="bg-theme-surface anime-border anime-shadow rounded-[40px] p-6 flex flex-col gap-4 relative overflow-hidden"
+            >
+              {/* Полоску прогресса оставляем всем, она абстрактная */}
+              <div 
+                className="absolute bottom-0 left-0 h-2 bg-theme-highlight transition-all"
+                style={{ width: `${progress}%` }}
+              />
+
+              <div className="flex items-start justify-between gap-4">
+                <h3 className="text-2xl font-extrabold text-theme-text line-clamp-1 flex-1">
+                  {collect.title}
+                </h3>
+                <CollectStatusBadge status={collect.status} />
               </div>
-            )}
-          </div>
-        </div>
 
-        {/* Финансовый блок (скрыт для макетчицы) */}
-        {canViewFinances ? (
-          <div className="flex flex-col gap-4 bg-theme-bg p-6 border-2 border-theme-border rounded-[32px] relative overflow-hidden">
-            <div 
-              className="absolute bottom-0 left-0 h-3 bg-theme-highlight transition-all opacity-80"
-              style={{ width: `${progress}%` }}
-            />
-            
-            <div className="flex flex-col">
-              <span className="text-theme-muted font-bold text-sm">Собрано позиций</span>
-              <span className="text-3xl font-display font-extrabold text-theme-text">
-                {totalQuantity} <span className="text-theme-muted text-xl">/ {collect.minCount} шт.</span>
-              </span>
-            </div>
+              <div className="flex items-center justify-between bg-theme-bg p-3 border-2 border-theme-border rounded-[20px]">
+                <span className="text-theme-muted font-bold text-sm">Управление:</span>
+                <CollectStatusManager id={collect.id} currentStatus={collect.status} />
+              </div>
 
-            <div className="flex flex-col pt-4 border-t-2 border-theme-border/50">
-              <span className="text-theme-muted font-bold text-sm mb-1">Сумма заказов</span>
-              <span className="text-4xl font-display font-extrabold text-theme-text">
-                {calculatedSum.toLocaleString('ru-RU')} ₽
-              </span>
-            </div>
+              <p className="text-theme-muted font-bold text-sm line-clamp-2">
+                {collect.description}
+              </p>
 
-            <div className="flex items-center justify-between mt-2 pt-4 border-t-2 border-theme-border/50">
-              <span className="font-extrabold text-theme-text">Текущая скидка:</span>
-              <span className="font-extrabold text-2xl text-theme-highlight bg-theme-surface px-4 py-1 rounded-[16px] border-2 border-theme-border">
-                {currentDiscount}%
-              </span>
-            </div>
-          </div>
-        ) : (
-          <div className="flex flex-col gap-4 bg-theme-bg p-6 border-2 border-theme-border rounded-[32px] items-center justify-center text-center">
-            <span className="text-4xl">📦</span>
-            <div className="flex flex-col">
-              <span className="text-theme-muted font-bold text-sm">Собрано позиций</span>
-              <span className="text-3xl font-display font-extrabold text-theme-text">
-                {totalQuantity} <span className="text-theme-muted text-xl">/ {collect.minCount} шт.</span>
-              </span>
-            </div>
+              <div className="grid grid-cols-2 gap-4 mt-2">
+                <div className="flex flex-col p-3 bg-theme-bg border-2 border-theme-border rounded-[20px]">
+                  <span className="text-theme-muted font-bold text-xs uppercase">Дедлайн</span>
+                  <span className={`font-extrabold ${isExpired ? 'text-theme-yellow-text' : 'text-theme-text'}`}>
+                    {new Date(collect.deadline).toLocaleDateString('ru-RU')}
+                  </span>
+                </div>
+                <div className="flex flex-col p-3 bg-theme-bg border-2 border-theme-border rounded-[20px]">
+                  <span className="text-theme-muted font-bold text-xs uppercase">Производство</span>
+                  <span className="font-extrabold text-theme-text line-clamp-1">
+                    {collect.productionDate}
+                  </span>
+                </div>
+              </div>
+
+              {/* Вот тут режем финансовые данные. Если НЕ макетчица - показываем. */}
+              {!isMaker && (
+                <div className="flex items-center justify-between p-3 bg-theme-bg border-2 border-theme-border rounded-[20px]">
+                  <div className="flex flex-col">
+                    <span className="text-theme-muted font-bold text-xs uppercase">Собрано (₽)</span>
+                    <span className="font-extrabold text-theme-text">
+                      {collect.currentSum.toLocaleString('ru-RU')}
+                    </span>
+                  </div>
+                  <div className="flex flex-col text-right">
+                    <span className="text-theme-muted font-bold text-xs uppercase">Скидка</span>
+                    <span className="font-extrabold text-theme-highlight">
+                      {currentDiscount}%
+                    </span>
+                  </div>
+                </div>
+              )}
+
+              <div className="flex items-center justify-between mt-2 pt-4 border-t-2 border-theme-border">
+                <div className="flex flex-col">
+                  <span className="text-theme-muted font-bold text-xs uppercase">Позиций</span>
+                  <span className="font-extrabold text-theme-text text-xl">
+                    {collect.currentCount} / {collect.minCount}
+                  </span>
+                </div>
+                <Link 
+                  href={`/admin/collects/${collect.id}`}
+                  className="anime-button px-5 py-2 text-sm"
+                >
+                  Детали →
+                </Link>
+              </div>
+            </article>
+          );
+        })}
+
+        {items.length === 0 && (
+          <div className="col-span-full py-20 text-center bg-theme-surface anime-border rounded-[40px]">
+            <p className="text-theme-muted font-bold text-xl">Нет активных коллектов.</p>
           </div>
         )}
-      </section>
-
-      <section className="bg-theme-surface anime-border anime-shadow rounded-[40px] overflow-hidden">
-        <div className="p-6 border-b-2 border-theme-border bg-theme-bg/50 flex items-center justify-between flex-wrap gap-4">
-          <h2 className="text-2xl font-display font-extrabold">Участники ({participants.length})</h2>
-          
-          <Link 
-            href={`/admin/collects/${collect.id}/add`} 
-            className="anime-button px-6 py-2 text-sm text-center flex items-center justify-center"
-          >
-            + Добавить участника
-          </Link>
-        </div>
-
-        <div className="overflow-x-auto p-2">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="border-b-2 border-theme-border text-theme-muted text-sm uppercase tracking-wider">
-                <th className="p-5 font-extrabold">Художник</th>
-                <th className="p-5 font-extrabold">Контакты</th>
-                <th className="p-5 font-extrabold">Макет</th>
-                <th className="p-5 font-extrabold text-center">Тираж</th>
-                {canViewFinances && <th className="p-5 font-extrabold text-right">Сумма</th>}
-                <th className="p-5 font-extrabold">Статус</th>
-              </tr>
-            </thead>
-            <tbody>
-              {participants.map((participant) => (
-                <ParticipantTableRow 
-                  key={participant.id} 
-                  participant={participant} 
-                  collectId={collect.id} 
-                  canViewFinances={canViewFinances} 
-                />
-              ))}
-
-              {participants.length === 0 && (
-                <tr>
-                  <td colSpan={canViewFinances ? 6 : 5} className="p-12 text-center text-theme-muted font-bold text-lg">
-                    В этом коллекте пока нет участников.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-      </section>
+      </div>
     </div>
   );
 }
