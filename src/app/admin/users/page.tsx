@@ -2,6 +2,8 @@ import { db } from '@/db';
 import { users } from '@/db/schema';
 import { desc } from 'drizzle-orm';
 import { RoleSelect } from '@/components/admin/users/RoleSelect';
+import { DeleteUserButton } from '@/components/admin/users/DeleteUserButton';
+import { UserForm } from '@/components/admin/users/UserForm';
 
 export const dynamic = 'force-dynamic';
 
@@ -22,6 +24,9 @@ export default async function UsersAdminPage() {
         </div>
       </header>
 
+      {/* Форма создания */}
+      <UserForm />
+
       <div className="bg-theme-surface anime-border anime-shadow rounded-[40px] overflow-hidden">
         <div className="overflow-x-auto p-2">
           <table className="w-full text-left border-collapse">
@@ -31,6 +36,7 @@ export default async function UsersAdminPage() {
                 <th className="p-5 font-extrabold">Привязки</th>
                 <th className="p-5 font-extrabold">Роль</th>
                 <th className="p-5 font-extrabold">Дата регистрации</th>
+                <th className="p-5 font-extrabold text-right">Действия</th>
               </tr>
             </thead>
             <tbody>
@@ -71,12 +77,15 @@ export default async function UsersAdminPage() {
                   <td className="p-5 text-theme-muted font-bold text-sm">
                     {user.createdAt ? new Date(user.createdAt).toLocaleDateString('ru-RU') : '—'}
                   </td>
+                  <td className="p-5 text-right">
+                    <DeleteUserButton userId={user.id} />
+                  </td>
                 </tr>
               ))}
-              
+
               {usersList.length === 0 && (
                 <tr>
-                  <td colSpan={4} className="p-12 text-center text-theme-muted font-bold text-lg">
+                  <td colSpan={5} className="p-12 text-center text-theme-muted font-bold text-lg">
                     Пользователей пока нет.
                   </td>
                 </tr>
