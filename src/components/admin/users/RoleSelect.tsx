@@ -2,12 +2,7 @@
 
 import { useTransition } from 'react';
 import { updateUserRole } from '@/actions/admin/users';
-
-const ROLES = {
-  'client': 'Клиент',
-  'manager': 'Менеджер',
-  'admin': 'Админ',
-} as const;
+import { ROLES } from '@/config/roles';
 
 interface Props {
   userId: string;
@@ -32,6 +27,12 @@ export function RoleSelect({ userId, currentRole }: Props) {
     });
   };
 
+  // Хак для кастомных ролей, которых пока нет в конфиге
+  const options = { ...ROLES } as Record<string, string>;
+  if (!options[currentRole]) {
+    options[currentRole] = currentRole;
+  }
+
   return (
     <select
       value={currentRole}
@@ -43,7 +44,7 @@ export function RoleSelect({ userId, currentRole }: Props) {
         'border-theme-border text-theme-text focus:border-theme-highlight'
       }`}
     >
-      {Object.entries(ROLES).map(([key, label]) => (
+      {Object.entries(options).map(([key, label]) => (
         <option key={key} value={key}>
           {label}
         </option>
