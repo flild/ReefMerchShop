@@ -25,9 +25,9 @@ export async function middleware(request: NextRequest) {
     if (!session) {
       return NextResponse.redirect(new URL('/login', request.nextUrl));
     }
-    // Если клиент — шлем лесом на главную
+    // Кидаем в профиль, чтобы юзер понимал, что он залогинен, но прав нет
     if (session.role === 'client') {
-      return NextResponse.redirect(new URL('/', request.nextUrl));
+      return NextResponse.redirect(new URL('/profile', request.nextUrl));
     }
   }
 

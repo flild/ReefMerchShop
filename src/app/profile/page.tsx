@@ -29,15 +29,6 @@ export default async function ProfilePage() {
     redirect('/login');
   }
 
-  // 3. Достаем заказы с их позициями (через relations)
-  // const userOrders = await db.query.orders.findMany({
-  //   where: eq((orders) => orders.userId, user.id),
-  //   orderBy: (orders, { desc }) => [desc(orders.createdAt)],
-  //   with: {
-  //     items: true,
-  //   }
-  // });
-
   const userOrders = await db.query.orders.findMany({
     where: eq(orders.userId, user.id),
     orderBy: [desc(orders.createdAt)],
