@@ -6,7 +6,7 @@ import Image from 'next/image';
 import { getSession } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 import { db } from '@/db';
-import { users, collects, collectParticipants } from '@/db/schema';
+import { users, collects, collectParticipants, orders } from '@/db/schema';
 import { eq, desc } from 'drizzle-orm';
 import { LogoutButton } from '@/components/auth/LogoutButton';
 
@@ -30,9 +30,17 @@ export default async function ProfilePage() {
   }
 
   // 3. Достаем заказы с их позициями (через relations)
+  // const userOrders = await db.query.orders.findMany({
+  //   where: eq((orders) => orders.userId, user.id),
+  //   orderBy: (orders, { desc }) => [desc(orders.createdAt)],
+  //   with: {
+  //     items: true,
+  //   }
+  // });
+
   const userOrders = await db.query.orders.findMany({
-    where: eq((orders) => orders.userId, user.id),
-    orderBy: (orders, { desc }) => [desc(orders.createdAt)],
+    where: eq(orders.userId, user.id),
+    orderBy: [desc(orders.createdAt)],
     with: {
       items: true,
     }
