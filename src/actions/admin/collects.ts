@@ -1,15 +1,39 @@
+// src/actions/admin/collects.ts
 'use server';
 
 import { db } from '@/db';
-import { collects, collectParticipants, users } from '@/db/schema';
-import { eq,sql } from 'drizzle-orm';
+import { collects, collectParticipants } from '@/db/schema';
+import { eq, sql } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
+import { getSession } from '@/lib/auth';
 
+type ActionResponse = {
+  success?: boolean;
+  error?: string;
+};
 
-// Новый метод для обновления статуса на любой из доступных
-export async function updateCollectStatus(id: string, newStatus: string) {
+// Проверка прав на административные действия (только admin и manager)
+async function assertStaffManager() {
+  const session = await getSession();
+  if (!session || (session.role !== 'admin' && session.role !== 'manager')) {
+    throw new Error('Доступ запрещен: недостаточно прав');
+  }
+  return session;
+}
+
+// Проверка прав на базовый доступ к админке (admin, manager, maker)
+async function assertStaff() {
+  const session = await getSession();
+  if (!session || !['admin', 'manager', 'maker'].includes(session.role)) {
+    throw new Error('Доступ запрещен: авторизуйтесь как сотрудник');
+  }
+  return session;
+}
+
+export async function updateCollectStatus(id: string, newStatus: string): Promise<ActionResponse> {
   try {
+    await assertStaffManager();
     await db.update(collects)
       .set({ status: newStatus })
       .where(eq(collects.id, id));
@@ -19,41 +43,45 @@ export async function updateCollectStatus(id: string, newStatus: string) {
     return { success: true };
   } catch (error) {
     console.error('Ошибка смены статуса коллекта:', error);
-    return { success: false, error: 'Ошибка обновления статуса в БД' };
+    return { error: error instanceof Error ? error.message : 'Ошибка обновления статуса' };
   }
 }
 
-export async function createCollect(prevState: any, formData: FormData) {
+export async function createCollect(
+  _prevState: ActionResponse | null, 
+  formData: FormData
+): Promise<ActionResponse> {
+  try {
+    await assertStaffManager();
+  } catch (error) {
+    return { error: 'Недостаточно прав для создания коллекта' };
+  }
+
   const title = formData.get('title') as string;
-  const description = formData.get('description') as string;
+  const description = (formData.get('description') as string) || '';
   const deadlineStr = formData.get('deadline') as string;
   const productionDate = formData.get('productionDate') as string;
-  const driveLink = formData.get('driveLink') as string;
-  
+  const driveLink = (formData.get('driveLink') as string) || null;
   const minCount = Number(formData.get('minCount'));
-  const targetSumLimit = Number(formData.get('targetSumLimit')); // Достаем лимит
-  const maxDiscount = Number(formData.get('maxDiscount'));       // Достаем макс. скидку (если добавил в схему БД)
+  const targetSumLimit = Number(formData.get('targetSumLimit'));
 
   if (!title || !deadlineStr || !productionDate || isNaN(minCount)) {
     return { error: 'Заполнены не все обязательные поля' };
   }
 
-  const deadline = new Date(deadlineStr);
-
   try {
     await db.insert(collects).values({
       id: crypto.randomUUID(),
       title,
-      description: description || '',
-      deadline,
+      description,
+      deadline: new Date(deadlineStr),
       productionDate,
       minCount,
-      targetSumLimit: isNaN(targetSumLimit) ? 250000 : targetSumLimit, // Пишем лимит
+      targetSumLimit: isNaN(targetSumLimit) ? 250000 : targetSumLimit,
       currentCount: 0,
       currentSum: 0,
-      driveLink: driveLink || null,
+      driveLink,
       status: 'open',
-      // maxDiscount: isNaN(maxDiscount) ? 20 : maxDiscount, // Раскомментируй, если добавишь maxDiscount в схему
     });
   } catch (error) {
     console.error('Ошибка создания коллекта:', error);
@@ -64,8 +92,15 @@ export async function createCollect(prevState: any, formData: FormData) {
   redirect('/admin/collects');
 }
 
-export async function updateParticipantStatus(participantId: string, newStatus: string, collectId: string) {
+export async function updateParticipantStatus(
+  participantId: string, 
+  newStatus: string, 
+  collectId: string
+): Promise<ActionResponse> {
   try {
+    // Смену рабочего статуса макета может производить и maker
+    await assertStaff();
+
     await db.update(collectParticipants)
       .set({ status: newStatus })
       .where(eq(collectParticipants.id, participantId));
@@ -74,18 +109,27 @@ export async function updateParticipantStatus(participantId: string, newStatus: 
     return { success: true };
   } catch (error) {
     console.error('Ошибка обновления статуса участника:', error);
-    return { success: false, error: 'Не удалось обновить статус' };
+    return { error: error instanceof Error ? error.message : 'Не удалось обновить статус' };
   }
 }
 
-export async function addParticipant(prevState: any, formData: FormData) {
+export async function addParticipant(
+  _prevState: ActionResponse | null, 
+  formData: FormData
+): Promise<ActionResponse> {
+  try {
+    await assertStaffManager();
+  } catch (error) {
+    return { error: 'Макетчикам запрещено добавлять участников вручную' };
+  }
+
   const collectId = formData.get('collectId') as string;
   const nickname = formData.get('nickname') as string;
   const email = formData.get('email') as string;
-  const vkId = formData.get('vkId') as string;
-  const telegram = formData.get('telegram') as string;
-  const layoutName = formData.get('layoutName') as string;
-  const layoutLink = formData.get('layoutLink') as string;
+  const vkId = (formData.get('vkId') as string) || null;
+  const telegram = (formData.get('telegram') as string) || null;
+  const layoutName = (formData.get('layoutName') as string) || null;
+  const layoutLink = (formData.get('layoutLink') as string) || null;
   const quantity = Number(formData.get('quantity'));
   const totalPrice = Number(formData.get('totalPrice'));
 
@@ -103,39 +147,44 @@ export async function addParticipant(prevState: any, formData: FormData) {
       collectId,
       nickname,
       email,
-      vkId: vkId || null,
-      telegram: telegram || null,
-      layoutName: layoutName || null,
-      layoutLink: layoutLink || null,
+      vkId,
+      telegram,
+      layoutName,
+      layoutLink,
       quantity,
       totalPrice,
       status: 'pending_payment',
-      // Если админ сразу добавил ссылку на файлы, помечаем макеты как загруженные
-      isLayoutsUploaded: !!layoutLink, 
+      isLayoutsUploaded: !!layoutLink,
     });
     
-    // Синхронизируем банк коллекта
     await syncCollectTotals(collectId);
-    
   } catch (error) {
     console.error('Ошибка добавления участника:', error);
-    return { error: 'База данных подавилась. Не удалось добавить участника.' };
+    return { error: 'Не удалось добавить участника в базу данных' };
   }
 
   revalidatePath(`/admin/collects/${collectId}`);
   redirect(`/admin/collects/${collectId}`);
 }
 
-export async function updateCollect(id: string, prevState: any, formData: FormData) {
+export async function updateCollect(
+  id: string, 
+  _prevState: ActionResponse | null, 
+  formData: FormData
+): Promise<ActionResponse> {
+  try {
+    await assertStaffManager();
+  } catch (error) {
+    return { error: 'Недостаточно прав для редактирования' };
+  }
+
   const title = formData.get('title')?.toString();
-  const description = formData.get('description')?.toString();
+  const description = formData.get('description')?.toString() || '';
   const deadlineStr = formData.get('deadline')?.toString();
   const productionDate = formData.get('productionDate')?.toString();
-  const driveLink = formData.get('driveLink')?.toString();
-  
+  const driveLink = formData.get('driveLink')?.toString() || null;
   const minCount = Number(formData.get('minCount'));
   const targetSumLimit = Number(formData.get('targetSumLimit'));
-  const maxDiscount = Number(formData.get('maxDiscount'));
 
   if (!title || !deadlineStr || !productionDate || isNaN(minCount)) {
     return { error: 'Заполнены не все обязательные поля' };
@@ -145,19 +194,17 @@ export async function updateCollect(id: string, prevState: any, formData: FormDa
     await db.update(collects)
       .set({
         title,
-        description: description || '',
+        description,
         deadline: new Date(deadlineStr),
         productionDate,
         minCount,
         targetSumLimit: isNaN(targetSumLimit) ? 250000 : targetSumLimit,
-        driveLink: driveLink || null,
-        // maxDiscount: isNaN(maxDiscount) ? 20 : maxDiscount, // Если добавил в БД
+        driveLink,
       })
       .where(eq(collects.id, id));
-
   } catch (error) {
     console.error('Ошибка обновления коллекта:', error);
-    return { error: 'Не удалось обновить коллект' };
+    return { error: 'Не удалось обновить коллективный сбор' };
   }
 
   revalidatePath('/admin/collects');
@@ -165,12 +212,13 @@ export async function updateCollect(id: string, prevState: any, formData: FormDa
   redirect(`/admin/collects/${id}`);
 }
 
-export async function deleteCollect(id: string) {
+export async function deleteCollect(id: string): Promise<ActionResponse> {
   try {
+    await assertStaffManager();
     await db.delete(collects).where(eq(collects.id, id));
   } catch (error) {
     console.error('Ошибка удаления коллекта:', error);
-    throw new Error('Не удалось удалить коллект');
+    return { error: 'Не удалось удалить коллективный сбор' };
   }
 
   revalidatePath('/admin/collects');
@@ -183,30 +231,40 @@ export async function updateParticipantData(
   data: { 
     nickname: string; 
     email: string;
-    vkId: string; 
-    telegram: string;
-    layoutName: string;
-    layoutLink: string;
+    vkId: string | null; 
+    telegram: string | null;
+    layoutName: string | null;
+    layoutLink: string | null;
     quantity: number; 
-    totalPrice: number;
+    totalPrice?: number;
   }
-) {
+): Promise<ActionResponse> {
+  const session = await assertStaff();
+  const isMaker = session.role === 'maker';
+
   try {
+    // Если правит макетчица — финансовое поле totalPrice игнорируется и не перетирается
+    const updatePayload: Record<string, unknown> = {
+      nickname: data.nickname,
+      email: data.email,
+      vkId: data.vkId,
+      telegram: data.telegram,
+      layoutName: data.layoutName,
+      layoutLink: data.layoutLink,
+      quantity: data.quantity,
+    };
+
+    if (!isMaker && typeof data.totalPrice === 'number') {
+      updatePayload.totalPrice = data.totalPrice;
+    }
+
     await db.update(collectParticipants)
-      .set({
-        nickname: data.nickname || '',
-        email: data.email || '',
-        vkId: data.vkId || null,
-        telegram: data.telegram || null,
-        layoutName: data.layoutName || null,
-        layoutLink: data.layoutLink || null,
-        quantity: data.quantity,
-        totalPrice: data.totalPrice,
-      })
+      .set(updatePayload)
       .where(eq(collectParticipants.id, participantId));
 
-    // Не забываем дернуть нашу функцию синхронизации банка из прошлого шага!
-    await syncCollectTotals(collectId);
+    if (!isMaker) {
+      await syncCollectTotals(collectId);
+    }
 
     revalidatePath(`/admin/collects/${collectId}`);
     return { success: true };
@@ -216,10 +274,10 @@ export async function updateParticipantData(
   }
 }
 
-export async function deleteParticipant(participantId: string, collectId: string) {
+export async function deleteParticipant(participantId: string, collectId: string): Promise<ActionResponse> {
   try {
+    await assertStaffManager();
     await db.delete(collectParticipants).where(eq(collectParticipants.id, participantId));
-    
     await syncCollectTotals(collectId);
     
     revalidatePath(`/admin/collects/${collectId}`);
@@ -231,7 +289,6 @@ export async function deleteParticipant(participantId: string, collectId: string
 }
 
 async function syncCollectTotals(collectId: string) {
-  // Получаем агрегированные данные прямо запросом (чтобы не тянуть все объекты в память)
   const result = await db
     .select({
       totalSum: sql<number>`COALESCE(SUM(${collectParticipants.totalPrice}), 0)`,
@@ -242,7 +299,6 @@ async function syncCollectTotals(collectId: string) {
 
   const totals = result[0] || { totalSum: 0, totalCount: 0 };
 
-  // Обновляем родительский коллект
   await db.update(collects)
     .set({
       currentSum: totals.totalSum,

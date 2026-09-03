@@ -1,6 +1,6 @@
 export const ROLES = {
   client: 'Клиент',
-  maker: 'Макетчица',
+  maker: 'Дизайнер макетов',
   manager: 'Менеджер',
   admin: 'Админ',
 } as const;
