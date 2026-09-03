@@ -2,8 +2,9 @@ import { db } from '@/db';
 import { collects } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 import Link from 'next/link';
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 import { AddParticipantForm } from '@/components/admin/collects/AddParticipantForm';
+import { getSession } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
@@ -12,6 +13,11 @@ interface PageProps {
 }
 
 export default async function AddParticipantPage({ params }: PageProps) {
+  const session = await getSession();
+  if (!session || (session.role !== 'admin' && session.role !== 'manager')) {
+    redirect('/admin/collects');
+  }
+
   const { id } = await params;
 
   const collectResult = await db
@@ -34,13 +40,12 @@ export default async function AddParticipantPage({ params }: PageProps) {
         >
           ← Вернуться к коллекту
         </Link>
-        <h1 className="text-4xl font-display font-extrabold">Ручное добавление участника</h1>
+        <h1 className="text-4xl font-display font-extrabold text-theme-text">Ручное добавление участника</h1>
         <p className="text-theme-muted font-bold text-lg">
           Коллект: <span className="text-theme-text">{collect.title}</span>
         </p>
       </header>
 
-      {/* Передаем только ID коллекта, остальное менеджер вобьет руками */}
       <AddParticipantForm collectId={id} />
     </div>
   );

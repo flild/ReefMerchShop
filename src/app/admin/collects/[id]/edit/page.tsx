@@ -1,9 +1,10 @@
 import { db } from '@/db';
 import { collects } from '@/db/schema';
 import { eq } from 'drizzle-orm';
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 import Link from 'next/link';
 import { CollectForm } from '@/components/admin/collects/CollectForm';
+import { getSession } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
@@ -12,9 +13,13 @@ interface PageProps {
 }
 
 export default async function EditCollectPage({ params }: PageProps) {
+  const session = await getSession();
+  if (!session || (session.role !== 'admin' && session.role !== 'manager')) {
+    redirect('/admin/collects');
+  }
+
   const { id } = await params;
 
-  // Ищем коллект в базе
   const collectResult = await db
     .select()
     .from(collects)
@@ -36,13 +41,12 @@ export default async function EditCollectPage({ params }: PageProps) {
         >
           ← Вернуться к коллекту
         </Link>
-        <h1 className="text-4xl font-display font-extrabold mb-2">Редактирование</h1>
+        <h1 className="text-4xl font-display font-extrabold mb-2 text-theme-text">Редактирование</h1>
         <p className="text-theme-muted font-bold text-lg">
           Коллект: <span className="text-theme-text">{collect.title}</span>
         </p>
       </header>
 
-      {/* Передаем данные в нашу обновленную форму */}
       <CollectForm 
         initialData={{
           id: collect.id,
@@ -53,7 +57,6 @@ export default async function EditCollectPage({ params }: PageProps) {
           minCount: collect.minCount,
           targetSumLimit: collect.targetSumLimit,
           driveLink: collect.driveLink,
-          // maxDiscount: collect.maxDiscount, // Если добавил в БД
         }} 
       />
     </div>
