@@ -1,11 +1,19 @@
+// src/app/admin/orders/new/page.tsx
 import { db } from '@/db';
 import { users } from '@/db/schema';
 import { OrderForm } from '@/components/admin/orders/OrderForm';
 import Link from 'next/link';
+import { getSession } from '@/lib/auth';
+import { redirect } from 'next/navigation';
 
 export const dynamic = 'force-dynamic';
 
 export default async function NewOrderPage() {
+  const session = await getSession();
+  if (session?.role === 'maker') {
+    redirect('/admin/orders');
+  }
+
   const allUsers = await db.select().from(users);
 
   return (

@@ -1,8 +1,10 @@
+// src/app/admin/orders/[id]/edit/page.tsx
 import { db } from '@/db';
 import { orders, users } from '@/db/schema';
 import { eq } from 'drizzle-orm';
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 import { OrderForm } from '@/components/admin/orders/OrderForm';
+import { getSession } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
@@ -11,6 +13,11 @@ export default async function EditOrderPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
+  const session = await getSession();
+  if (session?.role === 'maker') {
+    redirect('/admin/orders');
+  }
+
   const { id } = await params;
 
   const [order] = await db

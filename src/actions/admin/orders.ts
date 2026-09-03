@@ -6,6 +6,7 @@ import { writeFile, mkdir } from 'fs/promises';
 import { eq } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
+import { getSession } from '@/lib/auth';
 import path from 'path';
 
 
@@ -31,6 +32,11 @@ export async function updateOrderStatus(orderId: string, status: string) {
 }
 
 export async function createOrder(formData: FormData) {
+  const session = await getSession();
+  if (!session || session.role === 'maker' || session.role === 'client') {
+    return { error: 'Недостаточно прав для создания заказа' };
+  }
+
   const userId = formData.get('userId') as string;
   const status = formData.get('status') as string || 'new';
   const totalStr = formData.get('total') as string;
@@ -78,6 +84,11 @@ export async function createOrder(formData: FormData) {
 }
 
 export async function updateOrder(id: string, formData: FormData) {
+  const session = await getSession();
+  if (!session || session.role === 'maker' || session.role === 'client') {
+    return { error: 'Недостаточно прав для редактирования заказа' };
+  }
+
   const userId = formData.get('userId') as string;
   const totalStr = formData.get('total') as string;
   const details = formData.get('details') as string;

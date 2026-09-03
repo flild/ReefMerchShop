@@ -34,6 +34,13 @@ export const portfolioItems = sqliteTable('portfolio_items', {
   authorName: text('author_name'),
   createdAt: timestampMs('created_at'),
 });
+export const materialTypes = sqliteTable('material_types', {
+  id: text('id').primaryKey(),
+  name: text('name').notNull(), // 'Акрил', 'Голография', 'Дерево'
+  slug: text('slug').notNull().unique(), // 'acrylic', 'holography', 'wood'
+  description: text('description'),
+  createdAt: timestampMs('created_at'),
+});
 
 export const materialCategories = sqliteTable('material_categories', {
   id: text('id').primaryKey(),
@@ -44,7 +51,7 @@ export const materialCategories = sqliteTable('material_categories', {
 export const materials = sqliteTable('materials', {
   id: text('id').primaryKey(),
   categoryId: text('category_id').references(() => materialCategories.id, { onDelete: 'set null' }),
-  type: text('type').notNull(), // 'acrylic', 'holography'
+  typeId: text('type_id').notNull().references(() => materialTypes.id, { onDelete: 'restrict' }), // Привязка к типу
   name: text('name').notNull(),
   description: text('description'),
   imageUrl: text('image_url'),
@@ -237,4 +244,20 @@ export const orderProofsRelations = relations(orderProofs, ({ one }) => ({
     fields: [orderProofs.fileId],
     references: [files.id],
   }),
+}));
+
+export const materialTypesRelations = relations(materialTypes, ({ many }) => ({
+  materials: many(materials),
+}));
+
+export const materialsRelations = relations(materials, ({ one, many }) => ({
+  type: one(materialTypes, {
+    fields: [materials.typeId],
+    references: [materialTypes.id],
+  }),
+  category: one(materialCategories, {
+    fields: [materials.categoryId],
+    references: [materialCategories.id],
+  }),
+  blanks: many(blanks),
 }));
