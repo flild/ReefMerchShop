@@ -5,6 +5,7 @@ import { users } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 import { getSession } from '@/lib/auth';
+import { hash } from 'bcryptjs';
 
 type ActionResponse = {
   success?: boolean;
@@ -23,7 +24,6 @@ export async function updateUserRole(userId: string, newRole: string): Promise<A
   try {
     const session = await assertAdmin();
 
-    // Защита: нельзя понизить самого себя
     if (session.userId === userId && newRole !== 'admin') {
       return { 
         success: false, 
@@ -50,7 +50,6 @@ export async function deleteUser(userId: string): Promise<ActionResponse> {
   try {
     const session = await assertAdmin();
 
-    // Защита: нельзя удалить собственную учетку
     if (session.userId === userId) {
       return { 
         success: false, 
@@ -70,26 +69,46 @@ export async function deleteUser(userId: string): Promise<ActionResponse> {
   }
 }
 
-export async function createUser(formData: FormData): Promise<ActionResponse> {
+export async function createUser(
+  _prevState: ActionResponse | null, 
+  formData: FormData
+): Promise<ActionResponse> {
   try {
     await assertAdmin();
 
-    const name = formData.get('name') as string;
-    const email = formData.get('email') as string;
-    const role = formData.get('role') as string;
-    const passwordHash = 'dummy_hash_change_me'; 
+    const name = formData.get('name')?.toString().trim();
+    const email = formData.get('email')?.toString().trim().toLowerCase();
+    const role = formData.get('role')?.toString().trim() || 'client';
+    const password = formData.get('password')?.toString();
 
-    if (!name || !email) {
-      return { success: false, error: 'Имя и Email обязательны' };
+    if (!name || !email || !password) {
+      return { success: false, error: 'Имя, Email и пароль обязательны' };
     }
 
+    if (password.length < 6) {
+      return { success: false, error: 'Пароль должен содержать не менее 6 символов' };
+    }
+
+    // Проверяем занятость email
+    const existing = await db
+      .select({ id: users.id })
+      .from(users)
+      .where(eq(users.email, email))
+      .limit(1);
+
+    if (existing.length > 0) {
+      return { success: false, error: 'Пользователь с таким email уже существует' };
+    }
+
+    // Хэшируем пароль с солью
+    const passwordHash = await hash(password, 10);
     const newId = crypto.randomUUID();
 
     await db.insert(users).values({
       id: newId,
       name,
       email,
-      role: role || 'client',
+      role,
       passwordHash,
     });
 
@@ -97,6 +116,9 @@ export async function createUser(formData: FormData): Promise<ActionResponse> {
     return { success: true };
   } catch (error) {
     console.error('Ошибка создания пользователя:', error);
-    return { success: false, error: 'Не удалось создать пользователя. Возможно, email уже занят.' };
+    return { 
+      success: false, 
+      error: error instanceof Error ? error.message : 'Не удалось создать пользователя' 
+    };
   }
 }
