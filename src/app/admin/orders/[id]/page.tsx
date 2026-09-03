@@ -14,6 +14,7 @@ import { eq, desc } from 'drizzle-orm';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { OrderStatusSelect } from '@/components/admin/orders/OrderStatusSelect';
+import { getSession } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
@@ -23,6 +24,9 @@ interface PageProps {
 
 export default async function OrderDetailsPage({ params }: PageProps) {
   const { id } = await params;
+  
+  const session = await getSession();
+  const isMaker = session?.role === 'maker';
 
   const proofs = await db
     .select({
@@ -59,6 +63,7 @@ export default async function OrderDetailsPage({ params }: PageProps) {
     notFound();
   }
   const order = orderResult[0];
+  
   let parsedDetails = { customClientName: '', customClientContact: '', managerNote: '' };
   if (order.detailsJson) {
     try {
@@ -103,12 +108,15 @@ export default async function OrderDetailsPage({ params }: PageProps) {
           >
             ← Назад
           </Link>
-          <Link 
-            href={`/admin/orders/${order.id}/edit`} 
-            className="p-3 bg-theme-highlight/10 border-2 border-theme-highlight text-theme-highlight font-bold rounded-[16px] hover:bg-theme-highlight hover:text-theme-bg transition-colors"
-          >
-            Редактировать
-          </Link>
+          
+          {!isMaker && (
+            <Link 
+              href={`/admin/orders/${order.id}/edit`} 
+              className="p-3 bg-theme-highlight/10 border-2 border-theme-highlight text-theme-highlight font-bold rounded-[16px] hover:bg-theme-highlight hover:text-theme-bg transition-colors"
+            >
+              Редактировать
+            </Link>
+          )}
         </div>
         <div>
           <h1 className="text-4xl font-display font-extrabold mb-1">
@@ -121,8 +129,8 @@ export default async function OrderDetailsPage({ params }: PageProps) {
       </header>
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
-        
         <div className="xl:col-span-2 flex flex-col gap-8">
+          
           <section className="bg-theme-surface anime-border anime-shadow rounded-[40px] p-8 flex flex-col sm:flex-row justify-between gap-6">
             <div className="flex flex-col gap-2">
               <span className="text-theme-muted font-bold">Клиент</span>
@@ -139,12 +147,14 @@ export default async function OrderDetailsPage({ params }: PageProps) {
               )}
             </div>
 
-            <div className="flex flex-col gap-2">
-              <span className="text-theme-muted font-bold">Итоговая стоимость</span>
-              <div className="text-3xl font-display font-extrabold text-theme-text">
-                {order.total.toLocaleString('ru-RU')} ₽
+            {!isMaker && (
+              <div className="flex flex-col gap-2">
+                <span className="text-theme-muted font-bold">Итоговая стоимость</span>
+                <div className="text-3xl font-display font-extrabold text-theme-text">
+                  {order.total.toLocaleString('ru-RU')} ₽
+                </div>
               </div>
-            </div>
+            )}
 
             <div className="flex flex-col gap-2">
               <span className="text-theme-muted font-bold">Текущий статус</span>
@@ -178,9 +188,11 @@ export default async function OrderDetailsPage({ params }: PageProps) {
                       <span className="text-xl font-extrabold text-theme-text">
                         {item.quantity} шт.
                       </span>
-                      <span className="text-theme-muted font-bold">
-                        {item.price.toLocaleString('ru-RU')} ₽
-                      </span>
+                      {!isMaker && (
+                        <span className="text-theme-muted font-bold">
+                          {item.price.toLocaleString('ru-RU')} ₽
+                        </span>
+                      )}
                     </div>
                   </div>
 
@@ -216,7 +228,6 @@ export default async function OrderDetailsPage({ params }: PageProps) {
         </div>
 
         <div className="flex flex-col gap-8">
-          
           <section className="bg-theme-surface anime-border anime-shadow rounded-[40px] p-8">
             <h2 className="text-2xl font-display font-extrabold mb-6">История изменений</h2>
 

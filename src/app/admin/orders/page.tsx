@@ -3,10 +3,10 @@ import { orders, users } from '@/db/schema';
 import { eq, desc } from 'drizzle-orm';
 import Link from 'next/link';
 import { OrderStatusSelect } from '@/components/admin/orders/OrderStatusSelect';
+import { getSession } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
-// Хелпер для определения цвета статуса по дизайн-системе
 function getStatusColorClass(status: string) {
   switch (status) {
     case 'completed':
@@ -21,6 +21,9 @@ function getStatusColorClass(status: string) {
 }
 
 export default async function OrdersAdminPage() {
+  const session = await getSession();
+  const isMaker = session?.role === 'maker';
+
   const ordersList = await db
     .select({
       id: orders.id,
@@ -44,9 +47,11 @@ export default async function OrdersAdminPage() {
             Управление текущими заказами и статусами производства
           </p>
         </div>
-        <Link href="/admin/orders/new" className="anime-button px-6 py-3 text-lg block text-center whitespace-nowrap">
-          + Создать заказ
-        </Link>
+        {!isMaker && (
+          <Link href="/admin/orders/new" className="anime-button px-6 py-3 text-lg block text-center whitespace-nowrap">
+            + Создать заказ
+          </Link>
+        )}
       </header>
 
       <div className="bg-theme-surface anime-border anime-shadow rounded-[40px] overflow-hidden">
@@ -56,7 +61,7 @@ export default async function OrdersAdminPage() {
               <tr className="border-b-2 border-theme-border text-theme-muted text-sm uppercase tracking-wider">
                 <th className="p-5 font-extrabold">№ Заказа</th>
                 <th className="p-5 font-extrabold">Клиент</th>
-                <th className="p-5 font-extrabold">Сумма</th>
+                {!isMaker && <th className="p-5 font-extrabold">Сумма</th>}
                 <th className="p-5 font-extrabold">Статус</th>
                 <th className="p-5 font-extrabold">Дата создания</th>
                 <th className="p-5 font-extrabold text-right">Действия</th>
@@ -80,13 +85,16 @@ export default async function OrdersAdminPage() {
                     <div className="font-bold text-theme-text">{order.clientName || 'Без имени'}</div>
                     <div className="text-theme-muted text-sm font-bold">{order.clientEmail || '—'}</div>
                   </td>
-                  <td className="p-5">
-                    <div className="font-extrabold text-theme-text text-lg">
-                      {order.total.toLocaleString('ru-RU')} ₽
-                    </div>
-                  </td>
+                  
+                  {!isMaker && (
+                    <td className="p-5">
+                      <div className="font-extrabold text-theme-text text-lg">
+                        {order.total.toLocaleString('ru-RU')} ₽
+                      </div>
+                    </td>
+                  )}
+                  
                   <td className="p-5 flex items-center gap-3">
-                    {/* Цветной индикатор статуса */}
                     <span className={`w-3 h-3 rounded-full border-2 ${getStatusColorClass(order.status)}`} />
                     <OrderStatusSelect orderId={order.id} currentStatus={order.status} />
                   </td>
@@ -108,7 +116,7 @@ export default async function OrdersAdminPage() {
 
               {ordersList.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="p-12 text-center text-theme-muted font-bold text-lg">
+                  <td colSpan={isMaker ? 5 : 6} className="p-12 text-center text-theme-muted font-bold text-lg">
                     Заказов пока нет.
                   </td>
                 </tr>
