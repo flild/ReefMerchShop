@@ -5,14 +5,22 @@ import { useTransition } from 'react';
 import { deleteItem } from '@/actions/admin/inventory';
 import { Trash2 } from 'lucide-react';
 
-export function DeleteButton({ id, type }: { id: string, type: 'material' | 'accessory' | 'blank' }) {
+export interface DeleteButtonProps {
+  id: string;
+  type: 'material' | 'accessory' | 'blank' | 'type';
+}
+
+export function DeleteButton({ id, type }: DeleteButtonProps) {
   const [isPending, startTransition] = useTransition();
 
   const handleDelete = () => {
-    if (!confirm('Точно удалить? Если оно привязано к заказам, будет ошибка.')) return;
+    if (!confirm('Точно удалить эту позицию? Действие необратимо.')) return;
     
     startTransition(async () => {
-      await deleteItem(id, type);
+      const res = await deleteItem(id, type);
+      if (res && !res.success) {
+        alert(res.error);
+      }
     });
   };
 

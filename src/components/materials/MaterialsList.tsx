@@ -1,72 +1,75 @@
+// src/components/materials/MaterialsList.tsx
 'use client';
 
 import { motion } from 'motion/react';
 import Image from 'next/image';
-import { Sparkles, Image as ImageIcon } from 'lucide-react';
+import { Sparkles, Image as ImageIcon, Box } from 'lucide-react';
 import type { InferSelectModel } from 'drizzle-orm';
-import { materials, accessories } from '@/db/schema';
+import { materials, accessories, materialTypes } from '@/db/schema';
 
 type Material = InferSelectModel<typeof materials>;
 type Accessory = InferSelectModel<typeof accessories>;
+type MaterialType = InferSelectModel<typeof materialTypes>;
+
+export interface MaterialGroup {
+  type: MaterialType;
+  items: Material[];
+}
 
 interface MaterialsListProps {
-  acrylics: Material[];
-  holography: Material[];
+  groups: MaterialGroup[];
   accessoriesData: Accessory[];
 }
 
 function getColorClass(name: string) {
   const l = name.toLowerCase();
-  // Физические цвета материалов оставляем как есть, так как это репрезентация товара
   if (l.includes('прозрачный')) return 'bg-theme-bg opacity-80 backdrop-blur-md';
   if (l.includes('белый')) return 'bg-white border-theme-border';
   if (l.includes('черный')) return 'bg-black border-theme-border';
   return 'bg-theme-surface';
 }
 
-export function MaterialsList({ acrylics, holography, accessoriesData }: MaterialsListProps) {
+export function MaterialsList({ groups, accessoriesData }: MaterialsListProps) {
   return (
     <div className="flex flex-col gap-20">
-      {acrylics.length > 0 && (
-        <section>
-          <h2 className="text-4xl font-display font-black text-theme-text mb-10 flex items-center gap-4">
-            <span className="w-12 h-12 bg-theme-accent text-[color:var(--theme-btn-text)] rounded-2xl flex items-center justify-center shadow-[0_4px_0_0_var(--theme-btn-shadow)]">
-              <div className="w-6 h-6 border-4 border-current rounded-sm" />
-            </span>
-            Акрил
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {acrylics.map((item, i) => (
-              <MaterialCard key={item.id} item={item} index={i} />
-            ))}
+      {groups.map((group) => (
+        <section key={group.type.id}>
+          <div className="mb-10">
+            <h2 className="text-4xl font-display font-black text-theme-text flex items-center gap-4">
+              <span className="w-12 h-12 bg-theme-accent text-[color:var(--theme-btn-text)] rounded-2xl flex items-center justify-center shadow-[0_4px_0_0_var(--theme-btn-shadow)]">
+                {group.type.slug === 'holography' ? (
+                  <Sparkles size={24} strokeWidth={3} />
+                ) : (
+                  <Box size={24} strokeWidth={2.5} />
+                )}
+              </span>
+              {group.type.name}
+            </h2>
+            {group.type.description && (
+              <p className="text-theme-muted text-lg font-bold mt-2 ml-16">
+                {group.type.description}
+              </p>
+            )}
           </div>
-        </section>
-      )}
 
-      {holography.length > 0 && (
-        <section>
-          <h2 className="text-4xl font-display font-black text-theme-text mb-10 flex items-center gap-4">
-            <span className="w-12 h-12 bg-theme-accent text-[color:var(--theme-btn-text)] rounded-2xl flex items-center justify-center shadow-[0_4px_0_0_var(--theme-btn-shadow)]">
-              <Sparkles size={24} strokeWidth={3} />
-            </span>
-            Голография (пленка)
-          </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {holography.map((item, i) => (
+            {group.items.map((item, i) => (
               <MaterialCard key={item.id} item={item} index={i} />
             ))}
           </div>
         </section>
-      )}
+      ))}
 
       {accessoriesData.length > 0 && (
         <section>
-          <h2 className="text-4xl font-display font-black text-theme-text mb-10 flex items-center gap-4">
-            <span className="w-12 h-12 bg-theme-accent text-[color:var(--theme-btn-text)] rounded-2xl flex items-center justify-center shadow-[0_4px_0_0_var(--theme-btn-shadow)]">
-              <div className="w-6 h-6 border-4 border-current rounded-full" />
-            </span>
-            Фурнитура
-          </h2>
+          <div className="mb-10">
+            <h2 className="text-4xl font-display font-black text-theme-text flex items-center gap-4">
+              <span className="w-12 h-12 bg-theme-accent text-[color:var(--theme-btn-text)] rounded-2xl flex items-center justify-center shadow-[0_4px_0_0_var(--theme-btn-shadow)]">
+                <div className="w-6 h-6 border-4 border-current rounded-full" />
+              </span>
+              Фурнитура
+            </h2>
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 lg:grid-cols-4 gap-8">
             {accessoriesData.map((item, i) => (
               <AccessoryCard key={item.id} item={item} index={i} />
@@ -100,13 +103,13 @@ function MaterialCard({ item, index }: { item: Material; index: number }) {
       <div className="flex-1">
         <h3 className="text-2xl font-bold text-theme-text mb-2">{item.name}</h3>
         {item.description && (
-          <p className="text-theme-muted mb-4">{item.description}</p>
+          <p className="text-theme-muted mb-4 text-sm font-medium leading-relaxed">{item.description}</p>
         )}
       </div>
 
       <div className="mt-4 pt-4 border-t border-theme-border flex items-center justify-between">
         <div className="font-black text-xl text-theme-highlight">
-          {item.pricePerCm2}₽ <span className="text-sm font-medium text-theme-muted">/ см²</span>
+          {item.pricePerCm2} ₽ <span className="text-sm font-medium text-theme-muted">/ см²</span>
         </div>
         <StatusBadge available={item.inStock} />
       </div>
@@ -139,9 +142,9 @@ function AccessoryCard({ item, index }: { item: Accessory; index: number }) {
 
       <div className="mt-auto pt-4 flex items-center justify-between">
         <div className="font-bold text-theme-highlight">
-          {item.price}₽ <span className="text-sm font-normal text-theme-muted">/ шт</span>
+          {item.price} ₽ <span className="text-sm font-normal text-theme-muted">/ шт</span>
         </div>
-        <StockBadge status={status} stock={stockLevel} />
+        <AccessoryStockBadge status={status} stock={stockLevel} />
       </div>
     </motion.div>
   );
@@ -162,7 +165,7 @@ function StatusBadge({ available }: { available: boolean }) {
   );
 }
 
-function StockBadge({ status, stock }: { status: string; stock: number }) {
+function AccessoryStockBadge({ status, stock }: { status: string; stock: number }) {
   if (status === 'out_of_stock') {
     return (
       <div className="px-3 py-1 bg-theme-gray-bg text-theme-gray-text rounded-full text-xs font-black uppercase tracking-wider border-2 border-theme-border shadow-[2px_2px_0_0_var(--theme-border)] rotate-[3deg]">
@@ -179,7 +182,7 @@ function StockBadge({ status, stock }: { status: string; stock: number }) {
   }
   return (
     <div className="px-3 py-1 bg-theme-green-bg text-theme-green-text rounded-full text-xs font-black uppercase tracking-wider border-2 border-theme-border shadow-[2px_2px_0_0_var(--theme-border)] rotate-[-2deg]">
-      {stock > 100 ? 'Много' : stock + ' шт'}
+      {stock > 100 ? 'Много' : `${stock} шт`}
     </div>
   );
 }

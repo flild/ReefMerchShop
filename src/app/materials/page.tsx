@@ -1,11 +1,13 @@
+// src/app/materials/page.tsx
 import { Metadata } from 'next';
 import Link from 'next/link';
 import { ChevronRight, Sparkles } from 'lucide-react';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { db } from '@/db';
-import { materials, accessories } from '@/db/schema';
-import { MaterialsList } from '@/components/materials/MaterialsList';
+import { materials, materialTypes, accessories } from '@/db/schema';
+import { eq } from 'drizzle-orm';
+import { MaterialsList, MaterialGroup } from '@/components/materials/MaterialsList';
 
 export const dynamic = 'force-dynamic';
 
@@ -18,11 +20,19 @@ export const metadata: Metadata = {
 };
 
 export default async function MaterialsPage() {
-  const allMaterials = await db.select().from(materials).orderBy(materials.name);
-  const allAccessories = await db.select().from(accessories).orderBy(accessories.name);
+  const [types, allMaterials, allAccessories] = await Promise.all([
+    db.select().from(materialTypes).orderBy(materialTypes.name),
+    db.select().from(materials).orderBy(materials.name),
+    db.select().from(accessories).orderBy(accessories.name),
+  ]);
 
-  const acrylics = allMaterials.filter((m) => m.type === 'acrylic');
-  const holography = allMaterials.filter((m) => m.type === 'holography');
+  // Группируем материалы динамически по типам
+  const materialGroups: MaterialGroup[] = types
+    .map((type) => ({
+      type,
+      items: allMaterials.filter((m) => m.typeId === type.id),
+    }))
+    .filter((group) => group.items.length > 0);
 
   const breadcrumbData = {
     "@context": "https://schema.org",
@@ -43,7 +53,7 @@ export default async function MaterialsPage() {
 
       <main className="flex-1 py-24 bg-theme-bg manga-dots">
         <div className="container mx-auto px-4 max-w-6xl relative z-10">
-          
+
           <nav className="flex items-center gap-2 text-sm text-theme-muted mb-8 font-medium" aria-label="Breadcrumb">
             <Link href="/" className="hover:text-theme-highlight transition-colors">Главная</Link>
             <ChevronRight size={14} />
@@ -64,8 +74,7 @@ export default async function MaterialsPage() {
           </header>
 
           <MaterialsList 
-            acrylics={acrylics} 
-            holography={holography} 
+            groups={materialGroups}
             accessoriesData={allAccessories} 
           />
         </div>

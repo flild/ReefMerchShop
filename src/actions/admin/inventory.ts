@@ -213,7 +213,10 @@ export async function updateStock(
   }
 }
 
-export async function deleteItem(id: string, type: 'material' | 'accessory' | 'blank') {
+export async function deleteItem(
+  id: string, 
+  type: 'material' | 'accessory' | 'blank' | 'type'
+) {
   await checkInventoryAccess();
 
   try {
@@ -225,6 +228,23 @@ export async function deleteItem(id: string, type: 'material' | 'accessory' | 'b
       revalidatePath('/materials');
     } else if (type === 'blank') {
       await db.delete(blanks).where(eq(blanks.id, id));
+    } else if (type === 'type') {
+      // Проверяем, привязаны ли материалы к этому типу
+      const attachedMaterials = await db
+        .select({ id: materials.id })
+        .from(materials)
+        .where(eq(materials.typeId, id))
+        .limit(1);
+
+      if (attachedMaterials.length > 0) {
+        return { 
+          success: false, 
+          error: 'Нельзя удалить тип, к которому привязаны материалы. Сначала удалите или перенесите их.' 
+        };
+      }
+
+      await db.delete(materialTypes).where(eq(materialTypes.id, id));
+      revalidatePath('/materials');
     }
     
     revalidatePath('/admin/inventory');
