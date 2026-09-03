@@ -7,6 +7,7 @@ import { eq, sql } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { getSession } from '@/lib/auth';
+import { collectSchema, participantSchema, updateParticipantDataSchema } from '@/lib/validations/collects';
 
 type ActionResponse = {
   success?: boolean;
@@ -53,34 +54,29 @@ export async function createCollect(
 ): Promise<ActionResponse> {
   try {
     await assertStaffManager();
-  } catch (error) {
+  } catch {
     return { error: 'Недостаточно прав для создания коллекта' };
   }
 
-  const title = formData.get('title') as string;
-  const description = (formData.get('description') as string) || '';
-  const deadlineStr = formData.get('deadline') as string;
-  const productionDate = formData.get('productionDate') as string;
-  const driveLink = (formData.get('driveLink') as string) || null;
-  const minCount = Number(formData.get('minCount'));
-  const targetSumLimit = Number(formData.get('targetSumLimit'));
+  const rawData = Object.fromEntries(formData.entries());
+  const parsed = collectSchema.safeParse(rawData);
 
-  if (!title || !deadlineStr || !productionDate || isNaN(minCount)) {
-    return { error: 'Заполнены не все обязательные поля' };
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message || 'Ошибка валидации полей' };
   }
 
   try {
     await db.insert(collects).values({
       id: crypto.randomUUID(),
-      title,
-      description,
-      deadline: new Date(deadlineStr),
-      productionDate,
-      minCount,
-      targetSumLimit: isNaN(targetSumLimit) ? 250000 : targetSumLimit,
+      title: parsed.data.title,
+      description: parsed.data.description,
+      deadline: parsed.data.deadline,
+      productionDate: parsed.data.productionDate,
+      minCount: parsed.data.minCount,
+      targetSumLimit: parsed.data.targetSumLimit,
       currentCount: 0,
       currentSum: 0,
-      driveLink,
+      driveLink: parsed.data.driveLink,
       status: 'open',
     });
   } catch (error) {
@@ -119,27 +115,18 @@ export async function addParticipant(
 ): Promise<ActionResponse> {
   try {
     await assertStaffManager();
-  } catch (error) {
+  } catch {
     return { error: 'Макетчикам запрещено добавлять участников вручную' };
   }
 
-  const collectId = formData.get('collectId') as string;
-  const nickname = formData.get('nickname') as string;
-  const email = formData.get('email') as string;
-  const vkId = (formData.get('vkId') as string) || null;
-  const telegram = (formData.get('telegram') as string) || null;
-  const layoutName = (formData.get('layoutName') as string) || null;
-  const layoutLink = (formData.get('layoutLink') as string) || null;
-  const quantity = Number(formData.get('quantity'));
-  const totalPrice = Number(formData.get('totalPrice'));
+  const rawData = Object.fromEntries(formData.entries());
+  const parsed = participantSchema.safeParse(rawData);
 
-  if (!collectId || !nickname || !email || isNaN(quantity) || isNaN(totalPrice)) {
-    return { error: 'Заполнены не все обязательные поля' };
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message || 'Ошибка валидации данных участника' };
   }
 
-  if (quantity < 10) {
-    return { error: 'Минимальный тираж — 10 шт. на макет' };
-  }
+  const { collectId, nickname, email, vkId, telegram, layoutName, layoutLink, quantity, totalPrice } = parsed.data;
 
   try {
     await db.insert(collectParticipants).values({
@@ -228,34 +215,29 @@ export async function deleteCollect(id: string): Promise<ActionResponse> {
 export async function updateParticipantData(
   participantId: string, 
   collectId: string, 
-  data: { 
-    nickname: string; 
-    email: string;
-    vkId: string | null; 
-    telegram: string | null;
-    layoutName: string | null;
-    layoutLink: string | null;
-    quantity: number; 
-    totalPrice?: number;
-  }
+  data: unknown
 ): Promise<ActionResponse> {
   const session = await assertStaff();
   const isMaker = session.role === 'maker';
 
+  const parsed = updateParticipantDataSchema.safeParse(data);
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message || 'Ошибка валидации данных' };
+  }
+
   try {
-    // Если правит макетчица — финансовое поле totalPrice игнорируется и не перетирается
     const updatePayload: Record<string, unknown> = {
-      nickname: data.nickname,
-      email: data.email,
-      vkId: data.vkId,
-      telegram: data.telegram,
-      layoutName: data.layoutName,
-      layoutLink: data.layoutLink,
-      quantity: data.quantity,
+      nickname: parsed.data.nickname,
+      email: parsed.data.email,
+      vkId: parsed.data.vkId,
+      telegram: parsed.data.telegram,
+      layoutName: parsed.data.layoutName,
+      layoutLink: parsed.data.layoutLink,
+      quantity: parsed.data.quantity,
     };
 
-    if (!isMaker && typeof data.totalPrice === 'number') {
-      updatePayload.totalPrice = data.totalPrice;
+    if (!isMaker && typeof parsed.data.totalPrice === 'number') {
+      updatePayload.totalPrice = parsed.data.totalPrice;
     }
 
     await db.update(collectParticipants)

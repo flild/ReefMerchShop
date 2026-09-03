@@ -8,6 +8,7 @@ import { getSession } from '@/lib/auth';
 import { CollectStatusBadge } from '@/components/admin/collects/CollectStatusBadge';
 import { CollectStatusManager } from '@/components/admin/collects/CollectStatusManager';
 import { calculateDiscount } from '@/lib/collects';
+import { ParticipantTableRow } from '@/components/admin/collects/ParticipantTableRow';
 
 export const dynamic = 'force-dynamic';
 
@@ -182,78 +183,27 @@ export default async function CollectDetailsAdminPage({ params }: PageProps) {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="border-b-2 border-theme-border text-theme-muted text-xs uppercase font-extrabold">
-                <th className="pb-3 px-3">Участник</th>
-                <th className="pb-3 px-3">Контакты</th>
-                <th className="pb-3 px-3">Макет</th>
-                <th className="pb-3 px-3 text-center">Тираж</th>
-                {!isMaker && <th className="pb-3 px-3 text-right">Сумма (₽)</th>}
-                <th className="pb-3 px-3 text-center">Макеты сданы</th>
-                <th className="pb-3 px-3 text-right">Статус</th>
+                <th className="pb-3 px-5">Участник</th>
+                <th className="pb-3 px-5">Контакты</th>
+                <th className="pb-3 px-5">Макет</th>
+                <th className="pb-3 px-5 text-center">Тираж</th>
+                {!isMaker && <th className="pb-3 px-5 text-right">Сумма</th>}
+                <th className="pb-3 px-5">Статус / Действия</th>
               </tr>
             </thead>
-            <tbody className="divide-y-2 divide-theme-border">
+            <tbody>
               {participants.map((item) => (
-                <tr key={item.id} className="font-bold text-sm hover:bg-theme-bg/50 transition-colors">
-                  <td className="py-4 px-3">
-                    <div className="flex flex-col">
-                      <span className="text-theme-text font-extrabold">{item.nickname}</span>
-                      <span className="text-xs text-theme-muted">{item.email}</span>
-                    </div>
-                  </td>
-                  <td className="py-4 px-3">
-                    <div className="flex flex-col text-xs text-theme-muted gap-0.5">
-                      {item.telegram && <span>TG: @{item.telegram.replace('@', '')}</span>}
-                      {item.vkId && <span>VK: {item.vkId}</span>}
-                      {!item.telegram && !item.vkId && <span>—</span>}
-                    </div>
-                  </td>
-                  <td className="py-4 px-3">
-                    <div className="flex flex-col max-w-[220px]">
-                      <span className="text-theme-text line-clamp-1">{item.layoutName || 'Без названия'}</span>
-                      {item.layoutLink ? (
-                        <a
-                          href={item.layoutLink}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-xs text-theme-highlight hover:underline font-bold mt-0.5 inline-block"
-                        >
-                          Файлы макета ↗
-                        </a>
-                      ) : (
-                        <span className="text-xs text-theme-muted">Ссылка не прикреплена</span>
-                      )}
-                    </div>
-                  </td>
-                  <td className="py-4 px-3 text-center text-theme-text font-extrabold text-base">
-                    {item.quantity} шт.
-                  </td>
-                  {!isMaker && (
-                    <td className="py-4 px-3 text-right text-theme-text font-extrabold">
-                      {item.totalPrice.toLocaleString('ru-RU')}
-                    </td>
-                  )}
-                  <td className="py-4 px-3 text-center">
-                    <span
-                      className={`inline-block px-3 py-1 rounded-full text-xs font-extrabold ${
-                        item.isLayoutsUploaded
-                          ? 'bg-theme-green-bg text-theme-green-text'
-                          : 'bg-theme-yellow-bg text-theme-yellow-text'
-                      }`}
-                    >
-                      {item.isLayoutsUploaded ? 'Готовы' : 'Ждем файлы'}
-                    </span>
-                  </td>
-                  <td className="py-4 px-3 text-right">
-                    <span className="inline-block px-3 py-1 bg-theme-bg border border-theme-border rounded-full text-xs font-extrabold text-theme-text">
-                      {item.status}
-                    </span>
-                  </td>
-                </tr>
+                <ParticipantTableRow
+                  key={item.id}
+                  participant={item}
+                  collectId={id}
+                  canViewFinances={!isMaker}
+                />
               ))}
 
               {participants.length === 0 && (
                 <tr>
-                  <td colSpan={isMaker ? 6 : 7} className="py-12 text-center text-theme-muted font-bold">
+                  <td colSpan={isMaker ? 5 : 6} className="py-12 text-center text-theme-muted font-bold">
                     В этом коллекте еще нет участников.
                   </td>
                 </tr>
