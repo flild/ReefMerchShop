@@ -6,6 +6,7 @@ import { StockUpdater } from '@/components/admin/inventory/StockUpdater';
 import { DeleteButton } from '@/components/admin/inventory/DeleteButton';
 import Link from 'next/link';
 import { Pencil } from 'lucide-react';
+import { getSession } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
@@ -59,12 +60,16 @@ interface InventoryPageProps {
 }
 
 export default async function InventoryPage({ searchParams }: InventoryPageProps) {
+  const session = await getSession();
+  const isMaker = session?.role === 'maker';
+
   const { tab } = await searchParams;
   const activeTab: InventoryTab = (tab === 'types' || tab === 'accessories' || tab === 'blanks') ? tab : 'materials';
 
   const tabs: { id: InventoryTab; label: string }[] = [
     { id: 'materials', label: 'Материалы (Форматники)' },
-    { id: 'types', label: 'Типы материалов' },
+    // Макетчице не нужен справочник системных типов
+    ...(!isMaker ? [{ id: 'types' as InventoryTab, label: 'Типы материалов' }] : []),
     { id: 'accessories', label: 'Фурнитура' },
     { id: 'blanks', label: 'Заготовки' },
   ];
@@ -88,7 +93,7 @@ export default async function InventoryPage({ searchParams }: InventoryPageProps
       .leftJoin(materialTypes, eq(materials.typeId, materialTypes.id))
       .leftJoin(materialCategories, eq(materials.categoryId, materialCategories.id))
       .orderBy(desc(materials.stock));
-  } else if (activeTab === 'types') {
+  } else if (activeTab === 'types' && !isMaker) {
     typesData = await db
       .select({
         id: materialTypes.id,
@@ -134,25 +139,29 @@ export default async function InventoryPage({ searchParams }: InventoryPageProps
           </p>
         </div>
 
-        {activeTab === 'materials' && (
-          <Link href="/admin/inventory/new" className="anime-button px-6 py-3 text-lg block text-center whitespace-nowrap">
-            + Добавить материал
-          </Link>
-        )}
-        {activeTab === 'types' && (
-          <Link href="/admin/inventory/types/new" className="anime-button px-6 py-3 text-lg block text-center whitespace-nowrap">
-            + Добавить тип
-          </Link>
-        )}
-        {activeTab === 'accessories' && (
-          <Link href="/admin/inventory/accessories/new" className="anime-button px-6 py-3 text-lg block text-center whitespace-nowrap">
-            + Добавить фурнитуру
-          </Link>
-        )}
-        {activeTab === 'blanks' && (
-          <Link href="/admin/inventory/blanks/new" className="anime-button px-6 py-3 text-lg block text-center whitespace-nowrap">
-            + Добавить заготовку
-          </Link>
+        {!isMaker && (
+          <>
+            {activeTab === 'materials' && (
+              <Link href="/admin/inventory/new" className="anime-button px-6 py-3 text-lg block text-center whitespace-nowrap">
+                + Добавить материал
+              </Link>
+            )}
+            {activeTab === 'types' && (
+              <Link href="/admin/inventory/types/new" className="anime-button px-6 py-3 text-lg block text-center whitespace-nowrap">
+                + Добавить тип
+              </Link>
+            )}
+            {activeTab === 'accessories' && (
+              <Link href="/admin/inventory/accessories/new" className="anime-button px-6 py-3 text-lg block text-center whitespace-nowrap">
+                + Добавить фурнитуру
+              </Link>
+            )}
+            {activeTab === 'blanks' && (
+              <Link href="/admin/inventory/blanks/new" className="anime-button px-6 py-3 text-lg block text-center whitespace-nowrap">
+                + Добавить заготовку
+              </Link>
+            )}
+          </>
         )}
       </header>
 
@@ -181,7 +190,7 @@ export default async function InventoryPage({ searchParams }: InventoryPageProps
                 <th className="p-5 font-extrabold">{activeTab === 'types' ? 'Slug / Описание' : 'Характеристики'}</th>
                 {activeTab !== 'types' && <th className="p-5 font-extrabold">Статус</th>}
                 {activeTab !== 'types' && <th className="p-5 font-extrabold">Остаток</th>}
-                <th className="p-5 font-extrabold text-right">Действия</th>
+                {!isMaker && <th className="p-5 font-extrabold text-right">Действия</th>}
               </tr>
             </thead>
             <tbody>
@@ -193,15 +202,23 @@ export default async function InventoryPage({ searchParams }: InventoryPageProps
                     <div className="text-theme-muted text-sm font-bold uppercase">{item.typeName || 'Без типа'}</div>
                   </td>
                   <td className="p-5"><StockBadge stock={item.stock} minStock={item.minStock} /></td>
-                  <td className="p-5"><StockUpdater id={item.id} currentStock={item.stock} type="material" /></td>
-                  <td className="p-5 text-right">
-                    <div className="flex items-center justify-end gap-2 shrink-0">
-                      <Link href={`/admin/inventory/${item.id}/edit`} className="p-2 bg-theme-bg border-2 border-theme-border rounded-full text-theme-muted hover:text-theme-highlight hover:border-theme-highlight transition-all" title="Редактировать">
-                        <Pencil className="w-5 h-5" />
-                      </Link>
-                      <DeleteButton id={item.id} type="material" />
-                    </div>
+                  <td className="p-5">
+                    {isMaker ? (
+                      <span className="font-extrabold text-theme-text px-4 py-2">{item.stock} см²</span>
+                    ) : (
+                      <StockUpdater id={item.id} currentStock={item.stock} type="material" />
+                    )}
                   </td>
+                  {!isMaker && (
+                    <td className="p-5 text-right">
+                      <div className="flex items-center justify-end gap-2 shrink-0">
+                        <Link href={`/admin/inventory/${item.id}/edit`} className="p-2 bg-theme-bg border-2 border-theme-border rounded-full text-theme-muted hover:text-theme-highlight hover:border-theme-highlight transition-all" title="Редактировать">
+                          <Pencil className="w-5 h-5" />
+                        </Link>
+                        <DeleteButton id={item.id} type="material" />
+                      </div>
+                    </td>
+                  )}
                 </tr>
               ))}
 
@@ -226,17 +243,27 @@ export default async function InventoryPage({ searchParams }: InventoryPageProps
               {activeTab === 'accessories' && accessoriesData.map((item) => (
                 <tr key={item.id} className="border-b border-theme-border/50 hover:bg-theme-bg/50 transition-colors">
                   <td className="p-5 font-extrabold text-theme-text text-lg">{item.name}</td>
-                  <td className="p-5 font-bold text-theme-text">{item.price} ₽/шт</td>
-                  <td className="p-5"><StockBadge stock={item.stock} minStock={item.minStock} /></td>
-                  <td className="p-5"><StockUpdater id={item.id} currentStock={item.stock} type="accessory" /></td>
-                  <td className="p-5 text-right">
-                    <div className="flex items-center justify-end gap-2 shrink-0">
-                      <Link href={`/admin/inventory/accessories/${item.id}/edit`} className="p-2 bg-theme-bg border-2 border-theme-border rounded-full text-theme-muted hover:text-theme-highlight hover:border-theme-highlight transition-all" title="Редактировать">
-                        <Pencil className="w-5 h-5" />
-                      </Link>
-                      <DeleteButton id={item.id} type="accessory" />
-                    </div>
+                  <td className="p-5 font-bold text-theme-text">
+                    {isMaker ? 'Фурнитура' : `${item.price} ₽/шт`}
                   </td>
+                  <td className="p-5"><StockBadge stock={item.stock} minStock={item.minStock} /></td>
+                  <td className="p-5">
+                    {isMaker ? (
+                      <span className="font-extrabold text-theme-text px-4 py-2">{item.stock} шт.</span>
+                    ) : (
+                      <StockUpdater id={item.id} currentStock={item.stock} type="accessory" />
+                    )}
+                  </td>
+                  {!isMaker && (
+                    <td className="p-5 text-right">
+                      <div className="flex items-center justify-end gap-2 shrink-0">
+                        <Link href={`/admin/inventory/accessories/${item.id}/edit`} className="p-2 bg-theme-bg border-2 border-theme-border rounded-full text-theme-muted hover:text-theme-highlight hover:border-theme-highlight transition-all" title="Редактировать">
+                          <Pencil className="w-5 h-5" />
+                        </Link>
+                        <DeleteButton id={item.id} type="accessory" />
+                      </div>
+                    </td>
+                  )}
                 </tr>
               ))}
 
@@ -248,15 +275,23 @@ export default async function InventoryPage({ searchParams }: InventoryPageProps
                     <div className="text-theme-muted text-sm font-bold">Из: {item.materialName || '—'}</div>
                   </td>
                   <td className="p-5"><StockBadge stock={item.stock} minStock={item.minStock} /></td>
-                  <td className="p-5"><StockUpdater id={item.id} currentStock={item.stock} type="blank" /></td>
-                  <td className="p-5 text-right">
-                    <div className="flex items-center justify-end gap-2 shrink-0">
-                      <Link href={`/admin/inventory/blanks/${item.id}/edit`} className="p-2 bg-theme-bg border-2 border-theme-border rounded-full text-theme-muted hover:text-theme-highlight hover:border-theme-highlight transition-all" title="Редактировать">
-                        <Pencil className="w-5 h-5" />
-                      </Link>
-                      <DeleteButton id={item.id} type="blank" />
-                    </div>
+                  <td className="p-5">
+                    {isMaker ? (
+                      <span className="font-extrabold text-theme-text px-4 py-2">{item.stock} шт.</span>
+                    ) : (
+                      <StockUpdater id={item.id} currentStock={item.stock} type="blank" />
+                    )}
                   </td>
+                  {!isMaker && (
+                    <td className="p-5 text-right">
+                      <div className="flex items-center justify-end gap-2 shrink-0">
+                        <Link href={`/admin/inventory/blanks/${item.id}/edit`} className="p-2 bg-theme-bg border-2 border-theme-border rounded-full text-theme-muted hover:text-theme-highlight hover:border-theme-highlight transition-all" title="Редактировать">
+                          <Pencil className="w-5 h-5" />
+                        </Link>
+                        <DeleteButton id={item.id} type="blank" />
+                      </div>
+                    </td>
+                  )}
                 </tr>
               ))}
 
@@ -265,7 +300,7 @@ export default async function InventoryPage({ searchParams }: InventoryPageProps
                 (activeTab === 'accessories' && accessoriesData.length === 0) ||
                 (activeTab === 'blanks' && blanksData.length === 0)) && (
                 <tr>
-                  <td colSpan={5} className="p-12 text-center text-theme-muted font-bold text-lg">
+                  <td colSpan={isMaker ? 4 : 5} className="p-12 text-center text-theme-muted font-bold text-lg">
                     В этом разделе пока ничего нет.
                   </td>
                 </tr>

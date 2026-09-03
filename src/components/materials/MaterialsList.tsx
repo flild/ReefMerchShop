@@ -144,7 +144,7 @@ function AccessoryCard({ item, index }: { item: Accessory; index: number }) {
         <div className="font-bold text-theme-highlight">
           {item.price} ₽ <span className="text-sm font-normal text-theme-muted">/ шт</span>
         </div>
-        <AccessoryStockBadge status={status} stock={stockLevel} />
+        <AccessoryStockBadge status={status}/>
       </div>
     </motion.div>
   );
@@ -165,24 +165,24 @@ function StatusBadge({ available }: { available: boolean }) {
   );
 }
 
-function AccessoryStockBadge({ status, stock }: { status: string; stock: number }) {
+function AccessoryStockBadge({ status }: { status: string }) {
   if (status === 'out_of_stock') {
     return (
       <div className="px-3 py-1 bg-theme-gray-bg text-theme-gray-text rounded-full text-xs font-black uppercase tracking-wider border-2 border-theme-border shadow-[2px_2px_0_0_var(--theme-border)] rotate-[3deg]">
-        Нет
+        Под заказ
       </div>
     );
   }
   if (status === 'low_stock') {
     return (
       <div className="px-3 py-1 bg-theme-yellow-bg text-theme-yellow-text rounded-full text-xs font-black uppercase tracking-wider border-2 border-theme-border shadow-[2px_2px_0_0_var(--theme-border)] rotate-[-2deg]">
-        Мало ({stock})
+        Заканчивается
       </div>
     );
   }
   return (
     <div className="px-3 py-1 bg-theme-green-bg text-theme-green-text rounded-full text-xs font-black uppercase tracking-wider border-2 border-theme-border shadow-[2px_2px_0_0_var(--theme-border)] rotate-[-2deg]">
-      {stock > 100 ? 'Много' : `${stock} шт`}
+      В наличии
     </div>
   );
 }

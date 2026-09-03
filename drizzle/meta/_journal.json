@@ -8,6 +8,13 @@
       "when": 1788206107740,
       "tag": "0000_sharp_christian_walker",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1788466204616,
+      "tag": "0001_cloudy_black_tarantula",
+      "breakpoints": true
     }
   ]
 }
