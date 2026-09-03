@@ -7,9 +7,10 @@ import { ROLES } from '@/config/roles';
 interface Props {
   userId: string;
   currentRole: string;
+  isSelf?: boolean;
 }
 
-export function RoleSelect({ userId, currentRole }: Props) {
+export function RoleSelect({ userId, currentRole, isSelf = false }: Props) {
   const [isPending, startTransition] = useTransition();
 
   const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -23,32 +24,39 @@ export function RoleSelect({ userId, currentRole }: Props) {
     }
 
     startTransition(async () => {
-      await updateUserRole(userId, newRole);
+      const res = await updateUserRole(userId, newRole);
+      if (res?.error) {
+        alert(res.error);
+        e.target.value = currentRole;
+      }
     });
   };
 
-  // Хак для кастомных ролей, которых пока нет в конфиге
   const options = { ...ROLES } as Record<string, string>;
   if (!options[currentRole]) {
     options[currentRole] = currentRole;
   }
 
   return (
-    <select
-      value={currentRole}
-      onChange={handleChange}
-      disabled={isPending}
-      className={`bg-theme-bg border-2 rounded-[16px] px-3 py-2 font-bold outline-none anime-shadow transition-all text-sm appearance-none cursor-pointer disabled:opacity-50 min-w-[130px] ${
-        currentRole === 'admin' ? 'border-theme-highlight text-theme-highlight' : 
-        currentRole === 'manager' ? 'border-theme-green-text text-theme-green-text' : 
-        'border-theme-border text-theme-text focus:border-theme-highlight'
-      }`}
-    >
-      {Object.entries(options).map(([key, label]) => (
-        <option key={key} value={key}>
-          {label}
-        </option>
-      ))}
-    </select>
+    <div className="relative inline-block" title={isSelf ? 'Вы не можете изменить собственную роль' : undefined}>
+      <select
+        value={currentRole}
+        onChange={handleChange}
+        disabled={isPending || isSelf}
+        className={`bg-theme-bg border-2 rounded-[16px] px-3 py-2 font-bold outline-none anime-shadow transition-all text-sm appearance-none min-w-[130px] ${
+          isSelf ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'
+        } ${
+          currentRole === 'admin' ? 'border-theme-highlight text-theme-highlight' : 
+          currentRole === 'manager' ? 'border-theme-green-text text-theme-green-text' : 
+          'border-theme-border text-theme-text focus:border-theme-highlight'
+        }`}
+      >
+        {Object.entries(options).map(([key, label]) => (
+          <option key={key} value={key}>
+            {label}
+          </option>
+        ))}
+      </select>
+    </div>
   );
 }
