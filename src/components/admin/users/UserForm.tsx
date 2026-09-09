@@ -4,6 +4,7 @@ import { useActionState, useState } from 'react';
 import { createUser } from '@/actions/admin/users';
 import { ROLES } from '@/config/roles';
 
+
 function generateRandomPassword() {
   const chars = 'abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789!@#$%';
   let pass = '';
