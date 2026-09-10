@@ -1,5 +1,5 @@
 import { db } from './index';
-import { categories, portfolioItems, materials, accessories, collects, templates, users, orders } from './schema';
+import { categories, portfolioItems, materials, materialTypes, accessories, collects, templates, users, orders } from './schema';
 import { v4 as uuidv4 } from 'uuid';
 
 async function seed() {
@@ -37,11 +37,20 @@ async function seed() {
     { id: uuidv4(), categoryId: cat1, title: 'Парные брелоки', imageUrl: 'https://picsum.photos/seed/reef6/800/800', authorName: 'Sakura' },
   ]).onConflictDoNothing();
 
+  // Material Types
+  const typeAcrylic = uuidv4();
+  const typeHolography = uuidv4();
+
+  await db.insert(materialTypes).values([
+    { id: typeAcrylic, name: 'Акрил', slug: 'acrylic' },
+    { id: typeHolography, name: 'Голография', slug: 'holography' },
+  ]).onConflictDoNothing();
+
   // Materials
   await db.insert(materials).values([
-    { id: uuidv4(), type: 'acrylic', name: 'Прозрачный 3мм', stock: 1500, pricePerCm2: 2.5, inStock: true, description: 'Универсальный материал для брелоков и стендов.' },
-    { id: uuidv4(), type: 'acrylic', name: 'Жемчужный 3мм', stock: 500, pricePerCm2: 3.5, inStock: true, description: 'Перламутровый блеск, отлично подходит для мерча.' },
-    { id: uuidv4(), type: 'holography', name: 'Битое стекло', stock: 200, pricePerCm2: 1.0, inStock: true, description: 'Голографическая пленка с эффектом осколков.' }
+    { id: uuidv4(), typeId: typeAcrylic, name: 'Прозрачный 3мм', stock: 1500, pricePerCm2: 2.5, inStock: true, description: 'Универсальный материал для брелоков и стендов.' },
+    { id: uuidv4(), typeId: typeAcrylic, name: 'Жемчужный 3мм', stock: 500, pricePerCm2: 3.5, inStock: true, description: 'Перламутровый блеск, отлично подходит для мерча.' },
+    { id: uuidv4(), typeId: typeHolography, name: 'Битое стекло', stock: 200, pricePerCm2: 1.0, inStock: true, description: 'Голографическая пленка с эффектом осколков.' }
   ]).onConflictDoNothing();
 
   // Accessories
