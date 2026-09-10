@@ -1,5 +1,5 @@
 import { db } from '@/db';
-import { materialCategories } from '@/db/schema';
+import { materialCategories, materialTypes } from '@/db/schema';
 import { MaterialForm } from '@/components/admin/inventory/MaterialForm';
 import Link from 'next/link';
 
@@ -7,6 +7,7 @@ export const dynamic = 'force-dynamic';
 
 export default async function NewMaterialPage() {
   const categories = await db.select().from(materialCategories);
+  const types = await db.select().from(materialTypes);
 
   return (
     <div className="flex flex-col gap-8">
@@ -25,7 +26,7 @@ export default async function NewMaterialPage() {
         </div>
       </header>
 
-      <MaterialForm categories={categories} />
+      <MaterialForm categories={categories} types={types} />
     </div>
   );
 }

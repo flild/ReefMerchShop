@@ -39,7 +39,11 @@ interface FormState {
   success?: boolean;
 }
 
-export function MaterialForm({ categories, types, initialData }: MaterialFormProps) {
+export function MaterialForm({ 
+  categories = [], 
+  types = [], 
+  initialData 
+}: MaterialFormProps) {
   const isEditing = Boolean(initialData?.id);
 
   const [state, formAction, isPending] = useActionState<FormState | null, FormData>(
