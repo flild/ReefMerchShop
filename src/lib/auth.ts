@@ -19,10 +19,12 @@ export async function createSession(userId: string, role: string) {
     .setExpirationTime('7d')
     .sign(secretKey);
 
+  const isHttps = process.env.APP_URL?.startsWith('https://') ?? false;
+
   const cookieStore = await cookies();
   cookieStore.set('session', token, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
+    secure: isHttps, // теперь на http:// IP-адреса кука не будет блокироваться браузером
     expires: expiresAt,
     sameSite: 'lax',
     path: '/',
