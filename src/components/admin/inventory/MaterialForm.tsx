@@ -79,7 +79,7 @@ export function MaterialForm({
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="flex flex-col gap-2">
           <div className="flex items-center justify-between ml-2 mr-2">
-            <label className="font-extrabold text-theme-text">Тип материала (Справочник)</label>
+            <label className="font-extrabold text-theme-text">Тип материала</label>
             <Link
               href="/admin/inventory?tab=types"
               target="_blank"
@@ -97,7 +97,7 @@ export function MaterialForm({
           >
             <option value="">Выберите тип...</option>
             {types.map((t) => (
-              <option key={t.id} value={t.id}>{t.name} ({t.slug})</option>
+              <option key={t.id} value={t.id}>{t.name}</option>
             ))}
           </select>
         </div>
