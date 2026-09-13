@@ -87,6 +87,20 @@ export default async function ContentAdminPage() {
         </div>
       </section>
 
+
+      {/* Секция Конструктора чек-листов */}
+      <section className="bg-theme-surface anime-border anime-shadow rounded-[40px] p-8 flex flex-col gap-6">
+        <div className="flex items-center justify-between">
+          <h2 className="text-2xl font-display font-extrabold text-theme-text">Визуальные чек-листы (Конструктор)</h2>
+          <Link href="/admin/content/checklists" className="anime-button px-6 py-3 text-sm block">
+            Управление шаблонами
+          </Link>
+        </div>
+        <p className="text-theme-muted font-bold">
+          Здесь настраиваются шаблоны для страницы генератора чек-листов (аналог Geekomania).
+        </p>
+      </section>
+
      {/* Секция Правил чеклиста */}
       <section className="bg-theme-surface anime-border anime-shadow rounded-[40px] p-8 flex flex-col gap-6">
         <div className="flex items-center justify-between">
