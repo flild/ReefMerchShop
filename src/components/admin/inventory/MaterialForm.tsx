@@ -78,7 +78,17 @@ export function MaterialForm({
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="flex flex-col gap-2">
-          <label className="font-extrabold text-theme-text ml-2">Тип материала (Справочник)</label>
+          <div className="flex items-center justify-between ml-2 mr-2">
+            <label className="font-extrabold text-theme-text">Тип материала (Справочник)</label>
+            <Link
+              href="/admin/inventory?tab=types"
+              target="_blank"
+              className="text-theme-highlight font-bold text-sm hover:underline"
+              title="Перейти к редактированию типов"
+            >
+              Редактировать
+            </Link>
+          </div>
           <select 
             name="typeId" 
             required
