@@ -67,7 +67,7 @@ export default async function InventoryPage({ searchParams }: InventoryPageProps
   const activeTab: InventoryTab = (tab === 'types' || tab === 'categories' || tab === 'accessories' || tab === 'blanks') ? tab : 'materials';
 
   const tabs: { id: InventoryTab; label: string }[] = [
-    { id: 'materials', label: 'Материалы (Форматники)' },
+    { id: 'materials', label: 'Материалы' },
     // Макетчице не нужны справочники
     ...(!isMaker ? [{ id: 'categories' as InventoryTab, label: 'Категории' }] : []),
     ...(!isMaker ? [{ id: 'types' as InventoryTab, label: 'Типы' }] : []),

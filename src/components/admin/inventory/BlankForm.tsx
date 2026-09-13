@@ -59,7 +59,7 @@ export function BlankForm({ materials, initialData }: BlankFormProps) {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="flex flex-col gap-2">
-          <label className="font-extrabold text-theme-text ml-2">Исходный материал (Форматник)</label>
+          <label className="font-extrabold text-theme-text ml-2">Исходный материал </label>
           <select 
             name="materialId" 
             required
