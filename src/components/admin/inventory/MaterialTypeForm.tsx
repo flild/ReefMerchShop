@@ -42,7 +42,7 @@ export function MaterialTypeForm({ initialData }: MaterialTypeFormProps) {
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 gap-6">
         <div className="flex flex-col gap-2">
           <label className="font-extrabold text-theme-text ml-2">Название типа</label>
           <input 
@@ -52,18 +52,6 @@ export function MaterialTypeForm({ initialData }: MaterialTypeFormProps) {
             defaultValue={initialData?.name || ''}
             placeholder="Например: Дерево"
             className="bg-theme-bg border-2 border-theme-border rounded-[20px] px-5 py-3 font-bold text-theme-text outline-none focus:border-theme-highlight anime-shadow transition-all"
-          />
-        </div>
-
-        <div className="flex flex-col gap-2">
-          <label className="font-extrabold text-theme-text ml-2">Slug (Идентификатор)</label>
-          <input 
-            type="text" 
-            name="slug" 
-            required
-            defaultValue={initialData?.slug || ''}
-            placeholder="wood"
-            className="bg-theme-bg border-2 border-theme-border rounded-[20px] px-5 py-3 font-bold text-theme-text outline-none focus:border-theme-highlight anime-shadow transition-all font-mono"
           />
         </div>
       </div>

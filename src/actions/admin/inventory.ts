@@ -1,4 +1,5 @@
 'use server';
+import { transliterate } from 'transliteration';
 
 import { db } from '@/db';
 import { materials, materialTypes, blanks, accessories } from '@/db/schema';
@@ -21,11 +22,11 @@ export async function createMaterialType(formData: FormData) {
   await checkInventoryAccess();
 
   const name = formData.get('name') as string;
-  const slug = formData.get('slug') as string;
   const description = formData.get('description') as string;
+  const slug = name ? transliterate(name).toLowerCase().trim().replace(/[^a-z0-9]/gi, '-').replace(/-+/g, '-').replace(/^-|-$/g, '') : '';
 
   if (!name || !slug) {
-    return { success: false, error: 'Название и Slug обязательны' };
+    return { success: false, error: 'Название обязательно' };
   }
 
   try {
@@ -49,11 +50,11 @@ export async function updateMaterialType(id: string, formData: FormData) {
   await checkInventoryAccess();
 
   const name = formData.get('name') as string;
-  const slug = formData.get('slug') as string;
   const description = formData.get('description') as string;
+  const slug = name ? transliterate(name).toLowerCase().trim().replace(/[^a-z0-9]/gi, '-').replace(/-+/g, '-').replace(/^-|-$/g, '') : '';
 
   if (!name || !slug) {
-    return { success: false, error: 'Название и Slug обязательны' };
+    return { success: false, error: 'Название обязательно' };
   }
 
   try {
