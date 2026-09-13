@@ -7,7 +7,7 @@ import { Trash2 } from 'lucide-react';
 
 export interface DeleteButtonProps {
   id: string;
-  type: 'material' | 'accessory' | 'blank' | 'type';
+  type: 'material' | 'accessory' | 'blank' | 'type' | 'category';
 }
 
 export function DeleteButton({ id, type }: DeleteButtonProps) {

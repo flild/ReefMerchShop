@@ -1,7 +1,11 @@
 'use server';
+import { transliterate } from 'transliteration';
 
 import { db } from '@/db';
-import { materials, materialTypes, blanks, accessories } from '@/db/schema';
+import { writeFile } from 'fs/promises';
+import { join } from 'path';
+import { mkdir } from 'fs/promises';
+import { materials, materialTypes, blanks, accessories, materialCategories } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
@@ -21,11 +25,11 @@ export async function createMaterialType(formData: FormData) {
   await checkInventoryAccess();
 
   const name = formData.get('name') as string;
-  const slug = formData.get('slug') as string;
   const description = formData.get('description') as string;
+  const slug = name ? transliterate(name).toLowerCase().trim().replace(/[^a-z0-9]/gi, '-').replace(/-+/g, '-').replace(/^-|-$/g, '') : '';
 
   if (!name || !slug) {
-    return { success: false, error: 'Название и Slug обязательны' };
+    return { success: false, error: 'Название обязательно' };
   }
 
   try {
@@ -49,11 +53,11 @@ export async function updateMaterialType(id: string, formData: FormData) {
   await checkInventoryAccess();
 
   const name = formData.get('name') as string;
-  const slug = formData.get('slug') as string;
   const description = formData.get('description') as string;
+  const slug = name ? transliterate(name).toLowerCase().trim().replace(/[^a-z0-9]/gi, '-').replace(/-+/g, '-').replace(/^-|-$/g, '') : '';
 
   if (!name || !slug) {
-    return { success: false, error: 'Название и Slug обязательны' };
+    return { success: false, error: 'Название обязательно' };
   }
 
   try {
@@ -70,6 +74,57 @@ export async function updateMaterialType(id: string, formData: FormData) {
   revalidatePath('/admin/inventory');
   revalidatePath('/materials');
   return { success: true };
+}
+
+export async function createMaterialCategory(formData: FormData) {
+  await checkInventoryAccess();
+
+  const name = formData.get('name') as string;
+  const slug = name ? transliterate(name).toLowerCase().trim().replace(/[^a-z0-9]/gi, '-').replace(/-+/g, '-').replace(/^-|-$/g, '') : '';
+
+  if (!name || !slug) {
+    return { success: false, error: 'Название обязательно' };
+  }
+
+  try {
+    await db.insert(materialCategories).values({
+      id: crypto.randomUUID(),
+      name,
+      slug: slug.toLowerCase().trim(),
+    });
+  } catch (error) {
+    console.error('Ошибка создания категории материала:', error);
+    return { success: false, error: 'Не удалось создать категорию. Возможно, Slug уже занят.' };
+  }
+
+  revalidatePath('/admin/inventory');
+  revalidatePath('/materials');
+  redirect('/admin/inventory?tab=categories');
+}
+
+export async function updateMaterialCategory(id: string, formData: FormData) {
+  await checkInventoryAccess();
+
+  const name = formData.get('name') as string;
+  const slug = name ? transliterate(name).toLowerCase().trim().replace(/[^a-z0-9]/gi, '-').replace(/-+/g, '-').replace(/^-|-$/g, '') : '';
+
+  if (!name || !slug) {
+    return { success: false, error: 'Название обязательно' };
+  }
+
+  try {
+    await db.update(materialCategories).set({
+      name,
+      slug: slug.toLowerCase().trim(),
+    }).where(eq(materialCategories.id, id));
+  } catch (error) {
+    console.error('Ошибка обновления категории материала:', error);
+    return { success: false, error: 'Не удалось обновить категорию' };
+  }
+
+  revalidatePath('/admin/inventory');
+  revalidatePath('/materials');
+  redirect('/admin/inventory?tab=categories');
 }
 
 export async function deleteMaterialType(id: string) {
@@ -109,7 +164,31 @@ export async function createMaterial(formData: FormData) {
   const typeId = formData.get('typeId') as string;
   const categoryId = formData.get('categoryId') as string;
   const description = formData.get('description') as string;
-  const imageUrl = formData.get('imageUrl') as string;
+
+  const imageFile = formData.get('imageFile') as File | null;
+  let imageUrl = null;
+
+  if (imageFile && imageFile.size > 0) {
+    const bytes = await imageFile.arrayBuffer();
+    const buffer = Buffer.from(bytes);
+
+    // Create directory if it doesn't exist
+    const uploadDir = join(process.cwd(), 'public/admin/material');
+    try {
+      await mkdir(uploadDir, { recursive: true });
+    } catch (e) {
+      // Ignore if exists
+    }
+
+    // Create unique filename
+    const ext = imageFile.name.split('.').pop() || 'png';
+    const filename = `${crypto.randomUUID()}.${ext}`;
+    const path = join(uploadDir, filename);
+
+    await writeFile(path, buffer);
+    imageUrl = `/admin/material/${filename}`;
+  }
+
   const pricePerCm2 = Number(formData.get('pricePerCm2'));
   const minStock = Number(formData.get('minStock'));
   const stock = Number(formData.get('stock'));
@@ -125,7 +204,7 @@ export async function createMaterial(formData: FormData) {
       typeId,
       categoryId: categoryId || null,
       description: description || null,
-      imageUrl: imageUrl || null,
+      imageUrl: imageUrl,
       pricePerCm2: isNaN(pricePerCm2) ? 0 : pricePerCm2,
       minStock: isNaN(minStock) ? 1000 : minStock,
       stock: isNaN(stock) ? 0 : stock,
@@ -148,7 +227,29 @@ export async function updateMaterial(id: string, formData: FormData) {
   const typeId = formData.get('typeId') as string;
   const categoryId = formData.get('categoryId') as string;
   const description = formData.get('description') as string;
-  const imageUrl = formData.get('imageUrl') as string;
+
+  const imageFile = formData.get('imageFile') as File | null;
+  let imageUrl = undefined;
+
+  if (imageFile && imageFile.size > 0) {
+    const bytes = await imageFile.arrayBuffer();
+    const buffer = Buffer.from(bytes);
+
+    const uploadDir = join(process.cwd(), 'public/admin/material');
+    try {
+      await mkdir(uploadDir, { recursive: true });
+    } catch (e) {
+      // Ignore if exists
+    }
+
+    const ext = imageFile.name.split('.').pop() || 'png';
+    const filename = `${crypto.randomUUID()}.${ext}`;
+    const path = join(uploadDir, filename);
+
+    await writeFile(path, buffer);
+    imageUrl = `/admin/material/${filename}`;
+  }
+
   const pricePerCm2 = Number(formData.get('pricePerCm2'));
   const minStock = Number(formData.get('minStock'));
   const stock = Number(formData.get('stock'));
@@ -158,17 +259,22 @@ export async function updateMaterial(id: string, formData: FormData) {
   }
 
   try {
-    await db.update(materials).set({
+    const updateData: any = {
       name,
       typeId,
       categoryId: categoryId || null,
       description: description || null,
-      imageUrl: imageUrl || null,
       pricePerCm2: isNaN(pricePerCm2) ? 0 : pricePerCm2,
       minStock: isNaN(minStock) ? 1000 : minStock,
       stock: isNaN(stock) ? 0 : stock,
       inStock: stock > 0,
-    }).where(eq(materials.id, id));
+    };
+
+    if (imageUrl !== undefined) {
+        updateData.imageUrl = imageUrl;
+    }
+
+    await db.update(materials).set(updateData).where(eq(materials.id, id));
   } catch (error) {
     console.error('Ошибка обновления материала:', error);
     return { error: 'Не удалось обновить материал' };
@@ -215,7 +321,7 @@ export async function updateStock(
 
 export async function deleteItem(
   id: string, 
-  type: 'material' | 'accessory' | 'blank' | 'type'
+  type: 'material' | 'accessory' | 'blank' | 'type' | 'category'
 ) {
   await checkInventoryAccess();
 
@@ -244,6 +350,23 @@ export async function deleteItem(
       }
 
       await db.delete(materialTypes).where(eq(materialTypes.id, id));
+      revalidatePath('/materials');
+    } else if (type === 'category') {
+      // Проверяем, привязаны ли материалы к этой категории
+      const attachedMaterials = await db
+        .select({ id: materials.id })
+        .from(materials)
+        .where(eq(materials.categoryId, id))
+        .limit(1);
+
+      if (attachedMaterials.length > 0) {
+        return {
+          success: false,
+          error: 'Нельзя удалить категорию, к которой привязаны материалы. Сначала удалите или перенесите их.'
+        };
+      }
+
+      await db.delete(materialCategories).where(eq(materialCategories.id, id));
       revalidatePath('/materials');
     }
     

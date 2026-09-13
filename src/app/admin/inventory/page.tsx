@@ -10,7 +10,7 @@ import { getSession } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
-type InventoryTab = 'materials' | 'types' | 'accessories' | 'blanks';
+type InventoryTab = 'materials' | 'types' | 'accessories' | 'blanks' | 'categories';
 
 interface MaterialRow {
   id: string;
@@ -64,18 +64,20 @@ export default async function InventoryPage({ searchParams }: InventoryPageProps
   const isMaker = session?.role === 'maker';
 
   const { tab } = await searchParams;
-  const activeTab: InventoryTab = (tab === 'types' || tab === 'accessories' || tab === 'blanks') ? tab : 'materials';
+  const activeTab: InventoryTab = (tab === 'types' || tab === 'categories' || tab === 'accessories' || tab === 'blanks') ? tab : 'materials';
 
   const tabs: { id: InventoryTab; label: string }[] = [
     { id: 'materials', label: 'Материалы (Форматники)' },
-    // Макетчице не нужен справочник системных типов
-    ...(!isMaker ? [{ id: 'types' as InventoryTab, label: 'Типы материалов' }] : []),
+    // Макетчице не нужны справочники
+    ...(!isMaker ? [{ id: 'categories' as InventoryTab, label: 'Категории' }] : []),
+    ...(!isMaker ? [{ id: 'types' as InventoryTab, label: 'Типы' }] : []),
     { id: 'accessories', label: 'Фурнитура' },
     { id: 'blanks', label: 'Заготовки' },
   ];
 
   let materialsData: MaterialRow[] = [];
   let typesData: TypeRow[] = [];
+  let categoriesData: { id: string; name: string; slug: string }[] = [];
   let accessoriesData: AccessoryRow[] = [];
   let blanksData: BlankRow[] = [];
 
@@ -103,6 +105,15 @@ export default async function InventoryPage({ searchParams }: InventoryPageProps
       })
       .from(materialTypes)
       .orderBy(materialTypes.name);
+  } else if (activeTab === 'categories' && !isMaker) {
+    categoriesData = await db
+      .select({
+        id: materialCategories.id,
+        name: materialCategories.name,
+        slug: materialCategories.slug,
+      })
+      .from(materialCategories)
+      .orderBy(materialCategories.name);
   } else if (activeTab === 'accessories') {
     accessoriesData = await db
       .select({
@@ -146,6 +157,11 @@ export default async function InventoryPage({ searchParams }: InventoryPageProps
                 + Добавить материал
               </Link>
             )}
+            {activeTab === 'categories' && (
+              <Link href="/admin/inventory/categories/new" className="anime-button px-6 py-3 text-lg block text-center whitespace-nowrap">
+                + Добавить категорию
+              </Link>
+            )}
             {activeTab === 'types' && (
               <Link href="/admin/inventory/types/new" className="anime-button px-6 py-3 text-lg block text-center whitespace-nowrap">
                 + Добавить тип
@@ -187,9 +203,9 @@ export default async function InventoryPage({ searchParams }: InventoryPageProps
             <thead>
               <tr className="border-b-2 border-theme-border text-theme-muted text-sm uppercase tracking-wider">
                 <th className="p-5 font-extrabold">Наименование</th>
-                <th className="p-5 font-extrabold">{activeTab === 'types' ? 'Slug / Описание' : 'Характеристики'}</th>
-                {activeTab !== 'types' && <th className="p-5 font-extrabold">Статус</th>}
-                {activeTab !== 'types' && <th className="p-5 font-extrabold">Остаток</th>}
+                <th className="p-5 font-extrabold">{(activeTab === 'types' || activeTab === 'categories') ? 'Slug / Описание' : 'Характеристики'}</th>
+                {(activeTab !== 'types' && activeTab !== 'categories') && <th className="p-5 font-extrabold">Статус</th>}
+                {(activeTab !== 'types' && activeTab !== 'categories') && <th className="p-5 font-extrabold">Остаток</th>}
                 {!isMaker && <th className="p-5 font-extrabold text-right">Действия</th>}
               </tr>
             </thead>
@@ -219,6 +235,24 @@ export default async function InventoryPage({ searchParams }: InventoryPageProps
                       </div>
                     </td>
                   )}
+                </tr>
+              ))}
+
+              {activeTab === 'categories' && categoriesData.map((item) => (
+                <tr key={item.id} className="border-b border-theme-border/50 hover:bg-theme-bg/50 transition-colors">
+                  <td className="p-5 font-extrabold text-theme-text text-lg">{item.name}</td>
+                  <td className="p-5">
+                    <div className="font-mono text-sm font-bold text-theme-highlight">{item.slug}</div>
+                    <div className="text-theme-muted text-sm font-bold">—</div>
+                  </td>
+                  <td className="p-5 text-right">
+                    <div className="flex items-center justify-end gap-2 shrink-0">
+                      <Link href={`/admin/inventory/categories/${item.id}/edit`} className="p-2 bg-theme-bg border-2 border-theme-border rounded-full text-theme-muted hover:text-theme-highlight hover:border-theme-highlight transition-all" title="Редактировать">
+                        <Pencil className="w-5 h-5" />
+                      </Link>
+                      <DeleteButton id={item.id} type="category" />
+                    </div>
+                  </td>
                 </tr>
               ))}
 
@@ -297,6 +331,7 @@ export default async function InventoryPage({ searchParams }: InventoryPageProps
 
               {((activeTab === 'materials' && materialsData.length === 0) ||
                 (activeTab === 'types' && typesData.length === 0) ||
+                (activeTab === 'categories' && categoriesData.length === 0) ||
                 (activeTab === 'accessories' && accessoriesData.length === 0) ||
                 (activeTab === 'blanks' && blanksData.length === 0)) && (
                 <tr>

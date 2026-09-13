@@ -1,19 +1,17 @@
-// src/components/admin/inventory/MaterialTypeForm.tsx
 'use client';
 
 import { useActionState } from 'react';
-import { createMaterialType, updateMaterialType } from '@/actions/admin/inventory';
+import { createMaterialCategory, updateMaterialCategory } from '@/actions/admin/inventory';
 import Link from 'next/link';
 
-export interface MaterialTypeFormData {
+export interface MaterialCategoryFormData {
   id: string;
   name: string;
   slug: string;
-  description: string | null;
 }
 
-interface MaterialTypeFormProps {
-  initialData?: MaterialTypeFormData;
+interface MaterialCategoryFormProps {
+  initialData?: MaterialCategoryFormData;
 }
 
 interface FormState {
@@ -21,15 +19,15 @@ interface FormState {
   success?: boolean;
 }
 
-export function MaterialTypeForm({ initialData }: MaterialTypeFormProps) {
+export function MaterialCategoryForm({ initialData }: MaterialCategoryFormProps) {
   const isEditing = Boolean(initialData?.id);
 
   const [state, formAction, isPending] = useActionState<FormState | null, FormData>(
     async (_prevState: FormState | null, formData: FormData) => {
       if (isEditing && initialData) {
-        return await updateMaterialType(initialData.id, formData);
+        return await updateMaterialCategory(initialData.id, formData);
       }
-      return await createMaterialType(formData);
+      return await createMaterialCategory(formData);
     },
     null
   );
@@ -44,39 +42,28 @@ export function MaterialTypeForm({ initialData }: MaterialTypeFormProps) {
 
       <div className="grid grid-cols-1 gap-6">
         <div className="flex flex-col gap-2">
-          <label className="font-extrabold text-theme-text ml-2">Название типа</label>
-          <input 
-            type="text" 
-            name="name" 
+          <label className="font-extrabold text-theme-text ml-2">Название категории</label>
+          <input
+            type="text"
+            name="name"
             required
             defaultValue={initialData?.name || ''}
-            placeholder="Например: Дерево"
+            placeholder="Например: Плотные"
             className="bg-theme-bg border-2 border-theme-border rounded-[20px] px-5 py-3 font-bold text-theme-text outline-none focus:border-theme-highlight anime-shadow transition-all"
           />
         </div>
       </div>
 
-      <div className="flex flex-col gap-2">
-        <label className="font-extrabold text-theme-text ml-2">Описание (Опционально)</label>
-        <textarea 
-          name="description" 
-          rows={3}
-          defaultValue={initialData?.description || ''}
-          placeholder="Краткое описание типа материалов..."
-          className="bg-theme-bg border-2 border-theme-border rounded-[20px] px-5 py-3 font-bold text-theme-text outline-none focus:border-theme-highlight anime-shadow transition-all resize-none"
-        />
-      </div>
-
       <div className="flex items-center gap-4 mt-2">
-        <button 
-          type="submit" 
+        <button
+          type="submit"
           disabled={isPending}
           className="anime-button px-8 py-3 text-lg disabled:opacity-50"
         >
-          {isPending ? 'Сохраняем...' : (isEditing ? 'Обновить тип' : 'Создать тип')}
+          {isPending ? 'Сохраняем...' : (isEditing ? 'Обновить категорию' : 'Создать категорию')}
         </button>
-        <Link 
-          href="/admin/inventory?tab=types"
+        <Link
+          href="/admin/inventory?tab=categories"
           className="px-8 py-3 rounded-full font-extrabold text-theme-muted hover:text-theme-text transition-colors"
         >
           Отмена
