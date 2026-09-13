@@ -70,6 +70,9 @@ export function MaterialForm({
           type="text" 
           name="name" 
           required
+          minLength={2}
+          maxLength={100}
+
           defaultValue={initialData?.name || ''}
           placeholder="Например: Прозрачный акрил 3мм"
           className="bg-theme-bg border-2 border-theme-border rounded-[20px] px-5 py-3 font-bold text-theme-text outline-none focus:border-theme-highlight anime-shadow transition-all"
@@ -103,7 +106,17 @@ export function MaterialForm({
         </div>
 
         <div className="flex flex-col gap-2">
-          <label className="font-extrabold text-theme-text ml-2">Категория</label>
+          <div className="flex items-center justify-between ml-2 mr-2">
+            <label className="font-extrabold text-theme-text">Категория</label>
+            <Link
+              href="/admin/inventory?tab=categories"
+              target="_blank"
+              className="text-theme-highlight font-bold text-sm hover:underline"
+              title="Перейти к редактированию категорий"
+            >
+              Редактировать
+            </Link>
+          </div>
           <select 
             name="categoryId"
             defaultValue={initialData?.categoryId || ''}
@@ -124,6 +137,7 @@ export function MaterialForm({
             type="number" 
             name="pricePerCm2" 
             step="0.01"
+
             min="0"
             required
             defaultValue={initialData?.pricePerCm2 ?? 0}
@@ -136,6 +150,7 @@ export function MaterialForm({
             type="number" 
             name="stock" 
             min="0"
+
             required
             defaultValue={initialData?.stock ?? 0}
             className="bg-theme-bg border-2 border-theme-border rounded-[20px] px-5 py-3 font-bold text-theme-text outline-none focus:border-theme-highlight anime-shadow transition-all"
@@ -147,6 +162,7 @@ export function MaterialForm({
             type="number" 
             name="minStock" 
             min="0"
+
             required
             defaultValue={initialData?.minStock ?? 1000}
             className="bg-theme-bg border-2 border-theme-border rounded-[20px] px-5 py-3 font-bold text-theme-text outline-none focus:border-theme-highlight anime-shadow transition-all"
@@ -154,15 +170,22 @@ export function MaterialForm({
         </div>
       </div>
 
-      <div className="flex flex-col gap-2">
-        <label className="font-extrabold text-theme-text ml-2">URL изображения образца</label>
-        <input 
-          type="text" 
-          name="imageUrl" 
-          defaultValue={initialData?.imageUrl || ''}
-          placeholder="https://storage.yandexcloud.net/... или /materials/acrylic.png"
-          className="bg-theme-bg border-2 border-theme-border rounded-[20px] px-5 py-3 font-bold text-theme-text outline-none focus:border-theme-highlight anime-shadow transition-all"
-        />
+        <div className="flex flex-col gap-2">
+        <label className="font-extrabold text-theme-text ml-2">Изображение образца</label>
+        <div className="flex items-center gap-4">
+          {initialData?.imageUrl && (
+            <img src={initialData.imageUrl} alt="Текущее фото" className="w-16 h-16 object-cover rounded-xl border-2 border-theme-border" />
+          )}
+          <input
+            type="file"
+            name="imageFile"
+            accept="image/*"
+            className="flex-1 bg-theme-bg border-2 border-theme-border rounded-[20px] px-5 py-3 font-bold text-theme-text outline-none focus:border-theme-highlight anime-shadow transition-all file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-extrabold file:bg-theme-highlight file:text-theme-bg hover:file:bg-theme-text transition-all cursor-pointer"
+          />
+        </div>
+        {initialData?.imageUrl && (
+          <p className="text-xs text-theme-muted ml-2 font-bold mt-1">Оставьте пустым, чтобы не менять текущее фото</p>
+        )}
       </div>
 
       <div className="flex flex-col gap-2">
@@ -170,6 +193,8 @@ export function MaterialForm({
         <textarea 
           name="description" 
           rows={3}
+          maxLength={500}
+
           defaultValue={initialData?.description || ''}
           placeholder="Краткое описание свойств, прозрачности, текстуры..."
           className="bg-theme-bg border-2 border-theme-border rounded-[20px] px-5 py-3 font-bold text-theme-text outline-none focus:border-theme-highlight anime-shadow transition-all resize-none"
