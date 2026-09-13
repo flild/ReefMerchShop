@@ -288,3 +288,34 @@ async function syncCollectTotals(collectId: string) {
     })
     .where(eq(collects.id, collectId));
 }
+
+export async function updateParticipantPrice(
+  participantId: string,
+  collectId: string,
+  totalPrice: number
+): Promise<ActionResponse> {
+  try {
+    const session = await assertStaff();
+    if (session.role === 'maker') {
+      return { error: 'Макетчикам запрещено изменять финансовые показатели' };
+    }
+
+    if (typeof totalPrice !== 'number' || isNaN(totalPrice) || totalPrice < 0) {
+      return { error: 'Некорректная сумма' };
+    }
+
+    await db
+      .update(collectParticipants)
+      .set({ totalPrice })
+      .where(eq(collectParticipants.id, participantId));
+
+    await syncCollectTotals(collectId);
+
+    revalidatePath(`/admin/collects/${collectId}`);
+    revalidatePath('/admin/collects');
+    return { success: true };
+  } catch (error) {
+    console.error('Ошибка обновления стоимости:', error);
+    return { error: error instanceof Error ? error.message : 'Не удалось обновить стоимость' };
+  }
+}
