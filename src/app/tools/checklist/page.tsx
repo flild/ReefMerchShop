@@ -1,3 +1,4 @@
+// src/app/tools/checklist/page.tsx
 import { getChecklistTemplates } from '@/actions/admin/checklists';
 import { ChecklistConstructorClient } from './ChecklistConstructorClient';
 import { Header } from '@/components/layout/Header';
@@ -16,7 +17,6 @@ export default async function ChecklistGeneratorPage() {
 
       <main className="flex-1 py-16 bg-theme-bg manga-dots">
         <div className="container mx-auto px-4 max-w-7xl relative z-10">
-          
           <nav className="flex items-center gap-2 text-sm text-theme-muted mb-8 font-medium" aria-label="Breadcrumb">
             <Link href="/" className="hover:text-theme-highlight transition-colors">Главная</Link>
             <ChevronRight size={14} />
@@ -32,7 +32,7 @@ export default async function ChecklistGeneratorPage() {
             </div>
             <h1 className="text-4xl md:text-5xl font-display font-black text-theme-text mb-6">Генератор чек-листа</h1>
             <p className="text-xl text-theme-muted font-medium leading-relaxed max-w-3xl">
-              Соберите индивидуальный чек-лист для вашего заказа. Заполните данные, загрузите картинки и получите готовый PDF.
+              Соберите индивидуальный чек-лист для вашего заказа. Заполните данные, загрузите картинки и получите готовый документ.
             </p>
           </div>
 
