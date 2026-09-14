@@ -23,11 +23,12 @@ import { toast } from 'sonner';
 
 export interface ChecklistBlock {
   id: string;
-  type: 'text' | 'textarea' | 'number' | 'radio' | 'checkbox' | 'select' | 'image' | 'file';
+  type: string;
   title: string;
   description?: string | null;
-  isRequired?: boolean;
+  isRequired?: boolean | null;
   optionsJson?: string | null;
+  [key: string]: any;
 }
 
 export interface ChecklistTemplate {
@@ -35,6 +36,7 @@ export interface ChecklistTemplate {
   title: string;
   description?: string | null;
   blocks: ChecklistBlock[];
+  [key: string]: any;
 }
 
 export function ChecklistConstructorClient({ templates }: { templates: ChecklistTemplate[] }) {
