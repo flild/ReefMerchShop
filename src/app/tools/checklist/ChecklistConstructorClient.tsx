@@ -2,7 +2,7 @@
 
 import { useState, useRef } from 'react';
 import { Download, AlertCircle, FileImage, Upload, Trash2, ChevronRight } from 'lucide-react';
-import html2canvas from 'html2canvas';
+import { toJpeg } from 'html-to-image';
 import jsPDF from 'jspdf';
 import { toast } from 'sonner';
 
@@ -29,42 +29,47 @@ export function ChecklistConstructorClient({ templates }: { templates: any[] }) 
     }
   };
 
-  const generatePDF = async () => {
-    if (!previewRef.current) return;
+const generatePDF = async () => {
+  if (!previewRef.current) return;
 
-    // Simple validation
-    if (selectedTemplate) {
-      for (const block of selectedTemplate.blocks) {
-        if (block.isRequired && !answers[block.id]) {
-          toast.error(`Поле "${block.title}" обязательно для заполнения`);
-          return;
-        }
+  if (selectedTemplate) {
+    for (const block of selectedTemplate.blocks) {
+      if (block.isRequired && !answers[block.id]) {
+        toast.error(`Поле "${block.title}" обязательно для заполнения`);
+        return;
       }
     }
+  }
 
-    setIsGenerating(true);
-    try {
-      const canvas = await html2canvas(previewRef.current, {
-        scale: 2,
-        useCORS: true,
-        backgroundColor: '#ffffff'
-      });
+  setIsGenerating(true);
+  try {
+    // Рендерим напрямую в JPEG через нативный движок браузера
+    const imgData = await toJpeg(previewRef.current, {
+      quality: 0.95,
+      backgroundColor: '#ffffff',
+      pixelRatio: 2, // заменяет scale: 2 для чёткости
+    });
 
-      const imgData = canvas.toDataURL('image/jpeg', 1.0);
-      const pdf = new jsPDF('p', 'mm', 'a4');
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+    const img = new Image();
+    img.src = imgData;
+    await new Promise((resolve) => {
+      img.onload = resolve;
+    });
 
-      pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
-      pdf.save(`checklist_${selectedTemplate?.title || 'order'}.pdf`);
-      toast.success('PDF успешно сгенерирован!');
-    } catch (err) {
-      console.error(err);
-      toast.error('Ошибка при генерации PDF');
-    } finally {
-      setIsGenerating(false);
-    }
-  };
+    const pdf = new jsPDF('p', 'mm', 'a4');
+    const pdfWidth = pdf.internal.pageSize.getWidth();
+    const pdfHeight = (img.height * pdfWidth) / img.width;
+
+    pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
+    pdf.save(`checklist_${selectedTemplate?.title || 'order'}.pdf`);
+    toast.success('PDF успешно сгенерирован!');
+  } catch (err) {
+    console.error('PDF Generation Error:', err);
+    toast.error('Ошибка при генерации PDF');
+  } finally {
+    setIsGenerating(false);
+  }
+};
 
   if (templates.length === 0) {
     return (
@@ -341,7 +346,7 @@ export function ChecklistConstructorClient({ templates }: { templates: any[] }) 
 
               {/* Footer inside PDF */}
               <div className="mt-auto pt-12 border-t-2 border-gray-200 text-center text-sm font-bold text-gray-400 uppercase tracking-widest">
-                Сгенерировано в AI Studio Applet
+                РИФ
               </div>
             </div>
           ) : (

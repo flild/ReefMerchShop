@@ -15,6 +15,13 @@
       "when": 1788466204616,
       "tag": "0001_cloudy_black_tarantula",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1789406402477,
+      "tag": "0002_cool_korvac",
+      "breakpoints": true
     }
   ]
 }
