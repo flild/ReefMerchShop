@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 import { Calculator, ShoppingBag, ArrowRight, AlertCircle } from 'lucide-react';
 
 interface Material {
@@ -284,7 +284,14 @@ export function CalculatorClient({
                 className="w-full accent-theme-accent h-3 bg-theme-surface rounded-full appearance-none outline-none anime-border shadow-sm cursor-pointer mt-2"
               />
             </div>
-            ) : <div />}
+            ) : (
+            <div className="flex flex-col justify-center bg-theme-highlight/5 border-2 border-theme-highlight/20 p-6 rounded-2xl h-full">
+               <h3 className="font-display font-black text-xl text-theme-highlight mb-2">Фиксированные параметры</h3>
+               <p className="text-theme-muted text-sm leading-relaxed font-bold">
+                 Для данного изделия размер, материал и фурнитура уже подобраны нашими технологами для достижения идеального качества. Вам остается только выбрать тираж!
+               </p>
+            </div>
+            )}
 
             {/* Тираж */}
             <div>
@@ -324,39 +331,66 @@ export function CalculatorClient({
           )}
 
           {isIndividual ? (
-             <div className="mb-6 p-4 bg-theme-accent/10 border-2 border-theme-accent/30 rounded-2xl text-theme-accent font-bold text-sm text-center">
+             <motion.div
+               initial={{ opacity: 0, height: 0 }}
+               animate={{ opacity: 1, height: 'auto' }}
+               exit={{ opacity: 0, height: 0 }}
+               className="mb-6 p-4 bg-theme-accent/10 border-2 border-theme-accent/30 rounded-2xl text-theme-accent font-bold text-sm text-center"
+             >
                Указан индивидуальный размер. Автоматический расчет недоступен — оставьте заявку, и менеджер рассчитает точную стоимость вручную.
-             </div>
+             </motion.div>
           ) : (
-            <div className="space-y-6 mb-10 text-lg font-bold text-theme-text">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="space-y-6 mb-10 text-lg font-bold text-theme-text"
+            >
               <div className="flex justify-between border-b-2 border-theme-border pb-4">
                 <span className="text-theme-muted">Материал (за шт.)</span>
                 <span>{materialCost} ₽</span>
               </div>
-              {productType === 'keychain' && (
-                <div className="flex justify-between border-b-2 border-theme-border pb-4">
-                  <span className="text-theme-muted">Фурнитура</span>
-                  <span>{accessoryCost > 0 ? `${accessoryCost} ₽` : 'Бесплатно в штучном тарифе'}</span>
-                </div>
-              )}
-              {isDoubleSided && (productType === 'keychain' || productType === 'stand') && (
-                <div className="flex justify-between border-b-2 border-theme-border pb-4">
-                  <span className="text-theme-muted">Двусторонняя печать</span>
-                  <span>+{productType === 'keychain' ? 40 : 70} ₽</span>
-                </div>
-              )}
+              <AnimatePresence>
+                {productType === 'keychain' && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0, overflow: 'hidden' }}
+                    animate={{ opacity: 1, height: 'auto', overflow: 'visible' }}
+                    exit={{ opacity: 0, height: 0, overflow: 'hidden' }}
+                    className="flex justify-between border-b-2 border-theme-border pb-4"
+                  >
+                    <span className="text-theme-muted">Фурнитура</span>
+                    <span>{accessoryCost > 0 ? `${accessoryCost} ₽` : 'Бесплатно в штучном тарифе'}</span>
+                  </motion.div>
+                )}
+                {isDoubleSided && (productType === 'keychain' || productType === 'stand') && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0, overflow: 'hidden' }}
+                    animate={{ opacity: 1, height: 'auto', overflow: 'visible' }}
+                    exit={{ opacity: 0, height: 0, overflow: 'hidden' }}
+                    className="flex justify-between border-b-2 border-theme-border pb-4"
+                  >
+                    <span className="text-theme-muted">Двусторонняя печать</span>
+                    <span>+{productType === 'keychain' ? 40 : 70} ₽</span>
+                  </motion.div>
+                )}
+              </AnimatePresence>
               <div className="flex justify-between border-b-2 border-theme-border pb-4">
                 <span className="text-theme-muted">За одну штуку</span>
                 <span className="text-xl text-theme-accent">{unitPrice} ₽</span>
               </div>
 
-              <div className="flex justify-between pt-4 items-end">
+              <div className="flex justify-between pt-4 items-end overflow-hidden">
                 <span className="text-xl text-theme-muted mb-1">Итого</span>
-                <span className="text-4xl md:text-5xl font-display font-black text-theme-text drop-shadow-sm">
+                <motion.span
+                  key={total}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="text-4xl md:text-5xl font-display font-black text-theme-text drop-shadow-sm"
+                >
                   {total.toLocaleString('ru-RU')} ₽
-                </span>
+                </motion.span>
               </div>
-            </div>
+            </motion.div>
           )}
 
           <button className="anime-button w-full py-5 text-xl flex items-center justify-center gap-3 active:scale-95">
