@@ -47,7 +47,7 @@ export function CalculatorClient({
   const { unitPrice, materialCost, accessoryCost, total, isIndividual, isSmallBatch, smallBatchMsg } = useMemo(() => {
     const numSize = Number(size) || 0;
     const numQuantity = Number(quantity) || 0;
-    
+
     let isIndividual = false;
     let isSmallBatch = false;
     let smallBatchMsg = '';
