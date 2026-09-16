@@ -331,3 +331,35 @@ export const checklistBlocksRelations = relations(
     }),
   }),
 );
+
+export const pricingTiers = sqliteTable("pricing_tiers", {
+  id: text("id").primaryKey(),
+  productType: text("product_type").notNull(), // keychain, stand
+  maxDimensionMm: integer("max_dimension_mm").notNull(),
+  materialName: text("material_name").notNull(),
+  price: integer("price").notNull(),
+  updatedAt: timestampMs("updated_at"),
+});
+
+export const pricingSpecialProducts = sqliteTable("pricing_special_products", {
+  id: text("id").primaryKey(),
+  code: text("code").notNull().unique(), // icecream_keychain, nfc_card
+  name: text("name").notNull(),
+  minWholesaleQty: integer("min_wholesale_qty").notNull(),
+  piecePrice: integer("piece_price").notNull(),
+  wholesalePrice: integer("wholesale_price").notNull(),
+});
+
+export const pricingSmallBatchRules = sqliteTable("pricing_small_batch_rules", {
+  id: text("id").primaryKey(),
+  productType: text("product_type").notNull(), // keychain, stand
+  maxDimensionMm: integer("max_dimension_mm").notNull(),
+  price: integer("price").notNull(),
+});
+
+export const pricingModifiers = sqliteTable("pricing_modifiers", {
+  id: text("id").primaryKey(),
+  code: text("code").notNull().unique(), // print_double_sided_keychain, print_double_sided_stand
+  name: text("name").notNull(),
+  price: integer("price").notNull(),
+});

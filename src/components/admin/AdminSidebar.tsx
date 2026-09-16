@@ -29,6 +29,7 @@ const navItems: NavItem[] = [
   { href: '/admin/portfolio', label: 'Портфолио', icon: ImageIcon, allowedRoles: ['admin', 'manager'] },
   { href: '/admin/content', label: 'Контент', icon: Settings, allowedRoles: ['admin', 'manager'] },
   { href: '/admin/users', label: 'Пользователи', icon: Users, allowedRoles: ['admin', 'manager'] },
+  { href: '/admin/pricing', label: 'Цены калькулятора', icon: Settings, allowedRoles: ['admin', 'manager'] },
 ];
 
 interface AdminSidebarProps {

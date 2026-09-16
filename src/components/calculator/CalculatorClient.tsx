@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 import { Calculator, ShoppingBag, ArrowRight, AlertCircle } from 'lucide-react';
 
 interface Material {
@@ -17,54 +17,143 @@ interface Accessory {
 }
 
 interface CalculatorClientProps {
-  dbMaterials: Material[];
-  dbAccessories: Accessory[];
+  dbMaterials: any[];
+  dbAccessories: any[];
+  dbPricingTiers: any[];
+  dbSpecialProducts: any[];
+  dbSmallBatchRules: any[];
+  dbModifiers: any[];
 }
 
-export function CalculatorClient({ dbMaterials, dbAccessories }: CalculatorClientProps) {
-  const [productType, setProductType] = useState<'keychain' | 'stand'>('keychain');
+function stripEmojis(str: string) {
+  return str.replace(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F700}-\u{1F77F}\u{1F780}-\u{1F7FF}\u{1F800}-\u{1F8FF}\u{1F900}-\u{1F9FF}\u{1FA00}-\u{1FA6F}\u{1FA70}-\u{1FAFF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu, '').trim();
+}
+
+export function CalculatorClient({
+  dbMaterials,
+  dbAccessories,
+  dbPricingTiers,
+  dbSpecialProducts,
+  dbSmallBatchRules,
+  dbModifiers
+}: CalculatorClientProps) {
+  const [productType, setProductType] = useState<any>('keychain');
   const [materialId, setMaterialId] = useState<string>(dbMaterials[0]?.id || '');
   const [accessoryId, setAccessoryId] = useState<string>(dbAccessories[0]?.id || '');
-  
-  // Делаем size строкой/числом, чтобы инпут не сходил с ума при стирании
   const [size, setSize] = useState<number | string>(50);
-  const [quantity, setQuantity] = useState<number | string>(50);
+  const [quantity, setQuantity] = useState<number | string>(10);
+  const [isDoubleSided, setIsDoubleSided] = useState<boolean>(false);
 
-  // Динамический расчет стоимости
-  const { unitPrice, total, materialCost, accessoryCost } = useMemo(() => {
-    const selectedMat = dbMaterials.find(m => m.id === materialId);
-    const selectedAcc = dbAccessories.find(a => a.id === accessoryId);
-
-    if (!selectedMat) return { unitPrice: 0, total: 0, materialCost: 0, accessoryCost: 0 };
-
+  const { unitPrice, materialCost, accessoryCost, total, isIndividual, isSmallBatch, smallBatchMsg } = useMemo(() => {
     const numSize = Number(size) || 0;
     const numQuantity = Number(quantity) || 0;
 
-    // Площадь в см2. Например, 50x50 мм = 2500 мм2 = 25 см2
-    let areaCm2 = (numSize * numSize) / 100;
-    
-    // Стенд обычно состоит из фигурки и базы, поэтому площадь больше
-    if (productType === 'stand') {
-      areaCm2 = areaCm2 * 1.5; 
+    let isIndividual = false;
+    let isSmallBatch = false;
+    let smallBatchMsg = '';
+
+    let mCost = 0;
+    let aCost = 0;
+    let uPrice = 0;
+    let tPrice = 0;
+
+    const selectedMat = dbMaterials.find(m => m.id === materialId) || dbMaterials[0];
+    const selectedAcc = dbAccessories.find(a => a.id === accessoryId);
+
+    // Double sided logic
+    let doubleSidedMarkup = 0;
+    if (isDoubleSided) {
+       if (productType === 'keychain') {
+          doubleSidedMarkup = dbModifiers.find((m: any) => m.code === 'print_double_sided_keychain')?.price || 40;
+       } else if (productType === 'stand') {
+          doubleSidedMarkup = dbModifiers.find((m: any) => m.code === 'print_double_sided_stand')?.price || 70;
+       }
     }
 
-    const mCost = areaCm2 * selectedMat.pricePerCm2;
-    const aCost = selectedAcc ? selectedAcc.price : 0;
-    
-    const uPrice = Math.round(mCost + aCost);
-    
+    if (productType === 'icecream_keychain') {
+      const sp = dbSpecialProducts.find((p: any) => p.code === 'icecream_keychain');
+      if (sp) {
+        if (numQuantity < sp.minWholesaleQty) {
+          isSmallBatch = true;
+          smallBatchMsg = `При заказе от ${sp.minWholesaleQty} шт цена будет ${sp.wholesalePrice} ₽/шт!`;
+          uPrice = sp.piecePrice;
+        } else {
+          uPrice = sp.wholesalePrice;
+        }
+        mCost = uPrice;
+      }
+    } else if (productType === 'nfc_card') {
+      const sp = dbSpecialProducts.find((p: any) => p.code === 'nfc_card');
+      if (sp) {
+        if (numQuantity < sp.minWholesaleQty) {
+          isSmallBatch = true;
+          uPrice = sp.piecePrice;
+        } else {
+          uPrice = sp.wholesalePrice;
+        }
+        mCost = uPrice;
+      }
+    } else {
+      // keychain and stand
+      const maxSize = productType === 'keychain' ? 80 : 200;
+      if (numSize > maxSize) {
+        isIndividual = true;
+      } else {
+        if (numQuantity < 10) {
+          isSmallBatch = true;
+          smallBatchMsg = 'При заказе до 10 шт. действует штучный тариф. От 10 шт. цена за единицу значительно выгоднее!';
+
+          // Small batch rules
+          const rule = dbSmallBatchRules
+            .filter((r: any) => r.productType === productType && r.maxDimensionMm >= numSize)
+            .sort((a: any, b: any) => a.maxDimensionMm - b.maxDimensionMm)[0];
+
+          if (rule) {
+             mCost = rule.price;
+          } else {
+             // Fallback
+             mCost = productType === 'keychain' ? 600 : (numSize <= 100 ? 800 : 1500);
+          }
+
+          if (productType === 'keychain') {
+             aCost = 0; // free accessory
+          } else {
+             aCost = selectedAcc ? selectedAcc.price : 0;
+          }
+        } else {
+          // Wholesale pricing tiers
+          const matName = selectedMat ? stripEmojis(selectedMat.name) : '';
+          const tier = dbPricingTiers
+            .filter((t: any) => t.productType === productType && t.materialName === matName && t.maxDimensionMm >= numSize)
+            .sort((a: any, b: any) => a.maxDimensionMm - b.maxDimensionMm)[0];
+
+          if (tier) {
+             mCost = tier.price;
+          } else {
+             // Fallback area calc
+             let areaCm2 = (numSize * numSize) / 100;
+             if (productType === 'stand') areaCm2 *= 1.5;
+             mCost = areaCm2 * (selectedMat?.pricePerCm2 || 0);
+          }
+          aCost = (productType === 'keychain' && selectedAcc) ? selectedAcc.price : 0;
+        }
+        uPrice = mCost + aCost + doubleSidedMarkup;
+      }
+    }
+
+    tPrice = uPrice * numQuantity;
+
     return {
       materialCost: Math.round(mCost),
       accessoryCost: aCost,
-      unitPrice: uPrice,
-      total: uPrice * numQuantity
+      unitPrice: Math.round(uPrice),
+      total: Math.round(tPrice),
+      isIndividual,
+      isSmallBatch,
+      smallBatchMsg
     };
-  }, [productType, materialId, accessoryId, size, quantity, dbMaterials, dbAccessories]);
+  }, [productType, materialId, accessoryId, size, quantity, isDoubleSided, dbMaterials, dbAccessories, dbPricingTiers, dbSpecialProducts, dbSmallBatchRules, dbModifiers]);
 
-  // Функция для очистки строки от эмодзи
-  const stripEmojis = (str: string) => {
-    return str.replace(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F700}-\u{1F77F}\u{1F780}-\u{1F7FF}\u{1F800}-\u{1F8FF}\u{1F900}-\u{1F9FF}\u{1FA00}-\u{1FA6F}\u{1FA70}-\u{1FAFF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu, '').trim();
-  };
 
   return (
     <div className="flex flex-col lg:flex-row gap-8 lg:gap-12">
@@ -95,11 +184,13 @@ export function CalculatorClient({ dbMaterials, dbAccessories }: CalculatorClien
             <div className="grid grid-cols-2 gap-4">
               {[
                 { id: 'keychain', name: 'Брелок' },
-                { id: 'stand', name: 'Стенд' }
+                { id: 'stand', name: 'Стенд' },
+                { id: 'icecream_keychain', name: 'Мороженка' },
+                { id: 'nfc_card', name: 'NFC' }
               ].map(type => (
                 <button
                   key={type.id}
-                  onClick={() => setProductType(type.id as 'keychain' | 'stand')}
+                  onClick={() => setProductType(type.id as any)}
                   className={`p-5 rounded-[24px] border-2 text-center transition-all font-bold text-lg shadow-sm ${
                     productType === type.id 
                       ? 'border-theme-accent bg-theme-accent/10 text-theme-accent shadow-[0_4px_0_0_var(--theme-btn-shadow)] -translate-y-1' 
@@ -113,24 +204,26 @@ export function CalculatorClient({ dbMaterials, dbAccessories }: CalculatorClien
           </div>
 
           {/* Материал */}
-          <div>
-            <h3 className="font-display font-black text-xl text-theme-text mb-4">Материал (Акрил)</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {dbMaterials.map(mat => (
-                <button
-                  key={mat.id}
-                  onClick={() => setMaterialId(mat.id)}
-                  className={`p-5 rounded-[24px] border-2 text-left transition-all font-bold text-lg shadow-sm flex justify-between items-center ${
-                    materialId === mat.id 
-                      ? 'border-theme-accent bg-theme-accent/10 text-theme-accent shadow-[0_4px_0_0_var(--theme-btn-shadow)] -translate-y-1' 
-                      : 'border-theme-border text-theme-muted hover:border-theme-highlight/50 hover:bg-theme-bg hover:-translate-y-1'
-                  }`}
-                >
-                  <span>{stripEmojis(mat.name)}</span>
-                </button>
-              ))}
+          {(productType === 'keychain' || productType === 'stand') && (
+            <div>
+              <h3 className="font-display font-black text-xl text-theme-text mb-4">Материал (Акрил)</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {dbMaterials.map(mat => (
+                  <button
+                    key={mat.id}
+                    onClick={() => setMaterialId(mat.id)}
+                    className={`p-5 rounded-[24px] border-2 text-left transition-all font-bold text-lg shadow-sm flex justify-between items-center ${
+                      materialId === mat.id
+                        ? 'border-theme-accent bg-theme-accent/10 text-theme-accent shadow-[0_4px_0_0_var(--theme-btn-shadow)] -translate-y-1'
+                        : 'border-theme-border text-theme-muted hover:border-theme-highlight/50 hover:bg-theme-bg hover:-translate-y-1'
+                    }`}
+                  >
+                    <span>{stripEmojis(mat.name)}</span>
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Фурнитура (Только для брелоков) */}
           <motion.div 
@@ -156,10 +249,19 @@ export function CalculatorClient({ dbMaterials, dbAccessories }: CalculatorClien
             </div>
           </motion.div>
 
+          {/* Double Sided */}
+          {(productType === 'keychain' || productType === 'stand') && (
+            <label className="flex items-center gap-3 cursor-pointer">
+              <input type="checkbox" checked={isDoubleSided} onChange={(e) => setIsDoubleSided(e.target.checked)} className="w-5 h-5 accent-theme-accent" />
+              <span className="font-bold text-theme-text">Двусторонняя печать (+{productType === 'keychain' ? 40 : 70} ₽)</span>
+            </label>
+          )}
+
           {/* Ползунки и инпуты */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-10 bg-theme-bg p-8 rounded-[32px] anime-border">
             
             {/* Гибридный контрол Размера */}
+            {(productType === 'keychain' || productType === 'stand') ? (
             <div>
               <div className="flex justify-between items-center mb-4">
                 <h3 className="font-display font-black text-xl text-theme-text">Размер</h3>
@@ -182,13 +284,21 @@ export function CalculatorClient({ dbMaterials, dbAccessories }: CalculatorClien
                 className="w-full accent-theme-accent h-3 bg-theme-surface rounded-full appearance-none outline-none anime-border shadow-sm cursor-pointer mt-2"
               />
             </div>
+            ) : (
+            <div className="flex flex-col justify-center bg-theme-highlight/5 border-2 border-theme-highlight/20 p-6 rounded-2xl h-full">
+               <h3 className="font-display font-black text-xl text-theme-highlight mb-2">Фиксированные параметры</h3>
+               <p className="text-theme-muted text-sm leading-relaxed font-bold">
+                 Для данного изделия размер, материал и фурнитура уже подобраны нашими технологами для достижения идеального качества. Вам остается только выбрать тираж!
+               </p>
+            </div>
+            )}
 
             {/* Тираж */}
             <div>
               <h3 className="font-display font-black text-xl text-theme-text mb-4">Тираж (шт)</h3>
               <input 
                 type="number" 
-                min="10" max="5000" step="1"
+                min="1" max="5000" step="1"
                 value={quantity}
                 onChange={(e) => setQuantity(e.target.value)}
                 className="w-full p-4 rounded-2xl border-2 border-theme-border focus:border-theme-accent focus:outline-none transition-colors text-center font-black text-2xl text-theme-text bg-theme-surface shadow-inner"
@@ -213,32 +323,78 @@ export function CalculatorClient({ dbMaterials, dbAccessories }: CalculatorClien
             Предварительная смета
           </h3>
 
-          <div className="space-y-6 mb-10 text-lg font-bold text-theme-text">
-            <div className="flex justify-between border-b-2 border-theme-border pb-4">
-              <span className="text-theme-muted">Материал (за шт.)</span>
-              <span>{materialCost} ₽</span>
+          {isSmallBatch && smallBatchMsg && (
+            <div className="mb-6 p-4 bg-theme-yellow-bg border-2 border-theme-yellow-text/30 rounded-2xl text-theme-yellow-text font-bold text-sm">
+              <AlertCircle className="inline-block mr-2 mb-1" size={18} />
+              {smallBatchMsg}
             </div>
-            {productType === 'keychain' && (
+          )}
+
+          {isIndividual ? (
+             <motion.div
+               initial={{ opacity: 0, height: 0 }}
+               animate={{ opacity: 1, height: 'auto' }}
+               exit={{ opacity: 0, height: 0 }}
+               className="mb-6 p-4 bg-theme-accent/10 border-2 border-theme-accent/30 rounded-2xl text-theme-accent font-bold text-sm text-center"
+             >
+               Указан индивидуальный размер. Автоматический расчет недоступен — оставьте заявку, и менеджер рассчитает точную стоимость вручную.
+             </motion.div>
+          ) : (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="space-y-6 mb-10 text-lg font-bold text-theme-text"
+            >
               <div className="flex justify-between border-b-2 border-theme-border pb-4">
-                <span className="text-theme-muted">Фурнитура</span>
-                <span>{accessoryCost > 0 ? `${accessoryCost} ₽` : 'Включено'}</span>
+                <span className="text-theme-muted">Материал (за шт.)</span>
+                <span>{materialCost} ₽</span>
               </div>
-            )}
-            <div className="flex justify-between border-b-2 border-theme-border pb-4">
-              <span className="text-theme-muted">За одну штуку</span>
-              <span className="text-xl text-theme-accent">{unitPrice} ₽</span>
-            </div>
-            
-            <div className="flex justify-between pt-4 items-end">
-              <span className="text-xl text-theme-muted mb-1">Итого</span>
-              <span className="text-4xl md:text-5xl font-display font-black text-theme-text drop-shadow-sm">
-                {total.toLocaleString('ru-RU')} ₽
-              </span>
-            </div>
-          </div>
+              <AnimatePresence>
+                {productType === 'keychain' && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0, overflow: 'hidden' }}
+                    animate={{ opacity: 1, height: 'auto', overflow: 'visible' }}
+                    exit={{ opacity: 0, height: 0, overflow: 'hidden' }}
+                    className="flex justify-between border-b-2 border-theme-border pb-4"
+                  >
+                    <span className="text-theme-muted">Фурнитура</span>
+                    <span>{accessoryCost > 0 ? `${accessoryCost} ₽` : 'Бесплатно'}</span>
+                  </motion.div>
+                )}
+                {isDoubleSided && (productType === 'keychain' || productType === 'stand') && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0, overflow: 'hidden' }}
+                    animate={{ opacity: 1, height: 'auto', overflow: 'visible' }}
+                    exit={{ opacity: 0, height: 0, overflow: 'hidden' }}
+                    className="flex justify-between border-b-2 border-theme-border pb-4"
+                  >
+                    <span className="text-theme-muted">Двусторонняя печать</span>
+                    <span>+{productType === 'keychain' ? 40 : 70} ₽</span>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+              <div className="flex justify-between border-b-2 border-theme-border pb-4">
+                <span className="text-theme-muted">За одну штуку</span>
+                <span className="text-xl text-theme-accent">{unitPrice} ₽</span>
+              </div>
+
+              <div className="flex justify-between pt-4 items-end overflow-hidden">
+                <span className="text-xl text-theme-muted mb-1">Итого</span>
+                <motion.span
+                  key={total}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="text-4xl md:text-5xl font-display font-black text-theme-text drop-shadow-sm"
+                >
+                  {total.toLocaleString('ru-RU')} ₽
+                </motion.span>
+              </div>
+            </motion.div>
+          )}
 
           <button className="anime-button w-full py-5 text-xl flex items-center justify-center gap-3 active:scale-95">
-            Перейти к оформлению <ArrowRight size={24} strokeWidth={3} />
+            {isIndividual ? 'Отправить на расчет менеджеру' : 'Перейти к оформлению'} <ArrowRight size={24} strokeWidth={3} />
           </button>
 
           <p className="mt-6 text-center font-bold text-theme-muted text-sm leading-relaxed">

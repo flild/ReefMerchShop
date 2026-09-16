@@ -89,57 +89,28 @@
 
 /* 2. Скармливаем переменные Tailwind v4 */
 @theme {
-  /* Хардкодные референсные цвета бренда (использовать редко, в основном для лого или градиентов) */
+  /* Хардкодные референсные цвета бренда */
   --color-reef-dark: #093f8e;
   --color-reef-blue: #2a8bf2;
   --color-reef-cyan: #4bd3e5;
   --color-reef-light: #e6f6fb;
   --color-reef-white: #FFFFFF;
   
-  /* === ОСНОВНЫЕ СЕМАНТИЧЕСКИЕ КЛАССЫ (ИСПОЛЬЗОВАТЬ ИСКЛЮЧИТЕЛЬНО ИХ ВМЕСТО bg-blue-500 и т.д.) === */
-  
-  /* Фоны: bg-theme-bg, bg-theme-surface */
+  /* Фоны */
   --color-theme-bg: var(--theme-bg-main);
   --color-theme-surface: var(--theme-bg-surface);
   
-  /* Текст: text-theme-text, text-theme-muted */
+  /* Текст */
   --color-theme-text: var(--theme-text-main);
   --color-theme-muted: var(--theme-text-muted);
   
-  /* Обводки: border-theme-border */
+  /* Обводки и акценты */
   --color-theme-border: var(--theme-border);
-  
-  /* Акценты: bg-theme-accent, text-theme-highlight */
   --color-theme-accent: var(--theme-btn-bg);
   --color-theme-highlight: var(--theme-highlight);
 
-  /* Статусы (для бейджей): bg-theme-green-bg, text-theme-green-text и т.д. */
-  --color-theme-green-bg: var(--theme-status-green-bg/* Кастомный скроллбар под стиль типографии РИФ */
-* {
-  scrollbar-width: thin;
-  scrollbar-color: var(--theme-highlight) transparent;
-}
-
-::-webkit-scrollbar {
-  width: 7px;
-  height: 7px;
-}
-
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-::-webkit-scrollbar-thumb {
-  background-color: var(--theme-border);
-  border-radius: 9999px;
-  border: 1px solid transparent;
-  background-clip: padding-box;
-  transition: background-color 0.2s ease;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background-color: var(--theme-highlight);
-});
+  /* Статусы */
+  --color-theme-green-bg: var(--theme-status-green-bg);
   --color-theme-green-text: var(--theme-status-green-text);
   --color-theme-yellow-bg: var(--theme-status-yellow-bg);
   --color-theme-yellow-text: var(--theme-status-yellow-text);
