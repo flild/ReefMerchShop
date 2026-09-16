@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from 'react';
 import { toast } from 'sonner';
+import { Check, Save } from 'lucide-react';
 import {
   updatePricingTierAction,
   updateSpecialProductPriceAction,
@@ -10,6 +11,54 @@ import {
   updateAccessoryPriceAction
 } from '@/actions/admin/pricing';
 
+function EditablePriceInput({
+  initialValue,
+  onSave
+}: {
+  initialValue: number;
+  onSave: (value: string) => Promise<void>;
+}) {
+  const [value, setValue] = useState(initialValue.toString());
+  const [isPending, startTransition] = useTransition();
+  const [isSaved, setIsSaved] = useState(false);
+
+  const handleBlur = () => {
+    if (value === initialValue.toString()) return;
+
+    startTransition(async () => {
+      await onSave(value);
+      setIsSaved(true);
+      setTimeout(() => setIsSaved(false), 2000);
+    });
+  };
+
+  return (
+    <div className="relative flex items-center">
+      <input
+        type="number"
+        value={value}
+        onChange={(e) => setValue(e.target.value)}
+        onBlur={handleBlur}
+        disabled={isPending}
+        className={`w-full p-2 pr-8 rounded-lg border-2 bg-theme-bg font-bold transition-colors ${
+          isSaved
+            ? 'border-green-500/50 focus:border-green-500 text-green-600'
+            : 'border-theme-border focus:border-theme-accent text-theme-text'
+        } ${isPending ? 'opacity-50' : ''}`}
+      />
+      <div className="absolute right-2 flex items-center pointer-events-none">
+        {isPending ? (
+          <div className="w-4 h-4 rounded-full border-2 border-theme-accent border-t-transparent animate-spin" />
+        ) : isSaved ? (
+          <Check size={16} className="text-green-500" strokeWidth={3} />
+        ) : (
+          value !== initialValue.toString() && <Save size={16} className="text-theme-accent opacity-50" />
+        )}
+      </div>
+    </div>
+  );
+}
+
 export function PricingClient({
   initialPricingTiers,
   initialSpecialProducts,
@@ -17,73 +66,68 @@ export function PricingClient({
   initialModifiers,
   initialAccessories,
 }: any) {
-  const [isPending, startTransition] = useTransition();
 
-  const handleUpdateTier = (id: string, value: string) => {
+
+  const handleUpdateTier = async (id: string, value: string) => {
     const price = parseInt(value, 10);
     if (isNaN(price)) return;
-    startTransition(async () => {
-      try {
-        await updatePricingTierAction(id, price);
-        toast.success('Цена обновлена');
-      } catch (error) {
-        toast.error('Ошибка при обновлении цены');
-      }
-    });
+    try {
+      await updatePricingTierAction(id, price);
+      toast.success('Цена обновлена');
+    } catch (error) {
+      toast.error('Ошибка при обновлении цены');
+      throw error;
+    }
   };
 
-  const handleUpdateSpecialProduct = (id: string, piecePrice: string, wholesalePrice: string) => {
+  const handleUpdateSpecialProduct = async (id: string, piecePrice: string, wholesalePrice: string) => {
     const pPrice = parseInt(piecePrice, 10);
     const wPrice = parseInt(wholesalePrice, 10);
     if (isNaN(pPrice) || isNaN(wPrice)) return;
 
-    startTransition(async () => {
-      try {
-        await updateSpecialProductPriceAction(id, { piecePrice: pPrice, wholesalePrice: wPrice });
-        toast.success('Цены спец-изделия обновлены');
-      } catch (error) {
-        toast.error('Ошибка при обновлении');
-      }
-    });
+    try {
+      await updateSpecialProductPriceAction(id, { piecePrice: pPrice, wholesalePrice: wPrice });
+      toast.success('Цены спец-изделия обновлены');
+    } catch (error) {
+      toast.error('Ошибка при обновлении');
+      throw error;
+    }
   };
 
-  const handleUpdateSmallBatchRule = (id: string, value: string) => {
+  const handleUpdateSmallBatchRule = async (id: string, value: string) => {
     const price = parseInt(value, 10);
     if (isNaN(price)) return;
-    startTransition(async () => {
-      try {
-        await updateSmallBatchRuleAction(id, price);
-        toast.success('Цена штучного тарифа обновлена');
-      } catch (error) {
-        toast.error('Ошибка при обновлении');
-      }
-    });
+    try {
+      await updateSmallBatchRuleAction(id, price);
+      toast.success('Цена штучного тарифа обновлена');
+    } catch (error) {
+      toast.error('Ошибка при обновлении');
+      throw error;
+    }
   };
 
-  const handleUpdateModifier = (id: string, value: string) => {
+  const handleUpdateModifier = async (id: string, value: string) => {
     const price = parseInt(value, 10);
     if (isNaN(price)) return;
-    startTransition(async () => {
-      try {
-        await updateModifierPriceAction(id, price);
-        toast.success('Цена опции обновлена');
-      } catch (error) {
-        toast.error('Ошибка при обновлении');
-      }
-    });
+    try {
+      await updateModifierPriceAction(id, price);
+      toast.success('Цена опции обновлена');
+    } catch (error) {
+      toast.error('Ошибка при обновлении');
+      throw error;
+    }
   };
 
-  const handleUpdateAccessory = (id: string, value: string) => {
+  const handleUpdateAccessory = async (id: string, value: string) => {
     const price = parseInt(value, 10);
     if (isNaN(price)) return;
-    startTransition(async () => {
-      try {
-        await updateAccessoryPriceAction(id, price);
-        toast.success('Цена фурнитуры обновлена');
-      } catch (error) {
-        toast.error('Ошибка при обновлении');
-      }
-    });
+    try {
+      await updateAccessoryPriceAction(id, price);
+      toast.success('Цена фурнитуры обновлена');
+    } catch (error) {
+      toast.error('Ошибка при обновлении');
+      throw error;
+    }
   };
 
   const renderTierTable = (productType: string, title: string) => {
@@ -113,11 +157,9 @@ export function PricingClient({
                     return (
                       <td key={m} className="p-2">
                         {tier ? (
-                          <input
-                            type="number"
-                            defaultValue={tier.price}
-                            onBlur={(e) => handleUpdateTier(tier.id, e.target.value)}
-                            className="w-24 p-2 rounded-lg border-2 border-theme-border bg-theme-bg text-theme-text font-bold"
+                          <EditablePriceInput
+                            initialValue={tier.price}
+                            onSave={async (val) => await handleUpdateTier(tier.id, val)}
                           />
                         ) : (
                           '-'
@@ -148,20 +190,16 @@ export function PricingClient({
               <div className="flex gap-4">
                 <div>
                   <label className="text-sm text-theme-muted block mb-1">Штучно</label>
-                  <input
-                    type="number"
-                    defaultValue={p.piecePrice}
-                    onBlur={(e) => handleUpdateSpecialProduct(p.id, e.target.value, p.wholesalePrice.toString())}
-                    className="w-full p-2 rounded-lg border-2 border-theme-border bg-theme-bg font-bold"
+                  <EditablePriceInput
+                    initialValue={p.piecePrice}
+                    onSave={async (val) => await handleUpdateSpecialProduct(p.id, val, p.wholesalePrice.toString())}
                   />
                 </div>
                 <div>
                   <label className="text-sm text-theme-muted block mb-1">Опт (от {p.minWholesaleQty} шт)</label>
-                  <input
-                    type="number"
-                    defaultValue={p.wholesalePrice}
-                    onBlur={(e) => handleUpdateSpecialProduct(p.id, p.piecePrice.toString(), e.target.value)}
-                    className="w-full p-2 rounded-lg border-2 border-theme-border bg-theme-bg font-bold"
+                  <EditablePriceInput
+                    initialValue={p.wholesalePrice}
+                    onSave={async (val) => await handleUpdateSpecialProduct(p.id, p.piecePrice.toString(), val)}
                   />
                 </div>
               </div>
@@ -176,11 +214,9 @@ export function PricingClient({
           {initialSmallBatchRules.map((rule: any) => (
             <div key={rule.id} className="p-4 border-2 border-theme-border rounded-xl">
               <h3 className="font-bold">{rule.productType === 'keychain' ? 'Брелок' : 'Стенд'} до {rule.maxDimensionMm} мм</h3>
-              <input
-                type="number"
-                defaultValue={rule.price}
-                onBlur={(e) => handleUpdateSmallBatchRule(rule.id, e.target.value)}
-                className="w-full mt-2 p-2 rounded-lg border-2 border-theme-border bg-theme-bg font-bold"
+              <EditablePriceInput
+                initialValue={rule.price}
+                onSave={async (val) => await handleUpdateSmallBatchRule(rule.id, val)}
               />
             </div>
           ))}
@@ -193,11 +229,9 @@ export function PricingClient({
           {initialModifiers.map((mod: any) => (
             <div key={mod.id} className="p-4 border-2 border-theme-border rounded-xl">
               <h3 className="font-bold">{mod.name}</h3>
-              <input
-                type="number"
-                defaultValue={mod.price}
-                onBlur={(e) => handleUpdateModifier(mod.id, e.target.value)}
-                className="w-full mt-2 p-2 rounded-lg border-2 border-theme-border bg-theme-bg font-bold"
+              <EditablePriceInput
+                initialValue={mod.price}
+                onSave={async (val) => await handleUpdateModifier(mod.id, val)}
               />
             </div>
           ))}
@@ -210,11 +244,9 @@ export function PricingClient({
           {initialAccessories.map((acc: any) => (
             <div key={acc.id} className="p-4 border-2 border-theme-border rounded-xl">
               <h3 className="font-bold text-sm truncate">{acc.name}</h3>
-              <input
-                type="number"
-                defaultValue={acc.price}
-                onBlur={(e) => handleUpdateAccessory(acc.id, e.target.value)}
-                className="w-full mt-2 p-2 rounded-lg border-2 border-theme-border bg-theme-bg font-bold"
+              <EditablePriceInput
+                initialValue={acc.price}
+                onSave={async (val) => await handleUpdateAccessory(acc.id, val)}
               />
             </div>
           ))}
