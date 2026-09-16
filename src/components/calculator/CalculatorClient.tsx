@@ -359,7 +359,7 @@ export function CalculatorClient({
                     className="flex justify-between border-b-2 border-theme-border pb-4"
                   >
                     <span className="text-theme-muted">Фурнитура</span>
-                    <span>{accessoryCost > 0 ? `${accessoryCost} ₽` : 'Бесплатно в штучном тарифе'}</span>
+                    <span>{accessoryCost > 0 ? `${accessoryCost} ₽` : 'Бесплатно'}</span>
                   </motion.div>
                 )}
                 {isDoubleSided && (productType === 'keychain' || productType === 'stand') && (
