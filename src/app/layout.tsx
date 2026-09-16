@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import { ThemeProvider } from '@/components/ThemeProvider';
+import { Toaster } from 'sonner'; 
 
 const themeInitScript = `
   try {
@@ -76,6 +77,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="antialiased min-h-screen bg-theme-bg text-theme-text font-sans selection:bg-reef-cyan selection:text-white" suppressHydrationWarning>
         <ThemeProvider>
           {children}
+          <Toaster richColors position="bottom-center" />
         </ThemeProvider>
       </body>
     </html>

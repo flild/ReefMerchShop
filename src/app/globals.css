@@ -114,7 +114,32 @@
   --color-theme-highlight: var(--theme-highlight);
 
   /* Статусы (для бейджей): bg-theme-green-bg, text-theme-green-text и т.д. */
-  --color-theme-green-bg: var(--theme-status-green-bg);
+  --color-theme-green-bg: var(--theme-status-green-bg/* Кастомный скроллбар под стиль типографии РИФ */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--theme-highlight) transparent;
+}
+
+::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: var(--theme-border);
+  border-radius: 9999px;
+  border: 1px solid transparent;
+  background-clip: padding-box;
+  transition: background-color 0.2s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: var(--theme-highlight);
+});
   --color-theme-green-text: var(--theme-status-green-text);
   --color-theme-yellow-bg: var(--theme-status-yellow-bg);
   --color-theme-yellow-text: var(--theme-status-yellow-text);
@@ -124,6 +149,33 @@
   /* Шрифты */
   --font-sans: 'Nunito', system-ui, sans-serif;
   --font-display: 'M PLUS Rounded 1c', 'Nunito', system-ui, sans-serif;
+}
+
+/* Кастомный скроллбар под стиль типографии РИФ */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--theme-highlight) transparent;
+}
+
+::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: var(--theme-border);
+  border-radius: 9999px;
+  border: 1px solid transparent;
+  background-clip: padding-box;
+  transition: background-color 0.2s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: var(--theme-highlight);
 }
 
 /* 3. Чистые утилиты без дублирования */
