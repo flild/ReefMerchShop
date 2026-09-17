@@ -3,7 +3,7 @@ import { db } from '@/db';
 import { portfolioItems, materials } from '@/db/schema';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = 'https://reef.studio'; // TODO: Замени на свой домен
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://reef.studio';
 
   // Статичные маршруты
   const staticRoutes = [
