@@ -7,6 +7,6 @@ export default function robots(): MetadataRoute.Robots {
       allow: '/',
       disallow: ['/admin/', '/profile/', '/api/'],
     },
-    sitemap: 'https://reef.studio/sitemap.xml', // TODO: Замени домен
+    sitemap: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://reef.studio'}/sitemap.xml`,
   };
 }

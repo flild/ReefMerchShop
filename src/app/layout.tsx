@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import { ThemeProvider } from '@/components/ThemeProvider';
 import { Toaster } from 'sonner'; 
+import { Analytics } from '@/components/layout/Analytics';
 
 const themeInitScript = `
   try {
@@ -84,6 +85,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           {children}
           <Toaster richColors position="bottom-center" />
         </ThemeProvider>
+        <Analytics />
       </body>
     </html>
   );
