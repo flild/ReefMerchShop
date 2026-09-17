@@ -104,6 +104,7 @@ export const orders = sqliteTable("orders", {
   status: text("status").notNull().default("new"),
   total: integer("total").notNull().default(0),
   detailsJson: text("details_json").notNull().default("{}"),
+  deadline: timestampMs("deadline"),
   createdAt: timestampMs("created_at"),
 });
 
