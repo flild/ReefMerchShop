@@ -1,7 +1,7 @@
 import { Metadata } from 'next';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
-import { JsonLd } from '@/components/seo/JsonLd';
+import { BreadcrumbJsonLd } from '@/components/seo/JsonLd';
 import { CalculatorClient } from '@/components/calculator/CalculatorClient';
 
 import { db } from '@/db';
@@ -16,10 +16,16 @@ import {
 import { eq } from 'drizzle-orm';
 
 export const metadata: Metadata = {
-  title: 'Калькулятор заказа',
-  description: 'Точный расчет стоимости производства мерча: акриловые брелоки, стенды. Выбор материалов, фурнитуры и тиража.',
+  title: 'Калькулятор стоимости мерча | Цены на печать',
+  description: 'Онлайн калькулятор расчета стоимости печати акриловых брелоков и стендов. Узнайте цену на производство мерча за пару кликов.',
   alternates: {
-    canonical: `${process.env.NEXT_PUBLIC_SITE_URL}/calculator`,
+    canonical: '/calculator',
+  },
+  openGraph: {
+    title: 'Калькулятор стоимости печати мерча | Типография РИФ',
+    description: 'Интерактивный калькулятор: выберите материал, размер и тираж для точного расчета стоимости производства.',
+    url: '/calculator',
+    type: 'website',
   },
 };
 
@@ -64,7 +70,10 @@ export default async function CalculatorPage() {
 
   return (
     <div className="min-h-screen flex flex-col font-sans bg-theme-bg">
-      <JsonLd />
+      <BreadcrumbJsonLd items={[
+        { name: "Главная", item: "/" },
+        { name: "Калькулятор", item: "/calculator" }
+      ]} />
       <Header />
 
       <main className="flex-1 py-16 manga-dots">

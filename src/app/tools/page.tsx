@@ -2,13 +2,20 @@ import { Metadata } from 'next';
 import Link from 'next/link';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
+import { BreadcrumbJsonLd } from '@/components/seo/JsonLd';
 import { CheckSquare, MonitorPlay, FileSearch, ArrowRight, Sparkles, ChevronRight } from 'lucide-react';
 
 export const metadata: Metadata = {
-  title: 'Инструменты | Reef',
-  description: 'Полезные утилиты для подготовки макетов. Генератор мокапов, чек-листы и валидатор.',
+  title: 'Инструменты для подготовки макетов к печати | РИФ',
+  description: 'Бесплатные утилиты для художников: генератор мокапов мерча, чек-листы проверки макетов и инструменты валидации от типографии РИФ.',
   alternates: {
-    canonical: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://reef.ru'}/tools`,
+    canonical: '/tools',
+  },
+  openGraph: {
+    title: 'Инструменты для художников | Типография РИФ',
+    description: 'Генератор мокапов, чек-листы и другие полезные инструменты для правильной подготовки макетов.',
+    url: '/tools',
+    type: 'website',
   },
 };
 
@@ -40,21 +47,12 @@ const tools = [
 ];
 
 export default function ToolsIndexPage() {
-  const breadcrumbData = {
-    "@context": "https://schema.org",
-    "@type": "BreadcrumbList",
-    "itemListElement": [
-      { "@type": "ListItem", "position": 1, "name": "Главная", "item": "https://reef.ru/" },
-      { "@type": "ListItem", "position": 2, "name": "Инструменты", "item": "https://reef.ru/tools" }
-    ]
-  };
-
   return (
     <div className="min-h-screen flex flex-col font-sans">
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbData) }}
-      />
+      <BreadcrumbJsonLd items={[
+        { name: "Главная", item: "/" },
+        { name: "Инструменты", item: "/tools" }
+      ]} />
       <Header />
 
       <main className="flex-1 py-24 bg-theme-bg manga-dots">
