@@ -2,6 +2,7 @@ import { Metadata } from 'next';
 import Link from 'next/link';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
+import { BreadcrumbJsonLd } from '@/components/seo/JsonLd';
 import { Download, FileDown, Layers, Sparkles, ChevronRight } from 'lucide-react';
 import { db } from '@/db';
 import { templates } from '@/db/schema';
@@ -9,10 +10,16 @@ import { templates } from '@/db/schema';
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
-  title: 'Шаблоны',
-  description: 'Скачайте шаблоны для подготовки макетов к печати. PSD, AI, PDF форматы для акриловых брелоков и стендов.',
+  title: 'Шаблоны для печати мерча | Скачать мокапы',
+  description: 'Скачайте бесплатные шаблоны (PSD, AI, PDF) для правильной подготовки макетов акриловых брелоков и стендов к печати.',
   alternates: {
-    canonical: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://reef.ru'}/templates`,
+    canonical: '/templates',
+  },
+  openGraph: {
+    title: 'Шаблоны макетов для типографии | РИФ',
+    description: 'Официальные шаблоны и мокапы для правильной подготовки файлов к печати в типографии РИФ.',
+    url: '/templates',
+    type: 'website',
   },
 };
 
@@ -53,21 +60,12 @@ export default async function TemplatesPage() {
   const displayTemplates = templatesData.length > 0 ? templatesData : mockTemplates;
 
   // SEO микроразметка
-  const breadcrumbData = {
-    "@context": "https://schema.org",
-    "@type": "BreadcrumbList",
-    "itemListElement": [
-      { "@type": "ListItem", "position": 1, "name": "Главная", "item": "https://reef.ru/" },
-      { "@type": "ListItem", "position": 2, "name": "Шаблоны", "item": "https://reef.ru/templates" }
-    ]
-  };
-
   return (
     <div className="min-h-screen flex flex-col font-sans">
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbData) }}
-      />
+      <BreadcrumbJsonLd items={[
+        { name: "Главная", item: "/" },
+        { name: "Шаблоны", item: "/templates" }
+      ]} />
       <Header />
 
       <main className="flex-1 py-24 bg-theme-bg manga-dots">

@@ -3,16 +3,23 @@ import Link from 'next/link';
 import { Sparkles, ChevronRight } from 'lucide-react';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
+import { BreadcrumbJsonLd } from '@/components/seo/JsonLd';
 import { db } from '@/db';
 import { collects } from '@/db/schema';
 import { desc } from 'drizzle-orm';
 import { CollectsList } from '@/components/collects/CollectsList';
 
 export const metadata: Metadata = {
-  title: 'Коллекты',
-  description: 'Совместные заказы для снижения стоимости производства мерча. Объединяйтесь с другими авторами!',
+  title: 'Коллекты | Совместные закупки мерча',
+  description: 'Присоединяйтесь к совместным закупкам (коллектам) мерча в типографии РИФ. Дешевая печать брелоков и стендов за счет объединения тиражей художников.',
   alternates: {
-    canonical: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://reef.ru'}/collects`,
+    canonical: '/collects',
+  },
+  openGraph: {
+    title: 'Коллекты мерча | Совместные заказы | Типография РИФ',
+    description: 'Объединяйтесь с другими художниками для производства мерча. Больше тираж — ниже стоимость! Акриловые брелоки, стенды, значки.',
+    url: '/collects',
+    type: 'website',
   },
 };
 
@@ -22,21 +29,12 @@ export default async function CollectsPage() {
     .from(collects)
     .orderBy(desc(collects.deadline));
 
-  const breadcrumbData = {
-    "@context": "https://schema.org",
-    "@type": "BreadcrumbList",
-    "itemListElement": [
-      { "@type": "ListItem", "position": 1, "name": "Главная", "item": "https://reef.ru/" },
-      { "@type": "ListItem", "position": 2, "name": "Коллекты", "item": "https://reef.ru/collects" }
-    ]
-  };
-
   return (
     <div className="min-h-screen flex flex-col font-sans">
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbData) }}
-      />
+      <BreadcrumbJsonLd items={[
+        { name: "Главная", item: "/" },
+        { name: "Коллекты", item: "/collects" }
+      ]} />
       <Header />
 
       <main className="flex-1 py-24 bg-theme-bg manga-dots">

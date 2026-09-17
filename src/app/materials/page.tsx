@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { ChevronRight, Sparkles } from 'lucide-react';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
+import { BreadcrumbJsonLd } from '@/components/seo/JsonLd';
 import { db } from '@/db';
 import { materials, materialTypes, accessories } from '@/db/schema';
 import { eq } from 'drizzle-orm';
@@ -12,10 +13,16 @@ import { MaterialsList, MaterialGroup } from '@/components/materials/MaterialsLi
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
-  title: 'Материалы и наличие',
-  description: 'Каталог акрила и фурнитуры для производства мерча. Актуальное наличие обновляется автоматически.',
+  title: 'Материалы для печати мерча | Наличие акрила и фурнитуры',
+  description: 'Каталог материалов типографии РИФ. Актуальное наличие прозрачного, голографического и цветного акрила, а также фурнитуры для брелоков.',
   alternates: {
-    canonical: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://reef.ru'}/materials`,
+    canonical: '/materials',
+  },
+  openGraph: {
+    title: 'Каталог материалов для мерча | Типография РИФ',
+    description: 'Огромный выбор акрила (голография, глиттер, цветной) и фурнитуры для создания уникальных брелоков и стендов.',
+    url: '/materials',
+    type: 'website',
   },
 };
 
@@ -34,21 +41,12 @@ export default async function MaterialsPage() {
     }))
     .filter((group) => group.items.length > 0);
 
-  const breadcrumbData = {
-    "@context": "https://schema.org",
-    "@type": "BreadcrumbList",
-    "itemListElement": [
-      { "@type": "ListItem", "position": 1, "name": "Главная", "item": "https://reef.ru/" },
-      { "@type": "ListItem", "position": 2, "name": "Материалы", "item": "https://reef.ru/materials" }
-    ]
-  };
-
   return (
     <div className="min-h-screen flex flex-col font-sans">
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbData) }}
-      />
+      <BreadcrumbJsonLd items={[
+        { name: "Главная", item: "/" },
+        { name: "Материалы", item: "/materials" }
+      ]} />
       <Header />
 
       <main className="flex-1 py-24 bg-theme-bg manga-dots">

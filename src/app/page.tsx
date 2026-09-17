@@ -1,6 +1,6 @@
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
-import { JsonLd } from '@/components/seo/JsonLd';
+import { OrganizationJsonLd, WebSiteJsonLd } from '@/components/seo/JsonLd';
 
 import { HeroSection } from '@/components/home/HeroSection';
 import { PortfolioSection } from '@/components/home/PortfolioSection';
@@ -17,6 +17,22 @@ import { GuidesSection } from '@/components/home/GuidesSection';
 import { db } from '@/db';
 import { materials, portfolioItems, collects, templates, articles } from '@/db/schema';
 import { desc, eq, and, ne, sql } from 'drizzle-orm';
+
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Профессиональная печать мерча на заказ | РИФ',
+  description: 'Типография РИФ — создаем идеальный мерч для художников и иллюстраторов. Печать на акриле, брелоки, стенды, стикеры. Быстрая доставка по всей России.',
+  alternates: {
+    canonical: '/',
+  },
+  openGraph: {
+    title: 'Профессиональная печать мерча на заказ | РИФ',
+    description: 'Создай свой идеальный мерч с типографией РИФ. Акриловые брелоки, стенды, значки и стикеры для художников.',
+    url: '/',
+    type: 'website',
+  },
+};
 
 export const dynamic = 'force-dynamic';
 
@@ -88,7 +104,8 @@ export default async function Home() {
 
   return (
     <div className="min-h-screen flex flex-col font-sans">
-      <JsonLd />
+      <OrganizationJsonLd />
+      <WebSiteJsonLd />
       <Header />
       
       <main className="flex-1 overflow-hidden">

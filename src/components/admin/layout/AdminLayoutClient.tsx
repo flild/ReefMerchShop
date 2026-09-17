@@ -18,6 +18,7 @@ export function AdminLayoutClient({ children, userRole, roleDisplayName, logoutA
 
   // Close sidebar on navigation
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setIsSidebarOpen(false);
   }, [pathname]);
 

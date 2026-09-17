@@ -1,14 +1,25 @@
+import { Metadata } from 'next';
 import { db } from '@/db';
 import { articles } from '@/db/schema';
 import { eq, desc } from 'drizzle-orm';
 import Link from 'next/link';
 import Image from 'next/image';
+import { BreadcrumbJsonLd } from '@/components/seo/JsonLd';
 
 export const dynamic = 'force-dynamic';
 
-export const metadata = {
-  title: 'Гайды и статьи',
-  description: 'Полезные материалы по подготовке макетов и мерчу от Reef.',
+export const metadata: Metadata = {
+  title: 'Гайды и статьи по подготовке мерча | Блог типографии РИФ',
+  description: 'Полезные статьи, гайды и туториалы по правильной подготовке макетов, выбору материалов и созданию мерча. Блог типографии РИФ.',
+  alternates: {
+    canonical: '/guides',
+  },
+  openGraph: {
+    title: 'Блог и Гайды для авторов мерча | РИФ',
+    description: 'Учим делать мерч правильно: советы от профессиональной типографии.',
+    url: '/guides',
+    type: 'website',
+  },
 };
 
 export default async function GuidesListPage() {
@@ -27,6 +38,10 @@ export default async function GuidesListPage() {
 
   return (
     <main className="max-w-7xl mx-auto px-6 py-12 md:py-20">
+      <BreadcrumbJsonLd items={[
+        { name: "Главная", item: "/" },
+        { name: "Гайды", item: "/guides" }
+      ]} />
       <header className="mb-12">
         <h1 className="text-5xl md:text-6xl font-display font-extrabold text-theme-text mb-4">
           Гайды и Статьи

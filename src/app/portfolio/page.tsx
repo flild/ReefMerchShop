@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { Sparkles, Palette, ChevronRight } from 'lucide-react';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
+import { BreadcrumbJsonLd } from '@/components/seo/JsonLd';
 import PortfolioGallery from './PortfolioGallery';
 import { db } from '@/db';
 import { portfolioItems, categories } from '@/db/schema';
@@ -10,10 +11,16 @@ import { desc } from 'drizzle-orm';
 import type { InferSelectModel } from 'drizzle-orm';
 
 export const metadata: Metadata = {
-  title: 'Портфолио',
-  description: 'Примеры готового мерча и качество нашей печати. Брелоки, стенды, акрил.',
+  title: 'Портфолио готовых работ | Печать мерча',
+  description: 'Примеры напечатанного нами мерча: акриловые брелоки, фигурки, стенды и стикеры. Оцените качество печати и реза РИФ в нашей галерее работ.',
   alternates: {
-    canonical: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://reef.ru'}/portfolio`,
+    canonical: '/portfolio',
+  },
+  openGraph: {
+    title: 'Портфолио готовых работ | Типография РИФ',
+    description: 'Галерея реализованных проектов: качественная печать на акриле, брелоки и стенды для авторов мерча.',
+    url: '/portfolio',
+    type: 'website',
   },
 };
 
@@ -34,22 +41,12 @@ export default async function PortfolioPage() {
     console.error('Failed to load portfolio items:', error);
   }
 
-  // SEO микроразметка
-  const breadcrumbData = {
-    "@context": "https://schema.org",
-    "@type": "BreadcrumbList",
-    "itemListElement": [
-      { "@type": "ListItem", "position": 1, "name": "Главная", "item": "https://reef.ru/" },
-      { "@type": "ListItem", "position": 2, "name": "Портфолио", "item": "https://reef.ru/portfolio" }
-    ]
-  };
-
   return (
     <div className="min-h-screen flex flex-col font-sans">
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbData) }}
-      />
+      <BreadcrumbJsonLd items={[
+        { name: "Главная", item: "/" },
+        { name: "Портфолио", item: "/portfolio" }
+      ]} />
       <Header />
 
       <main className="flex-1 bg-theme-bg manga-dots">
