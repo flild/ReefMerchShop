@@ -28,7 +28,7 @@ export default async function CategoriesAdminPage() {
         </div>
       </header>
 
-      <div className="bg-theme-surface anime-border anime-shadow rounded-[40px] overflow-hidden">
+      <div className="bg-theme-surface anime-border anime-shadow rounded-[40px] overflow-hidden overflow-x-auto">
         <table className="w-full text-left border-collapse">
           <thead>
             <tr className="border-b-2 border-theme-border bg-theme-bg">

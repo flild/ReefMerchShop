@@ -10,9 +10,9 @@ import {
   Users, 
   Boxes,
   Settings,
-  LucideIcon
+  LucideIcon,
+  X
 } from 'lucide-react';
-import { cn } from '../../../lib/utils';
 
 interface NavItem {
   href: string;
@@ -34,9 +34,10 @@ const navItems: NavItem[] = [
 
 interface AdminSidebarProps {
   userRole: string;
+  onClose?: () => void;
 }
 
-export function AdminSidebar({ userRole }: AdminSidebarProps) {
+export function AdminSidebar({ userRole, onClose }: AdminSidebarProps) {
   const pathname = usePathname();
 
   const filteredNavItems = navItems.filter((item) => 
@@ -44,13 +45,21 @@ export function AdminSidebar({ userRole }: AdminSidebarProps) {
   );
 
   return (
-    <aside className="w-72 flex-shrink-0 h-screen sticky top-0 bg-theme-surface border-r-2 border-theme-border flex flex-col p-6 overflow-y-auto">
-      <div className="mb-8 px-2">
-        <Link href="/admin" className="block">
+    <aside className="w-72 flex-shrink-0 h-full bg-theme-surface border-r-2 border-theme-border flex flex-col p-6 overflow-y-auto">
+      <div className="mb-8 px-2 flex items-center justify-between">
+        <Link href="/admin" className="block" onClick={onClose}>
           <h2 className="text-3xl font-display font-extrabold text-theme-text tracking-tight">
             REEF <span className="text-theme-highlight">ADMIN</span>
           </h2>
         </Link>
+        {onClose && (
+          <button
+            className="lg:hidden p-2 hover:bg-theme-bg rounded-lg text-theme-text"
+            onClick={onClose}
+          >
+            <X size={24} />
+          </button>
+        )}
       </div>
 
       <nav className="flex flex-col gap-2 flex-1">
@@ -61,12 +70,8 @@ export function AdminSidebar({ userRole }: AdminSidebarProps) {
             <Link
               key={item.href}
               href={item.href}
-              className={cn(
-                "flex items-center gap-3 px-5 py-3.5 rounded-full font-bold transition-all border-2",
-                isActive 
-                  ? "anime-button border-transparent" 
-                  : "text-theme-muted border-transparent hover:border-theme-border hover:text-theme-text hover:bg-theme-bg"
-              )}
+              onClick={onClose}
+              className={`flex items-center gap-3 px-5 py-3.5 rounded-full font-bold transition-all border-2 ${isActive ? "anime-button border-transparent" : "text-theme-muted border-transparent hover:border-theme-border hover:text-theme-text hover:bg-theme-bg"}`}
             >
               <item.icon className="w-5 h-5" />
               <span>{item.label}</span>
