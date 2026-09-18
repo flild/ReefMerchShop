@@ -71,8 +71,8 @@ export function PortfolioSection({ items }: PortfolioSectionProps) {
                 />
               </div>
               
-              {/* Градиентная подложка для читаемости текста */}
-              <div className="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-slate-900/40 to-transparent z-10 opacity-80 group-hover:opacity-100 transition-opacity" />
+              {/* Градиентная подложка для читаемости текста (затемнение убрано, оставлен легкий градиент только для текста) */}
+              <div className="absolute inset-0 bg-gradient-to-t from-slate-900/70 via-transparent to-transparent z-10 opacity-70 transition-opacity" />
               
               <div className="relative z-20 mt-auto p-6 flex flex-col justify-end h-full">
                 <h3 className="font-black text-xl text-white mb-1 line-clamp-2 drop-shadow-md">

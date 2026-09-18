@@ -379,13 +379,13 @@ export function CalculatorClient({
                 <span className="text-xl text-theme-accent">{unitPrice} ₽</span>
               </div>
 
-              <div className="flex justify-between pt-4 items-end overflow-hidden">
+              <div className="flex justify-between pt-4 items-end flex-wrap gap-2">
                 <span className="text-xl text-theme-muted mb-1">Итого</span>
                 <motion.span
                   key={total}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="text-4xl md:text-5xl font-display font-black text-theme-text drop-shadow-sm"
+                  className="text-4xl md:text-5xl font-display font-black text-theme-text drop-shadow-sm truncate min-w-0 flex-shrink-0"
                 >
                   {total.toLocaleString('ru-RU')} ₽
                 </motion.span>
@@ -393,9 +393,18 @@ export function CalculatorClient({
             </motion.div>
           )}
 
-          <button className="anime-button w-full py-5 text-xl flex items-center justify-center gap-3 active:scale-95">
-            {isIndividual ? 'Отправить на расчет менеджеру' : 'Перейти к оформлению'} <ArrowRight size={24} strokeWidth={3} />
-          </button>
+          <div className="flex flex-col gap-4">
+            <label className="flex items-start gap-3 cursor-pointer group">
+              <input type="checkbox" required className="w-5 h-5 mt-0.5 accent-theme-accent shrink-0" />
+              <span className="font-medium text-theme-muted text-sm leading-tight group-hover:text-theme-text transition-colors">
+                Я даю согласие на обработку персональных данных и соглашаюсь с <a href="/privacy" className="text-theme-accent hover:underline" target="_blank">Политикой конфиденциальности</a> и <a href="/terms" className="text-theme-accent hover:underline" target="_blank">условиями Оферты</a>.
+              </span>
+            </label>
+
+            <button className="anime-button w-full py-5 text-xl flex items-center justify-center gap-3 active:scale-95">
+              {isIndividual ? 'Отправить на расчет менеджеру' : 'Перейти к оформлению'} <ArrowRight size={24} strokeWidth={3} />
+            </button>
+          </div>
 
           <p className="mt-6 text-center font-bold text-theme-muted text-sm leading-relaxed">
             * Итоговая сумма может измениться после проверки макетов менеджером.

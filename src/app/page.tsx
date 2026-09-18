@@ -44,7 +44,7 @@ export default async function Home() {
   let displayArticles: Array<{ id: string; title: string; slug: string; coverImage: string | null; badge: 'new' | 'popular' }> = [];
 
   try {
-    recentWorks = await db.select().from(portfolioItems).orderBy(desc(portfolioItems.createdAt)).limit(8);
+    recentWorks = await db.select().from(portfolioItems).orderBy(desc(portfolioItems.createdAt)).limit(4);
     popMaterials = await db.select().from(materials).limit(4);
     activeCollects = await db.select().from(collects).where(eq(collects.status, 'open')).limit(2);
     availableTemplates = await db.select().from(templates).limit(4);
