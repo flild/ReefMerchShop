@@ -224,7 +224,7 @@ export function JoinCollectForm({ collectId, title, driveLink }: Props) {
               <Check size={16} strokeWidth={4} className="absolute text-theme-bg opacity-0 peer-checked:opacity-100 pointer-events-none transition-opacity" />
             </div>
             <span className="font-bold text-theme-text select-none group-hover:text-theme-highlight transition-colors leading-tight">
-              Макеты проверены по чек-листу (CMYK, 300 dpi, шрифты в кривых).
+              Макеты проверены по чек-листу.
             </span>
           </label>
 

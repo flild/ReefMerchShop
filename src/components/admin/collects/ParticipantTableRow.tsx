@@ -291,11 +291,6 @@ export function ParticipantTableRow({ participant, collectId, canViewFinances }:
       <td className="p-5 font-extrabold text-theme-text text-lg align-top">
         <div className="flex items-center gap-2">
           <span>{participant.nickname || participant.clientName || 'Без имени'}</span>
-          {participant.isLayoutsUploaded && (
-            <span className="text-xs bg-theme-green-bg text-theme-green-text px-2 py-0.5 rounded-full whitespace-nowrap">
-              Макеты ок
-            </span>
-          )}
         </div>
       </td>
       <td className="p-5 align-top">

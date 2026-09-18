@@ -61,7 +61,7 @@ export default async function CollectsPage() {
               <span className="font-bold flex items-center gap-2 mb-2 text-theme-highlight text-lg">
                 <Sparkles size={20} /> Система скидок и условия:
               </span>
-              Изначальная цена чуть выше, но за каждые набранные <strong>50 000 ₽</strong> добавляется скидка <strong>5%</strong>. Максимальная скидка составляет <strong>20%</strong> (при достижении общего банка в 200 000 ₽). 
+              За каждые набранные <strong>50 000 ₽</strong> добавляется скидка <strong>5%</strong>. Максимальная скидка составляет <strong>20%</strong> (при достижении общего банка в 200 000 ₽). 
               <br/><br/>
               <span className="text-theme-muted">⚠️ Минимальный заказ — 10 шт. на один макет любого размера.</span>
             </div>

@@ -288,7 +288,7 @@ export function CalculatorClient({
             <div className="flex flex-col justify-center bg-theme-highlight/5 border-2 border-theme-highlight/20 p-6 rounded-2xl h-full">
                <h3 className="font-display font-black text-xl text-theme-highlight mb-2">Фиксированные параметры</h3>
                <p className="text-theme-muted text-sm leading-relaxed font-bold">
-                 Для данного изделия размер, материал и фурнитура уже подобраны нашими технологами для достижения идеального качества. Вам остается только выбрать тираж!
+                 Для данного изделия размер, материал и фурнитура фиксированные.
                </p>
             </div>
             )}
