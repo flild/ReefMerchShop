@@ -7,7 +7,7 @@ import Link from 'next/link';
 const AVAILABLE_FORMATS = ['PSD', 'AI', 'CDR', 'PDF', 'PNG', 'SVG'];
 
 export function TemplateForm() {
-  const [state, formAction, isPending] = useActionState(createTemplate, null);
+  const [state, formAction, isPending] = useActionState(async (prevState: any, formData: FormData) => { return await createTemplate(formData); }, null);
 
   return (
     <form action={formAction} className="bg-theme-surface anime-border anime-shadow rounded-[40px] p-8 max-w-2xl flex flex-col gap-6">

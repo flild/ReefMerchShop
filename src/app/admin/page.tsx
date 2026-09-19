@@ -204,7 +204,7 @@ export default async function AdminDashboard() {
   // Добавили метрику заявок и расширили грид ниже
   const stats = [
     { label: 'Новых заказов', value: newOrders.value.toString(), alert: newOrders.value > 0 },
-    { label: 'Требуют внимания (Пруфы)', value: attentionOrders.value.toString(), alert: attentionOrders.value > 0 },
+    { label: 'Требуют внимания', value: attentionOrders.value.toString(), alert: attentionOrders.value > 0 },
     { label: 'Новые заявки (Коллекты)', value: unprocessedParticipants.value.toString(), alert: unprocessedParticipants.value > 0 },
     { label: 'Заканчивается на складе', value: totalLowStock.toString(), alert: totalLowStock > 0 },
     { label: 'Выручка (30 дней)', value: formattedRevenue, alert: false },

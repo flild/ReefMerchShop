@@ -379,13 +379,13 @@ export function CalculatorClient({
                 <span className="text-xl text-theme-accent">{unitPrice} ₽</span>
               </div>
 
-              <div className="flex justify-between pt-4 items-end flex-wrap gap-2">
+              <div className="flex justify-between pt-4 items-end flex-wrap gap-2 overflow-hidden">
                 <span className="text-xl text-theme-muted mb-1">Итого</span>
                 <motion.span
                   key={total}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="text-4xl md:text-5xl font-display font-black text-theme-text drop-shadow-sm truncate min-w-0 flex-shrink-0"
+                  className="text-4xl md:text-5xl font-display font-black text-theme-text drop-shadow-sm break-all"
                 >
                   {total.toLocaleString('ru-RU')} ₽
                 </motion.span>
