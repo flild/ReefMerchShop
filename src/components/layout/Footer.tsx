@@ -27,6 +27,8 @@ export function Footer() {
             <li><Link href="/materials" className="hover:text-theme-accent hover:translate-x-1 transition-transform inline-block">Материалы</Link></li>
             <li><Link href="/calculator" className="hover:text-theme-accent hover:translate-x-1 transition-transform inline-block">Калькулятор</Link></li>
             <li><Link href="/collects" className="hover:text-theme-accent hover:translate-x-1 transition-transform inline-block">Коллекты</Link></li>
+            <li><Link href="/privacy" className="hover:text-theme-accent hover:translate-x-1 transition-transform inline-block">Политика конфиденциальности</Link></li>
+            <li><Link href="/terms" className="hover:text-theme-accent hover:translate-x-1 transition-transform inline-block">Условия Оферты</Link></li>
           </ul>
         </div>
         
@@ -43,15 +45,21 @@ export function Footer() {
           <h4 className="font-display font-black text-xl mb-6 text-theme-text">Связь с нами</h4>
           <ul className="space-y-4 font-bold text-theme-muted">
             <li>
-              <a href="https://vk.com/reef_print" target="_blank" rel="noopener noreferrer" className="hover:text-theme-accent hover:translate-x-1 transition-transform flex items-center gap-2">
+              <a href="https://vk.ru/merchreef" target="_blank" rel="noopener noreferrer" className="hover:text-theme-accent hover:translate-x-1 transition-transform flex items-center gap-2">
                 <Users size={20} strokeWidth={2.5} />
                 VKontakte
               </a>
             </li>
             <li>
-              <a href="https://t.me/reef_print" target="_blank" rel="noopener noreferrer" className="hover:text-theme-accent hover:translate-x-1 transition-transform flex items-center gap-2">
+              <a href="https://t.me/merchreef" target="_blank" rel="noopener noreferrer" className="hover:text-theme-accent hover:translate-x-1 transition-transform flex items-center gap-2">
                 <Send size={20} strokeWidth={2.5} />
                 Telegram
+              </a>
+            </li>
+            <li>
+              <a href="mailto:merchreef@mail.ru" className="hover:text-theme-accent hover:translate-x-1 transition-transform flex items-center gap-2">
+                <MapPin size={20} strokeWidth={2.5} className="opacity-0" />
+                merchreef@mail.ru
               </a>
             </li>
             <li className="pt-2 flex items-center gap-2 text-theme-text">

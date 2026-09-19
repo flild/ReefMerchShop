@@ -141,13 +141,22 @@ export function JoinCollectForm({ collectId, title, driveLink }: Props) {
             </div>
           </div>
 
-          <button 
-            type="submit" 
-            disabled={isPending}
-            className="anime-button px-6 py-4 text-lg mt-4 flex items-center justify-center gap-2"
-          >
-            {isPending ? 'Загрузка...' : 'Продолжить →'}
-          </button>
+          <div className="flex flex-col gap-4 mt-4">
+            <label className="flex items-start gap-3 cursor-pointer group">
+              <input type="checkbox" required className="w-5 h-5 mt-0.5 accent-theme-accent shrink-0" />
+              <span className="font-medium text-theme-muted text-sm leading-tight group-hover:text-theme-text transition-colors">
+                Я даю согласие на обработку персональных данных и соглашаюсь с <a href="/privacy" className="text-theme-accent hover:underline" target="_blank">Политикой конфиденциальности</a> и <a href="/terms" className="text-theme-accent hover:underline" target="_blank">условиями Оферты</a>.
+              </span>
+            </label>
+
+            <button
+              type="submit"
+              disabled={isPending}
+              className="anime-button px-6 py-4 text-lg flex items-center justify-center gap-2"
+            >
+              {isPending ? 'Загрузка...' : 'Продолжить →'}
+            </button>
+          </div>
         </form>
       )}
 

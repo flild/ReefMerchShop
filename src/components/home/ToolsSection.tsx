@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { motion, Variants } from 'motion/react';
-import { ArrowRight, Calculator, Image as ImageIcon, Package } from 'lucide-react';
+import { ArrowRight, Calculator, Image as ImageIcon, BoxSelect, CheckSquare } from 'lucide-react';
 
 const tools = [
   {
@@ -12,22 +12,25 @@ const tools = [
     desc: 'Точный расчет стоимости с учетом материалов, фурнитуры и тиража.',
     bgClass: 'bg-theme-bg',
     iconBgClass: 'bg-theme-surface',
+    active: true,
   },
   {
-    href: '/tools/mockup',
-    icon: <ImageIcon size={36} strokeWidth={2.5} />,
-    title: 'Мокап-генератор',
+    href: '#',
+    icon: <BoxSelect size={36} strokeWidth={2.5} />,
+    title: '3D Превью',
     desc: 'Примерьте свой арт на прозрачный, жемчужный или цветной акрил онлайн.',
-    bgClass: 'bg-theme-surface',
+    bgClass: 'bg-theme-surface opacity-70 grayscale-[30%]',
     iconBgClass: 'bg-theme-bg',
+    active: false,
   },
   {
-    href: '/collects',
-    icon: <Package size={36} strokeWidth={2.5} />,
-    title: 'Коллекты',
-    desc: 'Совместные заказы для снижения стоимости производства мерча.',
-    bgClass: 'bg-theme-bg',
+    href: '#',
+    icon: <CheckSquare size={36} strokeWidth={2.5} />,
+    title: 'Валидатор макетов',
+    desc: 'Автоматическая проверка ваших макетов на соответствие техническим требованиям.',
+    bgClass: 'bg-theme-bg opacity-70 grayscale-[30%]',
     iconBgClass: 'bg-theme-surface',
+    active: false,
   },
 ];
 
@@ -69,23 +72,37 @@ export function ToolsSection() {
           viewport={{ once: true, margin: "-50px" }}
           className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto"
         >
-          {tools.map((tool, i) => (
-            <motion.div key={i} variants={itemVariants}>
-              <Link 
-                href={tool.href} 
-                className={`${tool.bgClass} rounded-[40px] p-10 anime-border anime-shadow hover:anime-shadow-hover hover:-translate-y-2 transition-all group block h-full flex flex-col`}
-              >
-                <div className={`w-20 h-20 ${tool.iconBgClass} rounded-3xl flex items-center justify-center text-reef-cyan mb-8 shadow-sm group-hover:scale-110 group-hover:${i % 2 === 0 ? 'rotate-6' : '-rotate-6'} transition-transform anime-border`}>
-                  {tool.icon}
-                </div>
-                <h3 className="text-2xl font-display font-black text-theme-text mb-4">{tool.title}</h3>
-                <p className="text-lg text-theme-muted mb-8 font-medium flex-1">{tool.desc}</p>
-                <div className="text-reef-cyan font-bold flex items-center gap-2 group-hover:gap-4 transition-all text-lg mt-auto">
-                  Перейти <ArrowRight size={24} strokeWidth={3} />
-                </div>
-              </Link>
-            </motion.div>
-          ))}
+          {tools.map((tool, i) => {
+            const Wrapper = tool.active ? Link : 'div';
+            return (
+              <motion.div key={i} variants={itemVariants}>
+                <Wrapper
+                  href={tool.href as any}
+                  className={`${tool.bgClass} relative rounded-[40px] p-10 anime-border anime-shadow transition-all group block h-full flex flex-col ${tool.active ? 'hover:anime-shadow-hover hover:-translate-y-2' : 'cursor-not-allowed'}`}
+                >
+                  {!tool.active && (
+                    <div className="absolute top-4 right-4 z-10 px-3 py-1.5 rounded-full text-xs font-black border-2 border-theme-border shadow-[3px_3px_0_0_var(--theme-border)] bg-theme-yellow-bg text-theme-yellow-text rotate-[3deg]">
+                      Скоро...
+                    </div>
+                  )}
+                  <div className={`w-20 h-20 ${tool.iconBgClass} rounded-3xl flex items-center justify-center text-reef-cyan mb-8 shadow-sm transition-transform anime-border ${tool.active ? `group-hover:scale-110 group-hover:${i % 2 === 0 ? 'rotate-6' : '-rotate-6'}` : ''}`}>
+                    {tool.icon}
+                  </div>
+                  <h3 className="text-2xl font-display font-black text-theme-text mb-4">{tool.title}</h3>
+                  <p className="text-lg text-theme-muted mb-8 font-medium flex-1">{tool.desc}</p>
+                  <div className="text-reef-cyan font-bold flex items-center gap-2 transition-all text-lg mt-auto">
+                    {tool.active ? (
+                      <>
+                        Перейти <ArrowRight size={24} strokeWidth={3} className="group-hover:translate-x-1 transition-transform" />
+                      </>
+                    ) : (
+                      <span className="text-theme-muted">В разработке</span>
+                    )}
+                  </div>
+                </Wrapper>
+              </motion.div>
+            );
+          })}
         </motion.div>
       </div>
     </section>
