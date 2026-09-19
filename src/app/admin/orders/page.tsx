@@ -33,6 +33,7 @@ export default async function OrdersAdminPage() {
       createdAt: orders.createdAt,
       clientName: users.name,
       clientEmail: users.email,
+      detailsJson: orders.detailsJson,
     })
     .from(orders)
     .leftJoin(users, eq(orders.userId, users.id))
@@ -68,51 +69,61 @@ export default async function OrdersAdminPage() {
               </tr>
             </thead>
             <tbody>
-              {ordersList.map((order) => (
-                <tr 
-                  key={order.id} 
-                  className="border-b border-theme-border/50 hover:bg-theme-bg/50 transition-colors group"
-                >
-                  <td className="p-5">
-                    <Link 
-                      href={`/admin/orders/${order.id}`} 
-                      className="font-extrabold text-theme-highlight hover:underline text-lg"
-                    >
-                      #{order.orderNumber}
-                    </Link>
-                  </td>
-                  <td className="p-5">
-                    <div className="font-bold text-theme-text">{order.clientName || 'Без имени'}</div>
-                    <div className="text-theme-muted text-sm font-bold">{order.clientEmail || '—'}</div>
-                  </td>
-                  
-                  {!isMaker && (
+              {ordersList.map((order) => {
+                let parsedDetails: any = {};
+                try {
+                  parsedDetails = JSON.parse(order.detailsJson || '{}');
+                } catch (e) {}
+
+                const finalName = order.clientName || parsedDetails.customClientName || 'Без имени (Гость)';
+                const finalEmail = order.clientEmail || parsedDetails.customClientContact || '—';
+
+                return (
+                  <tr
+                    key={order.id}
+                    className="border-b border-theme-border/50 hover:bg-theme-bg/50 transition-colors group"
+                  >
                     <td className="p-5">
-                      <div className="font-extrabold text-theme-text text-lg">
-                        {order.total.toLocaleString('ru-RU')} ₽
-                      </div>
+                      <Link
+                        href={`/admin/orders/${order.id}`}
+                        className="font-extrabold text-theme-highlight hover:underline text-lg"
+                      >
+                        #{`${order.orderNumber}`}
+                      </Link>
                     </td>
-                  )}
-                  
-                  <td className="p-5 flex items-center gap-3">
-                    <span className={`w-3 h-3 rounded-full border-2 ${getStatusColorClass(order.status)}`} />
-                    <OrderStatusSelect orderId={order.id} currentStatus={order.status} />
-                  </td>
-                  <td className="p-5 text-theme-muted font-bold text-sm">
-                    {order.createdAt instanceof Date 
-                      ? order.createdAt.toLocaleDateString('ru-RU') 
-                      : '—'}
-                  </td>
-                  <td className="p-5 text-right">
-                    <Link 
-                      href={`/admin/orders/${order.id}`}
-                      className="anime-button px-5 py-2 text-sm inline-block"
-                    >
-                      Детали
-                    </Link>
-                  </td>
-                </tr>
-              ))}
+                    <td className="p-5">
+                      <div className="font-bold text-theme-text">{finalName}</div>
+                      <div className="text-theme-muted text-sm font-bold">{finalEmail}</div>
+                    </td>
+
+                    {!isMaker && (
+                      <td className="p-5">
+                        <div className="font-extrabold text-theme-text text-lg">
+                          {order.total.toLocaleString('ru-RU')} ₽
+                        </div>
+                      </td>
+                    )}
+
+                    <td className="p-5 flex items-center gap-3">
+                      <span className={`w-3 h-3 rounded-full border-2 ${getStatusColorClass(order.status)}`} />
+                      <OrderStatusSelect orderId={order.id} currentStatus={order.status} />
+                    </td>
+                    <td className="p-5 text-theme-muted font-bold text-sm">
+                      {order.createdAt instanceof Date
+                        ? order.createdAt.toLocaleDateString('ru-RU')
+                        : '—'}
+                    </td>
+                    <td className="p-5 text-right">
+                      <Link
+                        href={`/admin/orders/${order.id}`}
+                        className="anime-button px-5 py-2 text-sm inline-block"
+                      >
+                        Детали
+                      </Link>
+                    </td>
+                  </tr>
+                );
+              })}
 
               {ordersList.length === 0 && (
                 <tr>
