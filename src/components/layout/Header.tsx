@@ -64,7 +64,7 @@ export function Header() {
         </nav>
         
         <div className="flex items-center gap-2 md:gap-4 text-theme-accent relative z-20">
-          <a href="https://vk.ru/merchreef" target="_blank" rel="noopener noreferrer" className="hidden lg:flex items-center gap-2 bg-theme-accent text-theme-surface px-5 py-2.5 rounded-full font-bold text-sm hover:scale-105 transition-transform anime-shadow border-2 border-theme-border hover:anime-shadow-hover hover:-translate-y-1">
+          <a href="https://vk.ru/im?sel=-240002127" target="_blank" rel="noopener noreferrer" className="hidden lg:flex items-center gap-2 bg-theme-accent text-theme-surface px-5 py-2.5 rounded-full font-bold text-sm hover:scale-105 transition-transform anime-shadow border-2 border-theme-border hover:anime-shadow-hover hover:-translate-y-1">
             <Send size={18} strokeWidth={2.5} />
             Связаться
           </a>
