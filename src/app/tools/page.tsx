@@ -27,6 +27,7 @@ const tools = [
     icon: MonitorPlay,
     colorClasses: 'bg-theme-highlight text-[var(--theme-btn-text)]',
     href: '/tools/mockup',
+    comingSoon: true,
   },
   {
     id: 'checklist',
@@ -35,6 +36,7 @@ const tools = [
     icon: CheckSquare,
     colorClasses: 'bg-theme-accent text-[var(--theme-btn-text)]',
     href: '/tools/checklist',
+    comingSoon: false,
   },
   {
     id: 'check',
@@ -43,6 +45,7 @@ const tools = [
     icon: FileSearch,
     colorClasses: 'bg-theme-text text-theme-bg',
     href: '/tools/check',
+    comingSoon: true,
   }
 ];
 
@@ -77,16 +80,25 @@ export default function ToolsIndexPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {tools.map((tool) => (
-              <Link key={tool.id} href={tool.href} className="bg-theme-surface rounded-[40px] p-8 anime-border anime-shadow group hover:anime-shadow-hover hover:-translate-y-2 transition-all flex flex-col">
-                <div className={`w-16 h-16 rounded-3xl flex items-center justify-center mb-8 shadow-sm group-hover:scale-110 group-hover:-rotate-6 transition-transform anime-border ${tool.colorClasses}`}>
+              <Link key={tool.id} href={tool.comingSoon ? '#' : tool.href} className={`bg-theme-surface rounded-[40px] p-8 anime-border anime-shadow group transition-all flex flex-col relative overflow-hidden ${tool.comingSoon ? 'opacity-70 grayscale cursor-not-allowed hover:-translate-y-0' : 'hover:-translate-y-2 hover:anime-shadow-hover'}`}>
+                {tool.comingSoon && (
+                  <div className="absolute top-6 right-6 bg-theme-bg text-theme-text font-bold text-xs px-3 py-1 rounded-full border-2 border-theme-border z-10 shadow-sm">
+                    Скоро...
+                  </div>
+                )}
+                <div className={`w-16 h-16 rounded-3xl flex items-center justify-center mb-8 shadow-sm transition-transform anime-border ${tool.colorClasses} ${!tool.comingSoon && 'group-hover:scale-110 group-hover:-rotate-6'}`}>
                   <tool.icon size={32} strokeWidth={2.5} />
                 </div>
 
                 <h3 className="text-2xl font-bold text-theme-text mb-4">{tool.title}</h3>
                 <p className="text-theme-muted font-medium mb-8 flex-1 leading-relaxed">{tool.description}</p>
 
-                <div className="flex items-center gap-2 text-theme-highlight font-black mt-auto uppercase tracking-wider text-sm group-hover:gap-4 transition-all">
-                  Открыть <ArrowRight size={18} strokeWidth={3} />
+                <div className={`flex items-center gap-2 font-black mt-auto uppercase tracking-wider text-sm transition-all ${tool.comingSoon ? 'text-theme-muted' : 'text-theme-highlight group-hover:gap-4'}`}>
+                  {tool.comingSoon ? 'В разработке' : (
+                    <>
+                      Открыть <ArrowRight size={18} strokeWidth={3} />
+                    </>
+                  )}
                 </div>
               </Link>
             ))}
