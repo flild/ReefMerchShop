@@ -6,10 +6,14 @@ import { DeleteUserButton } from '@/components/admin/users/DeleteUserButton';
 import { UserForm } from '@/components/admin/users/UserForm';
 import { getSession } from '@/lib/auth';
 import { redirect } from 'next/navigation';
+import { ne } from 'drizzle-orm';
+import { StaffFilter } from '@/components/admin/users/StaffFilter';
 
 export const dynamic = 'force-dynamic';
 
-export default async function UsersAdminPage() {
+export default async function UsersAdminPage({ searchParams }: { searchParams: Promise<{ staffOnly?: string }> }) {
+  const params = await searchParams;
+  const staffOnly = params.staffOnly === 'true';
   const session = await getSession();
 
   if (!session || session.role !== 'admin') {
@@ -19,6 +23,7 @@ export default async function UsersAdminPage() {
   const usersList = await db
     .select()
     .from(users)
+    .where(staffOnly ? ne(users.role, 'client') : undefined)
     .orderBy(desc(users.createdAt));
 
   return (
@@ -29,6 +34,7 @@ export default async function UsersAdminPage() {
           <p className="text-theme-muted font-bold text-lg">
             Управление клиентами и правами доступа персонала
           </p>
+          <StaffFilter />
         </div>
       </header>
 

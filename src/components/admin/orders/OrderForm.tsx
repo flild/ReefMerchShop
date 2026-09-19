@@ -1,6 +1,6 @@
 'use client';
 
-import { useActionState } from 'react';
+import { useActionState, useState } from 'react';
 import { createOrder, updateOrder } from '@/actions/admin/orders';
 import Link from 'next/link';
 
@@ -24,6 +24,14 @@ interface OrderFormProps {
 
 export function OrderForm({ users, initialData }: OrderFormProps) {
   const isEditing = !!initialData?.id;
+
+  const [searchQuery, setSearchQuery] = useState('');
+
+
+  const filteredUsers = users.filter(u =>
+    (u.name && u.name.toLowerCase().includes(searchQuery.toLowerCase())) ||
+    (u.email && u.email.toLowerCase().includes(searchQuery.toLowerCase()))
+  );
 
   // Распаковываем JSON, если он есть
   let parsedDetails = { managerNote: '', customClientName: '', customClientContact: '' };
@@ -55,13 +63,21 @@ export function OrderForm({ users, initialData }: OrderFormProps) {
 
       <div className="flex flex-col gap-2">
         <label className="font-extrabold text-theme-text ml-2">Привязка к аккаунту (Опционально)</label>
+        <input
+          type="text"
+          placeholder="Поиск клиента по имени или email..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          onKeyDown={(e) => { if (e.key === 'Enter') e.preventDefault(); }}
+          className="bg-theme-bg border-2 border-theme-border rounded-[20px] px-5 py-2 font-bold text-theme-text outline-none focus:border-theme-highlight anime-shadow transition-all mb-2"
+        />
         <select 
           name="userId"
           defaultValue={initialData?.userId || ''}
           className="bg-theme-bg border-2 border-theme-border rounded-[20px] px-5 py-3 font-bold text-theme-text outline-none focus:border-theme-highlight anime-shadow appearance-none cursor-pointer"
         >
           <option value="">Гость (Без привязки к аккаунту)</option>
-          {users.map(u => (
+          {filteredUsers.map(u => (
             <option key={u.id} value={u.id}>
               {u.name || 'Без имени'} {u.email ? `(${u.email})` : ''}
             </option>

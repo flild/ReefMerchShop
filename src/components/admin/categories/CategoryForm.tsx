@@ -36,7 +36,7 @@ export function CategoryForm({ initialData }: CategoryFormProps) {
         </div>
       )}
 
-      <div className="grid grid-cols-2 gap-6">
+      <div className="flex flex-col gap-6">
         <div className="flex flex-col gap-2">
           <label className="font-extrabold text-theme-text ml-2">Название</label>
           <input 
@@ -45,17 +45,6 @@ export function CategoryForm({ initialData }: CategoryFormProps) {
             required
             defaultValue={initialData?.name || ''}
             placeholder="Например: Акриловые стенды"
-            className="bg-theme-bg border-2 border-theme-border rounded-[20px] px-5 py-3 font-bold text-theme-text outline-none focus:border-theme-highlight anime-shadow transition-all"
-          />
-        </div>
-
-        <div className="flex flex-col gap-2">
-          <label className="font-extrabold text-theme-text ml-2">Slug (ЧПУ)</label>
-          <input 
-            type="text" 
-            name="slug" 
-            defaultValue={initialData?.slug || ''}
-            placeholder="Оставь пустым для генерации"
             className="bg-theme-bg border-2 border-theme-border rounded-[20px] px-5 py-3 font-bold text-theme-text outline-none focus:border-theme-highlight anime-shadow transition-all"
           />
         </div>
