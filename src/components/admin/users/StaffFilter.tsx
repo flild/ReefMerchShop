@@ -27,7 +27,7 @@ export function StaffFilter() {
         onChange={toggleFilter}
         className="w-5 h-5 accent-theme-accent cursor-pointer"
       />
-      Только сотрудники
+      Персонал
     </label>
   );
 }
