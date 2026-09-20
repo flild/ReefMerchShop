@@ -20,14 +20,15 @@ export function StaffFilter() {
   }, [staffOnly, searchParams, router]);
 
   return (
-    <label className="flex items-center gap-2 cursor-pointer font-bold text-theme-text mt-4 select-none">
-      <input
-        type="checkbox"
-        checked={staffOnly}
-        onChange={toggleFilter}
-        className="w-5 h-5 accent-theme-accent cursor-pointer"
-      />
-      Только сотрудники
-    </label>
+    <button
+      onClick={toggleFilter}
+      className={`px-4 py-2 rounded-full font-bold text-sm transition-colors border-2 ${
+        staffOnly
+          ? 'bg-theme-text text-theme-bg border-theme-text'
+          : 'bg-transparent text-theme-muted border-theme-border hover:border-theme-text hover:text-theme-text'
+      }`}
+    >
+      Персонал
+    </button>
   );
 }
