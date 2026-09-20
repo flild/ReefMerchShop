@@ -34,15 +34,18 @@ export default async function UsersAdminPage({ searchParams }: { searchParams: P
           <p className="text-theme-muted font-bold text-lg">
             Управление клиентами и правами доступа персонала
           </p>
-          <StaffFilter />
         </div>
       </header>
 
       <UserForm />
 
-      <div className="bg-theme-surface anime-border anime-shadow rounded-[40px] overflow-hidden">
-        <div className="overflow-x-auto p-2">
-          <table className="w-full text-left border-collapse">
+      <div className="flex flex-col gap-4">
+        <div className="flex items-center gap-4">
+          <StaffFilter />
+        </div>
+        <div className="bg-theme-surface anime-border anime-shadow rounded-[40px] overflow-hidden">
+          <div className="overflow-x-auto p-2">
+            <table className="w-full text-left border-collapse">
             <thead>
               <tr className="border-b-2 border-theme-border text-theme-muted text-sm uppercase tracking-wider">
                 <th className="p-5 font-extrabold">Имя / Email</th>
@@ -129,6 +132,7 @@ export default async function UsersAdminPage({ searchParams }: { searchParams: P
             </tbody>
           </table>
         </div>
+      </div>
       </div>
     </div>
   );
