@@ -62,13 +62,13 @@ export default async function PortfolioPage() {
             <div className="max-w-3xl mb-16 text-center mx-auto">
               <div className="inline-flex items-center gap-2 px-6 py-3 bg-theme-surface rounded-full anime-border mb-6 text-theme-highlight font-bold text-sm tracking-wide shadow-[2px_2px_0_0_var(--theme-border)] rotate-[1deg]">
                 <Palette size={16} />
-                Наши любимые работы
+                Примеры нашей продукции
               </div>
               <h1 className="text-5xl md:text-6xl font-display font-black text-theme-text mb-8 drop-shadow-sm">
-                Галерея чудес
+                Портфолио работ
               </h1>
               <p className="text-xl md:text-2xl text-theme-muted font-medium leading-relaxed">
-                Посмотрите примеры изделий, которые мы уже произвели. Мы гордимся качеством печати и сборкой каждого мерча!
+                Ознакомьтесь с примерами уже отпечатанных тиражей. Мы тщательно контролируем точную цветопередачу, качество контурного реза и аккуратность сборки каждого изделия.
               </p>
             </div>
             

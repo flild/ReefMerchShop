@@ -82,17 +82,16 @@ export default function PortfolioGallery({
       </div>
 
       {/* Grid with smooth filtering animations */}
-      <motion.div layout className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
         <AnimatePresence mode="popLayout">
           {filteredItems.map(item => (
             <motion.div 
-              layout
-              initial={{ opacity: 0, scale: 0.8 }}
+              initial={{ opacity: 0, scale: 0.96 }}
               animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.8 }}
-              transition={{ duration: 0.3 }}
+              exit={{ opacity: 0, scale: 0.96 }}
+              transition={{ duration: 0.2, ease: 'easeOut' }}
               key={item.id} 
-              className="group relative rounded-[32px] overflow-hidden bg-theme-surface anime-border anime-shadow hover:anime-shadow-hover hover:-translate-y-2 transition-all duration-300 flex flex-col h-full"
+              className="group relative rounded-[32px] overflow-hidden bg-theme-surface anime-border anime-shadow hover:anime-shadow-hover hover:-translate-y-1.5 transition-all duration-300 flex flex-col h-full"
             >
               <div className="relative aspect-square overflow-hidden bg-theme-bg border-b-2 border-theme-border">
                 <Image
@@ -121,7 +120,7 @@ export default function PortfolioGallery({
             </motion.div>
           ))}
         </AnimatePresence>
-      </motion.div>
+      </div>
 
       {filteredItems.length === 0 && (
         <motion.div 
