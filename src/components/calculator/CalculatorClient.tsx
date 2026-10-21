@@ -2,7 +2,22 @@
 
 import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Calculator, ShoppingBag, ArrowRight, AlertCircle } from 'lucide-react';
+import { Calculator, ShoppingBag, ArrowRight, AlertCircle, Plus, Trash2, ShoppingCart } from 'lucide-react';
+
+interface CartItem {
+  id: string;
+  productType: string;
+  productTypeName: string;
+  materialName?: string;
+  accessoryName?: string;
+  size?: number | string;
+  quantity: number;
+  isDoubleSided: boolean;
+  unitPrice: number;
+  totalPrice: number;
+  isIndividual: boolean;
+  detailsText: string;
+}
 
 interface Material {
   id: string;
@@ -43,6 +58,9 @@ export function CalculatorClient({
   const [size, setSize] = useState<number | string>(50);
   const [quantity, setQuantity] = useState<number | string>(10);
   const [isDoubleSided, setIsDoubleSided] = useState<boolean>(false);
+
+  // Корзина с позициями заказа
+  const [cart, setCart] = useState<CartItem[]>([]);
 
   const { unitPrice, materialCost, accessoryCost, total, isIndividual, isSmallBatch, smallBatchMsg } = useMemo(() => {
     const numSize = Number(size) || 0;
@@ -154,6 +172,57 @@ export function CalculatorClient({
     };
   }, [productType, materialId, accessoryId, size, quantity, isDoubleSided, dbMaterials, dbAccessories, dbPricingTiers, dbSpecialProducts, dbSmallBatchRules, dbModifiers]);
 
+  const handleAddToCart = () => {
+    const numQuantity = Number(quantity) || 1;
+    const selectedMat = dbMaterials.find(m => m.id === materialId);
+    const selectedAcc = dbAccessories.find(a => a.id === accessoryId);
+
+    const typeNames: Record<string, string> = {
+      keychain: 'Брелок',
+      stand: 'Стенд',
+      icecream_keychain: 'Мороженка',
+      nfc_card: 'NFC'
+    };
+
+    const typeName = typeNames[productType] || 'Изделие';
+    const matName = (productType === 'keychain' || productType === 'stand') && selectedMat ? stripEmojis(selectedMat.name) : undefined;
+    const accName = productType === 'keychain' && selectedAcc ? stripEmojis(selectedAcc.name) : undefined;
+
+    let detailsParts: string[] = [];
+    if (productType === 'keychain' || productType === 'stand') {
+      detailsParts.push(`${size} мм`);
+      if (matName) detailsParts.push(matName);
+      if (accName) detailsParts.push(`Фурнитура: ${accName}`);
+      if (isDoubleSided) detailsParts.push('Двусторонняя');
+    } else {
+      detailsParts.push('Стандартные параметры');
+    }
+
+    const newItem: CartItem = {
+      id: `cart-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
+      productType,
+      productTypeName: typeName,
+      materialName: matName,
+      accessoryName: accName,
+      size: (productType === 'keychain' || productType === 'stand') ? size : undefined,
+      quantity: numQuantity,
+      isDoubleSided: (productType === 'keychain' || productType === 'stand') && isDoubleSided,
+      unitPrice,
+      totalPrice: total,
+      isIndividual,
+      detailsText: detailsParts.join(' • ')
+    };
+
+    setCart(prev => [...prev, newItem]);
+  };
+
+  const handleRemoveFromCart = (id: string) => {
+    setCart(prev => prev.filter(item => item.id !== id));
+  };
+
+  const cartGrandTotal = useMemo(() => {
+    return cart.reduce((acc, item) => acc + item.totalPrice, 0);
+  }, [cart]);
 
   return (
     <div className="flex flex-col lg:flex-row gap-8 lg:gap-12">
@@ -406,6 +475,69 @@ export function CalculatorClient({
           </AnimatePresence>
 
           <div className="flex flex-col gap-4">
+            <button
+              onClick={handleAddToCart}
+              className="w-full py-4 rounded-2xl border-2 border-theme-highlight bg-theme-highlight/10 text-theme-highlight font-black text-lg hover:bg-theme-highlight hover:text-[var(--theme-btn-text)] transition-all flex items-center justify-center gap-2 cursor-pointer shadow-sm active:scale-95"
+            >
+              <Plus size={20} strokeWidth={3} /> Добавить позицию в расчет
+            </button>
+          </div>
+
+          {/* Список позиций в заказе / Корзина */}
+          {cart.length > 0 && (
+            <div className="mt-8 pt-8 border-t-2 border-theme-border space-y-4">
+              <div className="flex items-center justify-between mb-4">
+                <h4 className="font-display font-black text-xl text-theme-text flex items-center gap-2">
+                  <ShoppingCart size={20} className="text-theme-highlight" /> Позиции заказа ({cart.length})
+                </h4>
+                <button
+                  onClick={() => setCart([])}
+                  className="text-xs font-bold text-theme-muted hover:text-red-500 transition-colors"
+                >
+                  Очистить
+                </button>
+              </div>
+
+              <div className="space-y-3 max-h-[320px] overflow-y-auto pr-1">
+                {cart.map((item, idx) => (
+                  <div
+                    key={item.id}
+                    className="p-4 bg-theme-bg rounded-2xl border-2 border-theme-border flex items-start justify-between gap-3 text-sm"
+                  >
+                    <div className="space-y-1 overflow-hidden">
+                      <div className="font-black text-theme-text flex items-center gap-2">
+                        <span>{idx + 1}. {item.productTypeName}</span>
+                        <span className="text-xs px-2 py-0.5 bg-theme-surface rounded-full border border-theme-border font-bold">
+                          {item.quantity} шт
+                        </span>
+                      </div>
+                      <p className="text-xs font-bold text-theme-muted truncate">
+                        {item.detailsText}
+                      </p>
+                      <div className="text-xs font-black text-theme-accent">
+                        {item.isIndividual ? 'Индивидуальный расчет' : `${item.totalPrice.toLocaleString('ru-RU')} ₽ (${item.unitPrice} ₽/шт)`}
+                      </div>
+                    </div>
+
+                    <button
+                      onClick={() => handleRemoveFromCart(item.id)}
+                      className="text-theme-muted hover:text-red-500 p-1 rounded-lg transition-colors shrink-0 mt-0.5"
+                      title="Удалить позицию"
+                    >
+                      <Trash2 size={18} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+
+              <div className="pt-4 border-t-2 border-theme-border flex items-center justify-between text-theme-text font-display font-black">
+                <span className="text-lg">Общий итог заказа:</span>
+                <span className="text-3xl text-theme-accent">{cartGrandTotal.toLocaleString('ru-RU')} ₽</span>
+              </div>
+            </div>
+          )}
+
+          <div className="mt-8 flex flex-col gap-4">
             <label className="flex items-start gap-3 cursor-pointer group">
               <input type="checkbox" required className="w-5 h-5 mt-0.5 accent-theme-accent shrink-0" />
               <span className="font-medium text-theme-muted text-sm leading-tight group-hover:text-theme-text transition-colors">
@@ -414,7 +546,7 @@ export function CalculatorClient({
             </label>
 
             <button className="anime-button w-full py-5 text-xl flex items-center justify-center gap-3 active:scale-95">
-              {isIndividual ? 'Отправить на расчет менеджеру' : 'Перейти к оформлению'} <ArrowRight size={24} strokeWidth={3} />
+              {isIndividual || cart.some(i => i.isIndividual) ? 'Отправить на расчет менеджеру' : 'Перейти к оформлению'} <ArrowRight size={24} strokeWidth={3} />
             </button>
           </div>
 
