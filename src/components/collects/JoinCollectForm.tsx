@@ -1,9 +1,12 @@
 'use client';
 
-import { useState, useTransition } from 'react';
-import { createParticipantRequest, submitParticipantLayouts } from '@/actions/client/collectActions';
-import { Check, UploadCloud, User, Mail, MessageCircle, FileImage, Link as LinkIcon, Hash } from 'lucide-react';
-import Link from 'next/link';
+import { useRef, useState, useTransition, type FormEvent } from 'react';
+import { ArrowUpRight, Check, LoaderCircle, Send, Sparkles } from 'lucide-react';
+import { toast } from 'sonner';
+import { createParticipantRequest } from '@/actions/client/collectActions';
+import { collectRequestSchema, type CollectRequest } from '@/lib/validations/collect-request';
+import { JoinCollectFields } from './JoinCollectFields';
+import { JoinCollectSuccess } from './JoinCollectSuccess';
 
 interface Props {
   collectId: string;
@@ -12,258 +15,124 @@ interface Props {
 }
 
 export function JoinCollectForm({ collectId, title, driveLink }: Props) {
-  const [step, setStep] = useState<1 | 2 | 3>(1);
-  const [participantId, setParticipantId] = useState<string | null>(null);
+  const [receipt, setReceipt] = useState<CollectRequest | null>(null);
+  const [summary, setSummary] = useState({ layoutName: '', quantity: '', email: '' });
   const [error, setError] = useState<string | null>(null);
-  
   const [isPending, startTransition] = useTransition();
+  const submitting = useRef(false);
 
-  const handleStep1Submit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (submitting.current) return;
+    const form = event.currentTarget;
+    const formData = new FormData(form);
+    const parsed = collectRequestSchema.safeParse(Object.fromEntries(formData));
     setError(null);
-    const formData = new FormData(e.currentTarget);
-    formData.append('collectId', collectId);
 
+    if (!parsed.success) {
+      const issue = parsed.error.issues[0];
+      setError(issue.message);
+      toast.error(issue.message);
+      const field = form.elements.namedItem(String(issue.path[0]));
+      if (field instanceof HTMLElement) field.focus();
+      return;
+    }
+
+    submitting.current = true;
     startTransition(async () => {
-      const res = await createParticipantRequest(formData);
-      if (res.error) {
-        setError(res.error);
-        return;
-      }
-      if (res.success && res.participantId) {
-        setParticipantId(res.participantId);
-        setStep(2);
+      try {
+        const result = await createParticipantRequest(formData);
+        if (!result.success) {
+          setError(result.error);
+          toast.error(result.error);
+          return;
+        }
+        setReceipt(parsed.data);
+        toast.success('Заявка в коллект отправлена!');
+      } catch {
+        const message = 'Не удалось отправить заявку. Проверь соединение и попробуй ещё раз.';
+        setError(message);
+        toast.error(message);
+      } finally {
+        submitting.current = false;
       }
     });
-  };
+  }
 
-  const handleStep2Submit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    if (!participantId) return;
-    setError(null);
-    const formData = new FormData(e.currentTarget);
-
-    startTransition(async () => {
-      const res = await submitParticipantLayouts(participantId, collectId, formData);
-      if (res.error) {
-        setError(res.error);
-        return;
-      }
-      if (res.success) {
-        setStep(3);
-      }
-    });
-  };
+  if (receipt) {
+    return <JoinCollectSuccess title={title} request={receipt} />;
+  }
 
   return (
-    <div className="max-w-2xl mx-auto bg-theme-surface anime-border anime-shadow rounded-[40px] p-8 md:p-12 overflow-hidden relative">
-      {/* Прогресс шагов */}
-      <div className="flex items-center justify-between mb-10 relative">
-        <div className="absolute left-0 top-1/2 -translate-y-1/2 w-full h-1 bg-theme-bg -z-10" />
-        <div 
-          className="absolute left-0 top-1/2 -translate-y-1/2 h-1 bg-theme-highlight -z-10 transition-all duration-500"
-          style={{ width: step === 1 ? '0%' : step === 2 ? '50%' : '100%' }}
-        />
-        {[1, 2, 3].map((num) => (
-          <div 
-            key={num}
-            className={`w-10 h-10 rounded-full flex items-center justify-center font-black border-2 transition-colors ${
-              step >= num 
-                ? 'bg-theme-highlight border-theme-highlight text-theme-bg' 
-                : 'bg-theme-surface border-theme-border text-theme-muted'
-            }`}
-          >
-            {step > num ? <Check size={20} strokeWidth={3} /> : num}
-          </div>
-        ))}
-      </div>
+    <div>
+      <header className="mb-10 max-w-2xl">
+        <span className="mb-4 inline-flex items-center gap-2 rounded-full bg-theme-accent/10 px-4 py-2 text-sm font-extrabold text-theme-text">
+          <Sparkles size={16} aria-hidden="true" /> Твой мерч — в общей компании
+        </span>
+        <h1 className="mb-3 font-display text-4xl font-black text-theme-text sm:text-5xl">Присоединяйся к коллекту</h1>
+        <p className="mb-3 break-words text-xl font-extrabold text-theme-text">{title}</p>
+        <p className="text-lg font-medium leading-relaxed text-theme-muted">
+          Оставь контакты и расскажи, что печатаем. Всё для заявки — на этой странице.
+        </p>
+      </header>
 
-      {error && (
-        <div className="mb-6 p-4 bg-theme-yellow-bg text-theme-yellow-text border-2 border-theme-yellow-text rounded-[20px] font-bold">
-          {error}
-        </div>
-      )}
+      <form onSubmit={handleSubmit} onChange={(event) => {
+        const data = new FormData(event.currentTarget);
+        setSummary({
+          layoutName: String(data.get('layoutName') ?? '').trim(),
+          quantity: String(data.get('quantity') ?? ''),
+          email: String(data.get('email') ?? '').trim(),
+        });
+      }} className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_340px] lg:gap-8" aria-busy={isPending}>
+        <input type="hidden" name="collectId" value={collectId} />
+        <fieldset disabled={isPending} className="min-w-0 space-y-6 disabled:opacity-70">
+          <legend className="sr-only">Контакты и данные макета</legend>
+          <JoinCollectFields driveLink={driveLink} />
+        </fieldset>
 
-      {/* ШАГ 1: КОНТАКТЫ */}
-      {step === 1 && (
-        <form onSubmit={handleStep1Submit} className="flex flex-col gap-6 animate-in fade-in slide-in-from-right-4">
-          <div className="text-center mb-4">
-            <h2 className="text-3xl font-display font-black text-theme-text mb-2">Запись в коллект</h2>
-            <p className="text-theme-muted font-bold">{title}</p>
+        <aside className="anime-border anime-shadow min-w-0 bg-theme-surface p-6 sm:p-8 lg:sticky lg:top-8" aria-label="Сводка заявки">
+          <div className="mb-6 border-b-2 border-dashed border-theme-border pb-6">
+            <p className="mb-2 text-xs font-black uppercase tracking-widest text-theme-muted">Твоя заявка</p>
+            <h2 className="break-words font-display text-2xl font-black text-theme-text">{title}</h2>
           </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="flex flex-col gap-2">
-              <label className="font-extrabold text-theme-text ml-2 flex items-center gap-2">
-                <User size={18} /> Твой никнейм
-              </label>
-              <input 
-                name="nickname" 
-                required 
-                autoFocus
-                className="bg-theme-bg border-2 border-theme-border rounded-[20px] px-5 py-4 text-theme-text font-bold outline-none focus:border-theme-highlight transition-all" 
-                placeholder="Арт-Самурай"
-              />
+          <dl className="space-y-5 text-sm">
+            <div>
+              <dt className="mb-1 font-bold text-theme-muted">Что печатаем</dt>
+              <dd className="break-words font-extrabold text-theme-text">{summary.layoutName || 'Добавь название макета'}</dd>
             </div>
-            
-            <div className="flex flex-col gap-2">
-              <label className="font-extrabold text-theme-text ml-2 flex items-center gap-2">
-                <Mail size={18} /> Email
-              </label>
-              <input 
-                name="email" 
-                type="email"
-                required 
-                className="bg-theme-bg border-2 border-theme-border rounded-[20px] px-5 py-4 text-theme-text font-bold outline-none focus:border-theme-highlight transition-all" 
-                placeholder="pochta@mail.com"
-              />
+            <div className="flex items-baseline justify-between gap-3">
+              <dt className="font-bold text-theme-muted">Тираж</dt>
+              <dd className="font-black text-theme-text">{summary.quantity ? `${summary.quantity} шт.` : 'от 10 шт.'}</dd>
             </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="flex flex-col gap-2">
-              <label className="font-extrabold text-theme-text ml-2 text-sm">ID ВКонтакте</label>
-              <input 
-                name="vkId" 
-                className="bg-theme-bg border-2 border-theme-border rounded-[20px] px-5 py-4 text-theme-text font-bold outline-none focus:border-theme-highlight transition-all" 
-                placeholder="vk.com/id"
-              />
+            <div>
+              <dt className="mb-1 font-bold text-theme-muted">Email для связи</dt>
+              <dd className="break-words font-extrabold text-theme-text">{summary.email || 'Укажи в контактах'}</dd>
             </div>
-            <div className="flex flex-col gap-2">
-              <label className="font-extrabold text-theme-text ml-2 flex items-center gap-2 text-sm">
-                <MessageCircle size={16} /> Telegram
-              </label>
-              <input 
-                name="telegram" 
-                className="bg-theme-bg border-2 border-theme-border rounded-[20px] px-5 py-4 text-theme-text font-bold outline-none focus:border-theme-highlight transition-all" 
-                placeholder="@username"
-              />
-            </div>
-          </div>
+          </dl>
+          <p className="my-6 rounded-2xl bg-theme-accent/10 p-4 text-sm font-medium leading-relaxed text-theme-text">
+            Точную стоимость рассчитаем после проверки макета. Сейчас оплачивать ничего не нужно.
+          </p>
 
-          <div className="flex flex-col gap-4 mt-4">
-            <label className="flex items-start gap-3 cursor-pointer group">
-              <input type="checkbox" required className="w-5 h-5 mt-0.5 accent-theme-accent shrink-0" />
-              <span className="font-medium text-theme-muted text-sm leading-tight group-hover:text-theme-text transition-colors">
-                Я даю согласие на обработку персональных данных и соглашаюсь с <a href="/privacy" className="text-theme-accent hover:underline" target="_blank">Политикой конфиденциальности</a> и <a href="/terms" className="text-theme-accent hover:underline" target="_blank">условиями Оферты</a>.
-              </span>
-            </label>
-
-            <button
-              type="submit"
-              disabled={isPending}
-              className="anime-button px-6 py-4 text-lg flex items-center justify-center gap-2"
-            >
-              {isPending ? 'Загрузка...' : 'Продолжить →'}
-            </button>
-          </div>
-        </form>
-      )}
-
-      {/* ШАГ 2: ДАННЫЕ МАКЕТА */}
-      {step === 2 && (
-        <form onSubmit={handleStep2Submit} className="flex flex-col gap-8 animate-in fade-in slide-in-from-right-4">
-          <div className="text-center">
-            <h2 className="text-3xl font-display font-black text-theme-text mb-2">Данные макета</h2>
-            <p className="text-theme-muted font-bold">Опиши, что печатаем и прикрепи ссылку</p>
-          </div>
-          
-          <div className="flex flex-col gap-2">
-            <label className="font-extrabold text-theme-text ml-2 flex items-center gap-2">
-              <FileImage size={18} /> Название макета
-            </label>
-            <input 
-              name="layoutName" 
-              required 
-              autoFocus
-              className="bg-theme-bg border-2 border-theme-border rounded-[20px] px-5 py-4 text-theme-text font-bold outline-none focus:border-theme-highlight transition-all" 
-              placeholder="Например: Брелок Аянами Рэй 5см голография"
-            />
-          </div>
-
-          <div className="flex flex-col gap-2">
-            <label className="font-extrabold text-theme-text ml-2 flex items-center gap-2">
-              <Hash size={18} /> Тираж (шт.)
-            </label>
-            <input 
-              name="quantity" 
-              type="number"
-              min="10"
-              required 
-              className="bg-theme-bg border-2 border-theme-border rounded-[20px] px-5 py-4 text-theme-text font-bold outline-none focus:border-theme-highlight transition-all" 
-              placeholder="10"
-            />
-            <span className="text-theme-muted text-xs font-bold ml-2">Минимальный заказ на 1 макет — 10 штук.</span>
-          </div>
-
-          <div className="flex flex-col gap-2">
-            <label className="font-extrabold text-theme-text ml-2 flex items-center gap-2">
-              <LinkIcon size={18} /> Ссылка на файлы
-            </label>
-            <input 
-              name="layoutLink" 
-              type="url"
-              required 
-              className="bg-theme-bg border-2 border-theme-border rounded-[20px] px-5 py-4 text-theme-text font-bold outline-none focus:border-theme-highlight transition-all" 
-              placeholder="Google Диск / Яндекс Диск"
-            />
-          </div>
-
-          {driveLink && (
-            <div className="bg-theme-bg p-4 rounded-[20px] border-2 border-theme-border text-sm font-bold flex flex-col gap-2">
-              <span className="text-theme-muted">💡 Или загрузи файлы в общую папку коллекта:</span>
-              <a 
-                href={driveLink} 
-                target="_blank" 
-                rel="noreferrer"
-                className="text-theme-highlight hover:underline flex items-center gap-2"
-              >
-                <UploadCloud size={16} /> Открыть общую папку Google Диск
-              </a>
-            </div>
-          )}
-
-          <label className="flex items-start gap-4 cursor-pointer p-5 border-2 border-theme-border rounded-[20px] hover:border-theme-highlight transition-colors bg-theme-bg/50 group">
-            <div className="relative flex items-center justify-center mt-0.5">
-              <input 
-                type="checkbox" 
-                required 
-                className="peer appearance-none w-6 h-6 border-2 border-theme-muted rounded-md checked:border-theme-highlight checked:bg-theme-highlight transition-colors cursor-pointer"
-              />
-              <Check size={16} strokeWidth={4} className="absolute text-theme-bg opacity-0 peer-checked:opacity-100 pointer-events-none transition-opacity" />
-            </div>
-            <span className="font-bold text-theme-text select-none group-hover:text-theme-highlight transition-colors leading-tight">
-              Макеты проверены по чек-листу.
+          <label className="mb-5 flex cursor-pointer items-start gap-3 text-xs font-medium leading-relaxed text-theme-muted">
+            <input name="consent" type="checkbox" required disabled={isPending} className="anime-border mt-1 h-5 w-5 shrink-0 accent-theme-accent" />
+            <span>
+              Соглашаюсь с <a href="/privacy" target="_blank" rel="noreferrer" className="font-bold text-theme-text underline underline-offset-2">политикой конфиденциальности</a> и <a href="/terms" target="_blank" rel="noreferrer" className="font-bold text-theme-text underline underline-offset-2">условиями оферты</a>, даю согласие на обработку персональных данных.
             </span>
           </label>
 
-          <button 
-            type="submit"
-            disabled={isPending}
-            className="anime-button px-6 py-4 text-lg w-full"
-          >
-            {isPending ? 'Сохраняем...' : 'Отправить заявку'}
+          {error && <p role="alert" className="mb-4 rounded-2xl bg-theme-yellow-bg p-4 text-sm font-bold text-theme-yellow-text">{error}</p>}
+          <button type="submit" disabled={isPending} className="anime-button flex w-full items-center justify-center gap-2 px-4 py-4 text-base disabled:pointer-events-none disabled:opacity-60">
+            {isPending ? <LoaderCircle size={20} className="animate-spin" aria-hidden="true" /> : <Send size={18} aria-hidden="true" />}
+            {isPending ? 'Отправляем заявку…' : 'Отправить заявку'}
           </button>
-        </form>
-      )}
-
-      {/* ШАГ 3: УСПЕХ */}
-      {step === 3 && (
-        <div className="text-center py-10 flex flex-col items-center gap-6 animate-in zoom-in-95">
-          <div className="w-24 h-24 bg-theme-highlight rounded-full flex items-center justify-center text-theme-bg anime-shadow">
-            <Check size={48} strokeWidth={4} />
-          </div>
-          <div>
-            <h2 className="text-3xl font-display font-black text-theme-text mb-3">Заявка отправлена!</h2>
-            <p className="text-theme-muted font-bold text-lg max-w-sm mx-auto">
-              Менеджер проверит макеты, посчитает точную сумму и обновит статус твоей заявки.
-            </p>
-          </div>
-          <Link href="/collects" className="anime-button px-8 py-3 mt-4">
-            Вернуться к коллектам
-          </Link>
-        </div>
-      )}
+          <p className="mt-5 flex items-center justify-center gap-2 text-xs font-bold text-theme-muted">
+            <Check size={14} aria-hidden="true" /> Сначала проверка, потом расчёт
+          </p>
+          <a href="/tools/checklist" target="_blank" rel="noreferrer" className="mt-6 flex items-center justify-center gap-1 text-sm font-bold text-theme-text underline underline-offset-4 hover:text-theme-highlight">
+            Помощь с подготовкой <ArrowUpRight size={16} aria-hidden="true" />
+          </a>
+        </aside>
+      </form>
     </div>
   );
 }

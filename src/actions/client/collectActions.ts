@@ -2,79 +2,63 @@
 
 import { db } from '@/db';
 import { collectParticipants, collects } from '@/db/schema';
+import { getSession } from '@/lib/auth';
+import { collectRequestSchema } from '@/lib/validations/collect-request';
 import { eq } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 
-export async function createParticipantRequest(formData: FormData) {
-  const collectId = formData.get('collectId')?.toString();
-  const nickname = formData.get('nickname')?.toString()?.trim();
-  const email = formData.get('email')?.toString()?.trim();
-  const vkId = formData.get('vkId')?.toString()?.trim();
-  const telegram = formData.get('telegram')?.toString()?.trim();
-  
-  if (!collectId || !nickname || !email) {
-    return { error: 'Заполни обязательные поля (Никнейм и Email)' };
+type RequestResult =
+  | { success: true; participantId: string }
+  | { success: false; error: string };
+
+// Публичная запись доступна и гостям; сессию используем для привязки к профилю.
+export async function createParticipantRequest(formData: FormData): Promise<RequestResult> {
+  const parsed = collectRequestSchema.safeParse(Object.fromEntries(formData));
+  if (!parsed.success) {
+    return { success: false, error: parsed.error.issues[0].message };
   }
 
-  // Защита от дурака: проверяем, открыт ли коллект
-  const collectResult = await db
-    .select({ status: collects.status })
-    .from(collects)
-    .where(eq(collects.id, collectId))
-    .limit(1);
-
-  if (!collectResult.length) return { error: 'Коллект не найден' };
-  if (collectResult[0].status !== 'open') return { error: 'Запись в этот коллект закрыта' };
-
+  const { collectId, nickname, email, vkId, telegram, layoutName, layoutLink, quantity } = parsed.data;
+  const session = await getSession();
   const participantId = crypto.randomUUID();
 
+  let result: RequestResult;
   try {
-    await db.insert(collectParticipants).values({
-      id: participantId,
-      collectId,
-      nickname,
-      email,
-      vkId: vkId || null,
-      telegram: telegram || null,
-      quantity: 0,
-      totalPrice: 0,
-      status: 'new',
-      isLayoutsUploaded: false,
-    });
+    // Проверка набора и сохранение полной заявки происходят в одной транзакции.
+    result = await db.transaction(async (tx): Promise<RequestResult> => {
+      const [collect] = await tx.select({ status: collects.status })
+        .from(collects).where(eq(collects.id, collectId)).limit(1);
 
-    return { success: true, participantId };
-  } catch (error) {
-    console.error('Ошибка создания заявки:', error);
-    return { error: 'БД подавилась. Попробуй еще раз.' };
-  }
-}
+      if (!collect) return { success: false, error: 'Коллект не найден' };
+      if (collect.status !== 'open') return { success: false, error: 'Запись в этот коллект закрыта' };
 
-// Новый экшен для второго шага (Макеты)
-export async function submitParticipantLayouts(participantId: string, collectId: string, formData: FormData) {
-  const layoutName = formData.get('layoutName')?.toString()?.trim();
-  const layoutLink = formData.get('layoutLink')?.toString()?.trim();
-  const quantity = Number(formData.get('quantity'));
-
-  if (!participantId) return { error: 'ID участника не передан' };
-  if (!layoutName || !layoutLink || isNaN(quantity) || quantity < 10) {
-    return { error: 'Заполни название, ссылку и укажи тираж от 10 шт.' };
-  }
-
-  try {
-    await db.update(collectParticipants)
-      .set({ 
+      await tx.insert(collectParticipants).values({
+        id: participantId,
+        collectId,
+        userId: session?.userId ?? null,
+        nickname,
+        email,
+        vkId: vkId || null,
+        telegram: telegram || null,
         layoutName,
         layoutLink,
         quantity,
+        totalPrice: 0,
+        status: 'layouts_uploaded',
         isLayoutsUploaded: true,
-        status: 'layouts_uploaded' 
-      })
-      .where(eq(collectParticipants.id, participantId));
+      });
 
-    revalidatePath(`/admin/collects/${collectId}`);
-    return { success: true };
+      return { success: true, participantId };
+    });
   } catch (error) {
-    console.error('Ошибка обновления статуса:', error);
-    return { error: 'Не удалось сохранить данные макетов' };
+    console.error('Ошибка создания заявки в коллект:', error);
+    return { success: false, error: 'Не удалось отправить заявку. Попробуй ещё раз.' };
   }
+
+  if (result.success) {
+    revalidatePath(`/admin/collects/${collectId}`);
+    revalidatePath('/admin');
+    revalidatePath('/profile');
+  }
+  return result;
 }
