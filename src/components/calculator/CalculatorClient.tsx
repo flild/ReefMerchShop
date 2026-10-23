@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Calculator, ShoppingBag, ArrowRight, AlertCircle, Plus, Trash2, ShoppingCart } from 'lucide-react';
+import { Calculator, ShoppingBag, Send, AlertCircle, Plus, Trash2, ShoppingCart } from 'lucide-react';
 
 interface CartItem {
   id: string;
@@ -545,8 +545,54 @@ export function CalculatorClient({
               </span>
             </label>
 
-            <button className="anime-button w-full py-5 text-xl flex items-center justify-center gap-3 active:scale-95">
-              {isIndividual || cart.some(i => i.isIndividual) ? 'Отправить на расчет менеджеру' : 'Перейти к оформлению'} <ArrowRight size={24} strokeWidth={3} />
+            <button
+              type="button"
+              onClick={() => {
+                let text = `👋 Здравствуйте! Хочу оформить заказ / получить расчет.\n\n`;
+
+                if (cart.length > 0) {
+                  text += `📋 *Позиции заказа (${cart.length}):*\n`;
+                  cart.forEach((item, idx) => {
+                    text += `${idx + 1}. *${item.productTypeName}* — ${item.quantity} шт.\n`;
+                    text += `   • Параметры: ${item.detailsText}\n`;
+                    text += `   • Стоимость: ${item.isIndividual ? 'Индивидуальный расчет' : `${item.totalPrice.toLocaleString('ru-RU')} ₽`}\n\n`;
+                  });
+                  text += `💰 *Общий итог:* ${cartGrandTotal.toLocaleString('ru-RU')} ₽`;
+                } else {
+                  const typeNames: Record<string, string> = {
+                    keychain: 'Брелок',
+                    stand: 'Стенд',
+                    icecream_keychain: 'Мороженка',
+                    nfc_card: 'NFC'
+                  };
+                  const typeName = typeNames[productType] || 'Изделие';
+                  const selectedMat = dbMaterials.find(m => m.id === materialId);
+                  const selectedAcc = dbAccessories.find(a => a.id === accessoryId);
+                  const matName = (productType === 'keychain' || productType === 'stand') && selectedMat ? stripEmojis(selectedMat.name) : undefined;
+                  const accName = productType === 'keychain' && selectedAcc ? stripEmojis(selectedAcc.name) : undefined;
+
+                  let detailsParts: string[] = [];
+                  if (productType === 'keychain' || productType === 'stand') {
+                    detailsParts.push(`${size} мм`);
+                    if (matName) detailsParts.push(matName);
+                    if (accName) detailsParts.push(`Фурнитура: ${accName}`);
+                    if (isDoubleSided) detailsParts.push('Двусторонняя печать');
+                  } else {
+                    detailsParts.push('Стандартные параметры');
+                  }
+
+                  text += `📋 *Изделие:* ${typeName}\n`;
+                  text += `🔢 *Количество:* ${quantity} шт.\n`;
+                  text += `⚙️ *Параметры:* ${detailsParts.join(' • ')}\n`;
+                  text += `💰 *Предварительная стоимость:* ${isIndividual ? 'Индивидуальный расчет' : `${total.toLocaleString('ru-RU')} ₽`}`;
+                }
+
+                const telegramUrl = `https://t.me/merchreef?text=${encodeURIComponent(text)}`;
+                window.open(telegramUrl, '_blank', 'noopener,noreferrer');
+              }}
+              className="anime-button w-full py-5 text-xl flex items-center justify-center gap-3 active:scale-95 cursor-pointer"
+            >
+              Связаться с менеджером в Telegram <Send size={22} strokeWidth={2.5} />
             </button>
           </div>
 

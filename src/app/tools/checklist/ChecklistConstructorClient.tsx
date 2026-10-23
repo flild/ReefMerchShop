@@ -121,6 +121,32 @@ export function ChecklistConstructorClient({ templates }: { templates: Checklist
     });
   };
 
+  const handleEnableDoubleSided = () => {
+    if (!selectedTemplate) return;
+    const sideBlock = selectedTemplate.blocks.find((b) => {
+      const t = b.title.toLowerCase();
+      return t.includes('сторон') || t.includes('печать') || t.includes('вид');
+    });
+
+    if (sideBlock) {
+      let options: any[] = [];
+      try {
+        options = sideBlock.optionsJson ? JSON.parse(sideBlock.optionsJson) : [];
+      } catch {}
+
+      const doubleOption = options.find((opt: any) => {
+        const label = String(opt.label || opt || '').toLowerCase();
+        return label.includes('двусторон') || label.includes('4+4') || label.includes('2') || label.includes('обе');
+      });
+
+      const newValue = doubleOption ? (doubleOption.label || doubleOption) : (options[0]?.label || options[0] || '4+4 (Двусторонняя печать)');
+      handleAnswerChange(sideBlock.id, newValue);
+      toast.success('Переключено на двустороннюю печать. Лицевая сторона разблокирована!');
+    } else {
+      toast.info('Лицевая сторона разблокирована.');
+    }
+  };
+
   const isFrontSideImageBlock = (block: ChecklistBlock): boolean => {
     if (block.type !== 'image' && block.type !== 'file') return false;
     const title = block.title.toLowerCase();
@@ -475,18 +501,27 @@ export function ChecklistConstructorClient({ templates }: { templates: Checklist
                       {(block.type === 'image' || block.type === 'file') && (
                         <div>
                           {isBlockedFront ? (
-                            <div className="p-4 rounded-2xl border-2 border-dashed border-amber-500/40 bg-amber-500/10 flex items-start gap-3">
-                              <div className="p-2 rounded-xl bg-amber-500/20 text-amber-600 shrink-0 mt-0.5">
-                                <Lock size={16} />
-                              </div>
-                              <div className="space-y-1">
-                                <div className="text-xs font-black text-theme-text uppercase tracking-wider">
-                                  Лицевая сторона заблокирована
+                            <div className="p-4 rounded-2xl border-2 border-dashed border-amber-500/40 bg-amber-500/10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                              <div className="flex items-start gap-3">
+                                <div className="p-2 rounded-xl bg-amber-500/20 text-amber-600 shrink-0 mt-0.5">
+                                  <Lock size={16} />
                                 </div>
-                                <p className="text-xs text-theme-muted font-medium leading-relaxed">
-                                  Выбрана односторонняя печать. По стандарту изображение наносится только на шершавую сторону (оборот).
-                                </p>
+                                <div className="space-y-1">
+                                  <div className="text-xs font-black text-theme-text uppercase tracking-wider">
+                                    Лицевая сторона заблокирована
+                                  </div>
+                                  <p className="text-xs text-theme-muted font-medium leading-relaxed">
+                                    Выбрана односторонняя печать. По стандарту изображение наносится только на оборот.
+                                  </p>
+                                </div>
                               </div>
+                              <button
+                                type="button"
+                                onClick={handleEnableDoubleSided}
+                                className="px-3 py-1.5 rounded-xl border border-amber-500/40 bg-amber-500/20 text-amber-800 font-bold text-xs hover:bg-amber-500 hover:text-white transition-all cursor-pointer shrink-0"
+                              >
+                                Включить двустороннюю печать
+                              </button>
                             </div>
                           ) : (
                             <div className="space-y-3">
