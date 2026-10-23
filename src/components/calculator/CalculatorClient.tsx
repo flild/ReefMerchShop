@@ -592,7 +592,7 @@ export function CalculatorClient({
               }}
               className="anime-button w-full py-5 text-xl flex items-center justify-center gap-3 active:scale-95 cursor-pointer"
             >
-              Связаться с менеджером в Telegram <Send size={22} strokeWidth={2.5} />
+              Связаться с менеджером <Send size={22} strokeWidth={2.5} />
             </button>
           </div>
 
