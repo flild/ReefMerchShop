@@ -59,26 +59,27 @@ export default async function JoinCollectPage({ params }: PageProps) {
   if (!collect) notFound();
 
   return (
-    <main className="min-h-screen bg-theme-bg manga-dots py-10 sm:py-16">
+    <main className="min-h-screen bg-theme-bg py-8 sm:py-12">
       <BreadcrumbJsonLd items={[
         { name: 'Главная', item: '/' },
         { name: 'Коллекты', item: '/collects' },
         { name: collect.title, item: `/collects/${collect.id}/join` },
       ]} />
-      <div className="mx-auto max-w-6xl px-4 sm:px-6">
+      <div className="mx-auto max-w-3xl px-4 sm:px-6">
         <nav className="mb-8 flex flex-wrap items-center gap-2 text-sm font-bold text-theme-muted" aria-label="Хлебные крошки">
           <Link href="/collects" className="hover:text-theme-text">Коллекты</Link>
           <ChevronRight size={14} aria-hidden="true" />
           <span aria-current="page" className="text-theme-text">Запись в коллект</span>
         </nav>
         {collect.status === 'open' ? <JoinCollectForm
-          collectId={collect.id} 
-          title={collect.title} 
-          driveLink={collect.driveLink} 
+          collectId={collect.id}
+          title={collect.title}
+          driveLink={collect.driveLink}
         /> : (
-          <section className="anime-border anime-shadow mx-auto max-w-2xl bg-theme-surface p-8 text-center sm:p-12">
+          <section className="py-8">
             <h1 className="mb-4 font-display text-3xl font-black text-theme-text">Набор закрыт</h1>
-            <p className="font-bold text-theme-muted">В этот коллект больше нельзя записаться. Посмотри другие открытые сборы.</p>
+            <p className="mb-2 break-words text-lg font-bold text-theme-text">{collect.title}</p>
+            <p className="text-theme-muted">Заявки в этот коллект больше не принимаются.</p>
             <Link href="/collects" className="anime-button mt-8 inline-flex px-6 py-4">Вернуться к коллектам</Link>
           </section>
         )}
