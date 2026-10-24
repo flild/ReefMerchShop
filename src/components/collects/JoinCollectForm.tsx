@@ -125,9 +125,7 @@ export function JoinCollectForm({ collectId, title, driveLink }: Props) {
             {isPending ? <LoaderCircle size={20} className="animate-spin" aria-hidden="true" /> : <Send size={18} aria-hidden="true" />}
             {isPending ? 'Отправляем заявку…' : 'Отправить заявку'}
           </button>
-          <p className="mt-5 flex items-center justify-center gap-2 text-xs font-bold text-theme-muted">
-            <Check size={14} aria-hidden="true" /> Сначала проверка, потом расчёт
-          </p>
+          
           <a href="/tools/checklist" target="_blank" rel="noreferrer" className="mt-6 flex items-center justify-center gap-1 text-sm font-bold text-theme-text underline underline-offset-4 hover:text-theme-highlight">
             Помощь с подготовкой <ArrowUpRight size={16} aria-hidden="true" />
           </a>
