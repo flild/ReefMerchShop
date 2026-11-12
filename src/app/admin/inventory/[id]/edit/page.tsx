@@ -1,3 +1,4 @@
+import { assertStaffManager as requirePageAccess } from '@/lib/auth';
 // src/app/admin/inventory/[id]/edit/page.tsx
 import { db } from '@/db';
 import { materials, materialCategories, materialTypes } from '@/db/schema';
@@ -13,6 +14,7 @@ interface EditMaterialPageProps {
 }
 
 export default async function EditMaterialPage({ params }: EditMaterialPageProps) {
+  await requirePageAccess();
   const { id } = await params;
 
   const [material] = await db

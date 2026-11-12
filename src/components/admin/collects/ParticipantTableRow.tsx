@@ -9,7 +9,7 @@ import { toast } from 'sonner';
 type Participant = {
   id: string;
   quantity: number;
-  totalPrice: number;
+  totalPrice: number | null;
   status: string;
   isLayoutsUploaded: boolean;
   nickname: string | null;
@@ -359,15 +359,16 @@ export function ParticipantTableRow({ participant, collectId, canViewFinances }:
             participantId={participant.id}
             currentStatus={participant.status}
             collectId={collectId}
+            canManagePayments={canViewFinances}
           />
-          <button
+          {canViewFinances && <button
             type="button"
             onClick={() => setIsEditing(true)}
             className="p-2 text-theme-muted hover:text-theme-highlight transition-colors bg-theme-surface border-2 border-theme-border hover:border-theme-highlight rounded-[12px] cursor-pointer"
             title="Редактировать заказ полностью"
           >
             ✏️
-          </button>
+          </button>}
         </div>
       </td>
     </tr>

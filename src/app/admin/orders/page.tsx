@@ -1,3 +1,4 @@
+import { assertStaff as requirePageAccess } from '@/lib/auth';
 import { db } from '@/db';
 import { orders, users } from '@/db/schema';
 import { eq, desc } from 'drizzle-orm';
@@ -21,6 +22,7 @@ function getStatusColorClass(status: string) {
 }
 
 export default async function OrdersAdminPage() {
+  await requirePageAccess();
   const session = await getSession();
   const isMaker = session?.role === 'maker';
 

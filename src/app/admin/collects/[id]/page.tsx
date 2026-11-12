@@ -1,3 +1,4 @@
+import { assertStaff as requirePageAccess } from '@/lib/auth';
 // src/app/admin/collects/[id]/page.tsx
 import { db } from '@/db';
 import { collects, collectParticipants } from '@/db/schema';
@@ -17,6 +18,7 @@ interface PageProps {
 }
 
 export default async function CollectDetailsAdminPage({ params }: PageProps) {
+  await requirePageAccess();
   const { id } = await params;
   const session = await getSession();
   const isMaker = session?.role === 'maker';
@@ -195,7 +197,7 @@ export default async function CollectDetailsAdminPage({ params }: PageProps) {
               {participants.map((item) => (
                 <ParticipantTableRow
                   key={item.id}
-                  participant={item}
+                  participant={{ ...item, totalPrice: isMaker ? null : item.totalPrice }}
                   collectId={id}
                   canViewFinances={!isMaker}
                 />

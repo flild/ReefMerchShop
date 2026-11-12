@@ -1,3 +1,4 @@
+import { assertStaffManager as requirePageAccess } from '@/lib/auth';
 import { CollectForm } from '@/components/admin/collects/CollectForm';
 import { getSession } from '@/lib/auth';
 import { redirect } from 'next/navigation';
@@ -5,6 +6,7 @@ import { redirect } from 'next/navigation';
 export const dynamic = 'force-dynamic';
 
 export default async function NewCollectPage() {
+  await requirePageAccess();
   const session = await getSession();
   if (!session || (session.role !== 'admin' && session.role !== 'manager')) {
     redirect('/admin/collects');

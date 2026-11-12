@@ -1,3 +1,4 @@
+import { assertStaffManager as requirePageAccess } from '@/lib/auth';
 import { db } from '@/db';
 import { materialCategories, materialTypes } from '@/db/schema';
 import { MaterialForm } from '@/components/admin/inventory/MaterialForm';
@@ -6,6 +7,7 @@ import Link from 'next/link';
 export const dynamic = 'force-dynamic';
 
 export default async function NewMaterialPage() {
+  await requirePageAccess();
   const categories = await db.select().from(materialCategories);
   const types = await db.select().from(materialTypes);
 

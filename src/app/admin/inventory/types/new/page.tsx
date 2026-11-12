@@ -1,10 +1,12 @@
+import { assertStaffManager as requirePageAccess } from '@/lib/auth';
 // src/app/admin/inventory/types/new/page.tsx
 import { MaterialTypeForm } from '@/components/admin/inventory/MaterialTypeForm';
 import Link from 'next/link';
 
 export const dynamic = 'force-dynamic';
 
-export default function NewMaterialTypePage() {
+export default async function NewMaterialTypePage() {
+  await requirePageAccess();
   return (
     <div className="flex flex-col gap-8">
       <header className="flex items-center gap-4">

@@ -1,3 +1,4 @@
+import { assertStaff as requirePageAccess } from '@/lib/auth';
 import { db } from '@/db';
 import {
   pricingTiers,
@@ -13,6 +14,7 @@ import { redirect } from 'next/navigation';
 export const dynamic = 'force-dynamic';
 
 export default async function AdminPricingPage() {
+  await requirePageAccess();
   const session = await getSession();
   if (!session || (session.role !== 'admin' && session.role !== 'manager')) {
     redirect('/');

@@ -1,3 +1,4 @@
+import { assertStaff as requirePageAccess } from '@/lib/auth';
 import { db } from '@/db';
 import { templates } from '@/db/schema';
 import Link from 'next/link';
@@ -10,6 +11,7 @@ import { desc } from 'drizzle-orm';
 export const dynamic = 'force-dynamic';
 
 export default async function TemplatesAdminPage() {
+  await requirePageAccess();
   const session = await getSession();
   if (!session || session.role !== 'admin') {
     redirect('/admin');

@@ -1,3 +1,4 @@
+import { assertStaffManager as requirePageAccess } from '@/lib/auth';
 import { db } from '@/db';
 import { collects } from '@/db/schema';
 import { eq } from 'drizzle-orm';
@@ -13,6 +14,7 @@ interface PageProps {
 }
 
 export default async function EditCollectPage({ params }: PageProps) {
+  await requirePageAccess();
   const session = await getSession();
   if (!session || (session.role !== 'admin' && session.role !== 'manager')) {
     redirect('/admin/collects');

@@ -1,12 +1,14 @@
 // src/actions/admin/collects.ts
 'use server';
+import { assertStaff, assertStaffManager } from '@/lib/auth';
+
 
 import { db } from '@/db';
 import { collects, collectParticipants } from '@/db/schema';
-import { eq, sql } from 'drizzle-orm';
+import { and, eq, sql } from 'drizzle-orm';
+import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
-import { getSession } from '@/lib/auth';
 import { collectSchema, participantSchema, updateParticipantDataSchema } from '@/lib/validations/collects';
 
 type ActionResponse = {
@@ -15,26 +17,11 @@ type ActionResponse = {
 };
 
 // Проверка прав на административные действия (только admin и manager)
-async function assertStaffManager() {
-  const session = await getSession();
-  if (!session || (session.role !== 'admin' && session.role !== 'manager')) {
-    throw new Error('Доступ запрещен: недостаточно прав');
-  }
-  return session;
-}
-
-// Проверка прав на базовый доступ к админке (admin, manager, maker)
-async function assertStaff() {
-  const session = await getSession();
-  if (!session || !['admin', 'manager', 'maker'].includes(session.role)) {
-    throw new Error('Доступ запрещен: авторизуйтесь как сотрудник');
-  }
-  return session;
-}
-
 export async function updateCollectStatus(id: string, newStatus: string): Promise<ActionResponse> {
   try {
     await assertStaffManager();
+    const parsed = z.enum(['open', 'review', 'in_progress', 'completed']).safeParse(newStatus);
+    if (!parsed.success) return { error: 'Некорректный статус коллекта' };
     await db.update(collects)
       .set({ status: newStatus })
       .where(eq(collects.id, id));
@@ -95,11 +82,15 @@ export async function updateParticipantStatus(
 ): Promise<ActionResponse> {
   try {
     // Смену рабочего статуса макета может производить и maker
-    await assertStaff();
+    const session = await assertStaff();
+    const parsed = z.enum(['new', 'layouts_uploaded', 'needs_fixes', 'approved', 'pending_payment', 'paid', 'production']).safeParse(newStatus);
+    if (!parsed.success || (session.role === 'maker' && ['pending_payment', 'paid'].includes(parsed.data))) {
+      return { error: 'Этот статус недоступен' };
+    }
 
     await db.update(collectParticipants)
       .set({ status: newStatus })
-      .where(eq(collectParticipants.id, participantId));
+      .where(and(eq(collectParticipants.id, participantId), eq(collectParticipants.collectId, collectId)));
       
     revalidatePath(`/admin/collects/${collectId}`);
     return { success: true };
@@ -217,7 +208,7 @@ export async function updateParticipantData(
   collectId: string, 
   data: unknown
 ): Promise<ActionResponse> {
-  const session = await assertStaff();
+  const session = await assertStaffManager();
   const isMaker = session.role === 'maker';
 
   const parsed = updateParticipantDataSchema.safeParse(data);
@@ -242,7 +233,7 @@ export async function updateParticipantData(
 
     await db.update(collectParticipants)
       .set(updatePayload)
-      .where(eq(collectParticipants.id, participantId));
+      .where(and(eq(collectParticipants.id, participantId), eq(collectParticipants.collectId, collectId)));
 
     if (!isMaker) {
       await syncCollectTotals(collectId);
@@ -259,7 +250,7 @@ export async function updateParticipantData(
 export async function deleteParticipant(participantId: string, collectId: string): Promise<ActionResponse> {
   try {
     await assertStaffManager();
-    await db.delete(collectParticipants).where(eq(collectParticipants.id, participantId));
+    await db.delete(collectParticipants).where(and(eq(collectParticipants.id, participantId), eq(collectParticipants.collectId, collectId)));
     await syncCollectTotals(collectId);
     
     revalidatePath(`/admin/collects/${collectId}`);
@@ -307,7 +298,7 @@ export async function updateParticipantPrice(
     await db
       .update(collectParticipants)
       .set({ totalPrice })
-      .where(eq(collectParticipants.id, participantId));
+      .where(and(eq(collectParticipants.id, participantId), eq(collectParticipants.collectId, collectId)));
 
     await syncCollectTotals(collectId);
 

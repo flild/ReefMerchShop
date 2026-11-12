@@ -7,6 +7,12 @@ const timestampMs = (name: string) =>
 
 // --- ТАБЛИЦЫ ---
 
+export const securityRateLimits = sqliteTable('security_rate_limits', {
+  key: text('key').primaryKey(),
+  attempts: integer('attempts').notNull(),
+  expiresAt: integer('expires_at').notNull(),
+});
+
 export const users = sqliteTable("users", {
   id: text("id").primaryKey(), // UUID
   name: text("name").notNull(),

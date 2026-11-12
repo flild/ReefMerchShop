@@ -1,3 +1,4 @@
+import { assertStaffManager as requirePageAccess } from '@/lib/auth';
 import { db } from '@/db';
 import { categories } from '@/db/schema';
 import { PortfolioForm } from '@/components/admin/portfolio/PortfolioForm';
@@ -5,6 +6,7 @@ import { PortfolioForm } from '@/components/admin/portfolio/PortfolioForm';
 export const dynamic = 'force-dynamic';
 
 export default async function NewPortfolioItemPage() {
+  await requirePageAccess();
   const allCategories = await db.select().from(categories);
 
   return (

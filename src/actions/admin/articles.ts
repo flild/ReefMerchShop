@@ -1,12 +1,14 @@
 'use server';
 
+import { assertStaffManager } from '@/lib/auth';
+
 import { db } from '@/db';
 import { articles } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
-import { writeFile } from 'fs/promises';
-import path from 'path';
+import { saveImage } from '@/lib/uploads';
+
 
 // Простой генератор slug из названия (в идеале использовать библиотеку типа slugify, но для MVP хватит)
 function generateSlug(title: string) {
@@ -16,7 +18,8 @@ function generateSlug(title: string) {
     .replace(/(^-|-$)+/g, '');
 }
 
-export async function createArticle(prevState: any, formData: FormData) {
+export async function createArticle(prevState: unknown, formData: FormData) {
+  await assertStaffManager();
   const title = formData.get('title') as string;
   let slug = formData.get('slug') as string;
 
@@ -49,6 +52,7 @@ export async function createArticle(prevState: any, formData: FormData) {
 }
 
 export async function toggleArticlePublish(id: string, currentStatus: boolean) {
+  await assertStaffManager();
   try {
     await db.update(articles)
       .set({ 
@@ -67,6 +71,7 @@ export async function toggleArticlePublish(id: string, currentStatus: boolean) {
 }
 
 export async function deleteArticle(id: string) {
+  await assertStaffManager();
   try {
     await db.delete(articles).where(eq(articles.id, id));
     revalidatePath('/admin/content/articles');
@@ -78,7 +83,8 @@ export async function deleteArticle(id: string) {
   }
 }
 
-export async function updateArticle(id: string, prevState: any, formData: FormData) {
+export async function updateArticle(id: string, prevState: unknown, formData: FormData) {
+  await assertStaffManager();
   const title = formData.get('title') as string;
   const slug = formData.get('slug') as string;
   const coverImage = formData.get('coverImage') as string;
@@ -111,23 +117,14 @@ export async function updateArticle(id: string, prevState: any, formData: FormDa
 }
 
 export async function uploadArticleImage(formData: FormData) {
+  await assertStaffManager();
   const file = formData.get('file') as File;
   if (!file || !(file instanceof File)) {
     return { error: 'Файл не найден или имеет неверный формат' };
   }
 
   try {
-    const bytes = await file.arrayBuffer();
-    const buffer = Buffer.from(bytes);
-    
-    // Генерируем уникальное имя без пробелов
-    const filename = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
-    // В MVP сохраняем локально. Папка public/uploads должна существовать
-    const filepath = path.join(process.cwd(), 'public', 'uploads', filename);
-    
-    await writeFile(filepath, buffer);
-    
-    return { url: `/uploads/${filename}` };
+    return { url: (await saveImage(file, 'articles')).path };
   } catch (error) {
     console.error('Ошибка загрузки файла:', error);
     return { error: 'Сервер не смог сохранить файл' };

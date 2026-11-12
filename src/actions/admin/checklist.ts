@@ -1,5 +1,7 @@
 'use server';
 
+import { assertStaffManager } from '@/lib/auth';
+
 import { db } from '@/db';
 import { checklistRules } from '@/db/schema';
 import { eq } from 'drizzle-orm';
@@ -7,6 +9,7 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 
 export async function toggleRuleStatus(id: string, currentStatus: boolean) {
+  await assertStaffManager();
   try {
     await db.update(checklistRules)
       .set({ isActive: !currentStatus })
@@ -21,6 +24,7 @@ export async function toggleRuleStatus(id: string, currentStatus: boolean) {
 }
 
 export async function deleteRule(id: string) {
+  await assertStaffManager();
   try {
     await db.delete(checklistRules).where(eq(checklistRules.id, id));
     revalidatePath('/admin/content');
@@ -31,7 +35,8 @@ export async function deleteRule(id: string) {
   }
 }
 
-export async function createRule(prevState: any, formData: FormData) {
+export async function createRule(prevState: unknown, formData: FormData) {
+  await assertStaffManager();
   const productType = formData.get('productType') as string;
   const parameter = formData.get('parameter') as string;
   const expectedValue = formData.get('expectedValue') as string;

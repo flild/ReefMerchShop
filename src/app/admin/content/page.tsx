@@ -1,3 +1,4 @@
+import { assertStaffManager as requirePageAccess } from '@/lib/auth';
 import { db } from '@/db';
 import { templates, checklistRules } from '@/db/schema'; 
 import { desc } from 'drizzle-orm';
@@ -8,6 +9,7 @@ import { RuleStatusToggle, DeleteRuleButton } from '@/components/admin/content/R
 export const dynamic = 'force-dynamic';
 
 export default async function ContentAdminPage() {
+  await requirePageAccess();
   const templatesList = await db
     .select()
     .from(templates)

@@ -2,9 +2,9 @@
 import { transliterate } from 'transliteration';
 
 import { db } from '@/db';
-import { writeFile } from 'fs/promises';
-import { join } from 'path';
-import { mkdir } from 'fs/promises';
+import { saveImage } from '@/lib/uploads';
+
+
 import { materials, materialTypes, blanks, accessories, materialCategories } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
@@ -169,24 +169,7 @@ export async function createMaterial(formData: FormData) {
   let imageUrl = null;
 
   if (imageFile && imageFile.size > 0) {
-    const bytes = await imageFile.arrayBuffer();
-    const buffer = Buffer.from(bytes);
-
-    // Create directory if it doesn't exist
-    const uploadDir = join(process.cwd(), 'public/admin/material');
-    try {
-      await mkdir(uploadDir, { recursive: true });
-    } catch (e) {
-      // Ignore if exists
-    }
-
-    // Create unique filename
-    const ext = imageFile.name.split('.').pop() || 'png';
-    const filename = `${crypto.randomUUID()}.${ext}`;
-    const path = join(uploadDir, filename);
-
-    await writeFile(path, buffer);
-    imageUrl = `/admin/material/${filename}`;
+    imageUrl = (await saveImage(imageFile, 'materials')).path;
   }
 
   const pricePerCm2 = Number(formData.get('pricePerCm2'));
@@ -232,22 +215,7 @@ export async function updateMaterial(id: string, formData: FormData) {
   let imageUrl = undefined;
 
   if (imageFile && imageFile.size > 0) {
-    const bytes = await imageFile.arrayBuffer();
-    const buffer = Buffer.from(bytes);
-
-    const uploadDir = join(process.cwd(), 'public/admin/material');
-    try {
-      await mkdir(uploadDir, { recursive: true });
-    } catch (e) {
-      // Ignore if exists
-    }
-
-    const ext = imageFile.name.split('.').pop() || 'png';
-    const filename = `${crypto.randomUUID()}.${ext}`;
-    const path = join(uploadDir, filename);
-
-    await writeFile(path, buffer);
-    imageUrl = `/admin/material/${filename}`;
+    imageUrl = (await saveImage(imageFile, 'materials')).path;
   }
 
   const pricePerCm2 = Number(formData.get('pricePerCm2'));
@@ -259,7 +227,7 @@ export async function updateMaterial(id: string, formData: FormData) {
   }
 
   try {
-    const updateData: any = {
+    const updateData: Partial<typeof materials.$inferInsert> = {
       name,
       typeId,
       categoryId: categoryId || null,

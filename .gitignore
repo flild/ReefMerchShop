@@ -52,6 +52,7 @@ examples/**/out/*
 
 # env
 .env*.local
+uploads/
 evals/.env
 
 pr-stats.md

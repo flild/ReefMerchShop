@@ -1,3 +1,4 @@
+import { assertStaffManager as requirePageAccess } from '@/lib/auth';
 import { MaterialCategoryForm } from '@/components/admin/inventory/MaterialCategoryForm';
 import { getSession } from '@/lib/auth';
 import { redirect } from 'next/navigation';
@@ -7,6 +8,7 @@ export const metadata = {
 };
 
 export default async function NewMaterialCategoryPage() {
+  await requirePageAccess();
   const session = await getSession();
   if (!session || (session.role !== 'admin' && session.role !== 'manager')) {
     redirect('/login');

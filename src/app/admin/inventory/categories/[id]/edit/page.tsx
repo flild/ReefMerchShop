@@ -1,3 +1,4 @@
+import { assertStaffManager as requirePageAccess } from '@/lib/auth';
 import { db } from '@/db';
 import { materialCategories } from '@/db/schema';
 import { eq } from 'drizzle-orm';
@@ -14,6 +15,7 @@ export default async function EditMaterialCategoryPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
+  await requirePageAccess();
   const session = await getSession();
   if (!session || (session.role !== 'admin' && session.role !== 'manager')) {
     redirect('/login');

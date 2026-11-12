@@ -1,17 +1,18 @@
 // src/middleware.ts
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { decrypt } from '@/lib/auth';
+import { decrypt } from '@/lib/session-token';
 
-const adminRoutes = ['/admin'];
+const adminRoutes = ['/admin', '/content/articles'];
 const protectedRoutes = ['/profile', '/orders/new']; 
 const authRoutes = ['/login', '/register'];
 
 // Маршруты админки, закрытые от макетчицы (maker)
-const managerOnlyAdminRoutes = ['/admin/users', '/admin/content', '/admin/portfolio'];
+const managerOnlyAdminRoutes = ['/admin/users', '/admin/content', '/admin/portfolio', '/content/articles'];
 
 export async function middleware(request: NextRequest) {
   const path = request.nextUrl.pathname;
+  if (path.startsWith('/uploads/proofs/')) return new NextResponse(null, { status: 404 });
   const isProtectedRoute = protectedRoutes.some((r) => path.startsWith(r));
   const isAdminRoute = adminRoutes.some((r) => path.startsWith(r));
   const isAuthRoute = authRoutes.some((r) => path.startsWith(r));
@@ -20,9 +21,7 @@ export async function middleware(request: NextRequest) {
   const session = await decrypt(cookie);
 
   // Формируем честный базовый URL для внешних редиректов
-  const originHeader = request.headers.get('x-forwarded-host') || request.headers.get('host');
-  const protoHeader = request.headers.get('x-forwarded-proto') || 'http';
-  const baseUrl = process.env.APP_URL || (originHeader ? `${protoHeader}://${originHeader}` : request.nextUrl.origin);
+  const baseUrl = process.env.APP_URL || request.nextUrl.origin;
 
   // 1. Попытка входа в админку
   if (isAdminRoute) {

@@ -1,3 +1,4 @@
+import { assertStaff as requirePageAccess } from '@/lib/auth';
 // src/app/admin/inventory/page.tsx
 import { db } from '@/db';
 import { materials, materialTypes, materialCategories, accessories, blanks } from '@/db/schema';
@@ -60,6 +61,7 @@ interface InventoryPageProps {
 }
 
 export default async function InventoryPage({ searchParams }: InventoryPageProps) {
+  await requirePageAccess();
   const session = await getSession();
   const isMaker = session?.role === 'maker';
 

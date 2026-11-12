@@ -1,55 +1,50 @@
-// src/lib/auth.ts
-import { jwtVerify, SignJWT } from 'jose';
 import { cookies } from 'next/headers';
-
-// В продакшене обязательно задай нормальный JWT_SECRET в .env
-const secretKey = new TextEncoder().encode(process.env.JWT_SECRET || 'super_secret_dev_key_123');
-
-type SessionPayload = {
-  userId: string;
-  role: string;
-};
+import { eq } from 'drizzle-orm';
+import { db } from '@/db';
+import { users } from '@/db/schema';
+import { roleSchema } from '@/lib/validations/auth';
+import { decrypt, signSession } from '@/lib/session-token';
 
 export async function createSession(userId: string, role: string) {
-  const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 дней
-  
-  const token = await new SignJWT({ userId, role })
-    .setProtectedHeader({ alg: 'HS256' })
-    .setIssuedAt()
-    .setExpirationTime('7d')
-    .sign(secretKey);
-
-  const isHttps = process.env.APP_URL?.startsWith('https://') ?? false;
-
-  const cookieStore = await cookies();
-  cookieStore.set('session', token, {
+  const parsedRole = roleSchema.safeParse(role);
+  if (!parsedRole.success) throw new Error('Неизвестная роль');
+  const token = await signSession({ userId, role: parsedRole.data });
+  (await cookies()).set('session', token, {
     httpOnly: true,
-    secure: isHttps, // теперь на http:// IP-адреса кука не будет блокироваться браузером
-    expires: expiresAt,
-    sameSite: 'lax',
-    path: '/',
+    secure: process.env.NODE_ENV === 'production' || process.env.APP_URL?.startsWith('https://') === true,
+    expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+    sameSite: 'lax', path: '/',
   });
 }
 
 export async function deleteSession() {
-  const cookieStore = await cookies();
-  cookieStore.delete('session');
-}
-
-export async function decrypt(token: string | undefined = '') {
-  try {
-    const { payload } = await jwtVerify(token, secretKey, {
-      algorithms: ['HS256'],
-    });
-    return payload as SessionPayload;
-  } catch (error) {
-    return null;
-  }
+  (await cookies()).delete('session');
 }
 
 export async function getSession() {
-  const cookieStore = await cookies();
-  const token = cookieStore.get('session')?.value;
-  if (!token) return null;
-  return await decrypt(token);
+  const payload = await decrypt((await cookies()).get('session')?.value);
+  if (!payload) return null;
+  const [user] = await db.select({ id: users.id, role: users.role })
+    .from(users).where(eq(users.id, payload.userId)).limit(1);
+  const role = roleSchema.safeParse(user?.role);
+  if (!user || !role.success) return null;
+  return { userId: user.id, role: role.data };
+}
+
+export async function assertStaff() {
+  const session = await getSession();
+  if (!session || session.role === 'client') throw new Error('Недостаточно прав');
+  return session;
+}
+
+export async function assertStaffManager() {
+  const session = await assertStaff();
+  if (session.role === 'maker') throw new Error('Недостаточно прав');
+  return session;
+}
+
+export async function assertAdmin() {
+  const session = await assertStaffManager();
+  if (session.role !== 'admin') throw new Error('Недостаточно прав');
+  return session;
 }

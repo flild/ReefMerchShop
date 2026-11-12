@@ -1,3 +1,4 @@
+import { assertStaffManager as requirePageAccess } from '@/lib/auth';
 import { db } from '@/db';
 import { portfolioItems, categories } from '@/db/schema';
 import { eq, desc } from 'drizzle-orm'; // like, or, and, sql больше не нужны
@@ -13,6 +14,7 @@ export default async function PortfolioAdminPage({
 }: {
   searchParams: Promise<{ q?: string; category?: string }>;
 }) {
+  await requirePageAccess();
   const params = await searchParams;
   const q = params.q || '';
   const currentCategory = params.category || '';

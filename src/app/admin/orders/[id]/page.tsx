@@ -1,3 +1,4 @@
+import { assertStaff as requirePageAccess } from '@/lib/auth';
 import { db } from '@/db';
 import { orderProofs } from '@/db/schema';
 import Image from 'next/image';
@@ -10,7 +11,7 @@ import {
   accessories, 
   files 
 } from '@/db/schema';
-import { eq, desc } from 'drizzle-orm';
+import { eq, desc, sql } from 'drizzle-orm';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { OrderStatusSelect } from '@/components/admin/orders/OrderStatusSelect';
@@ -23,6 +24,7 @@ interface PageProps {
 }
 
 export default async function OrderDetailsPage({ params }: PageProps) {
+  await requirePageAccess();
   const { id } = await params;
   
   const session = await getSession();
@@ -35,7 +37,7 @@ export default async function OrderDetailsPage({ params }: PageProps) {
       managerComment: orderProofs.managerComment,
       clientComment: orderProofs.clientComment,
       createdAt: orderProofs.createdAt,
-      fileUrl: files.path,
+      fileUrl: sql<string>`'/files/' || ${files.id}`,
     })
     .from(orderProofs)
     .leftJoin(files, eq(orderProofs.fileId, files.id))

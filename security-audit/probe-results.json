@@ -1,0 +1,46 @@
+{
+  "date": "2026-11-12",
+  "boundary": "Original source modules; real SQLite in memory; mocked Next request/cache/navigation and filesystem uploads. No HTTP or production deployment tested.",
+  "results": [
+    {
+      "name": "JWT with source-code fallback key accepts a nonexistent administrator",
+      "reproduced": true
+    },
+    {
+      "name": "Production session cookie lacks Secure when APP_URL is absent",
+      "reproduced": true
+    },
+    {
+      "name": "Anonymous caller changes an order to an arbitrary status",
+      "reproduced": true
+    },
+    {
+      "name": "Anonymous caller creates and deletes an order item",
+      "reproduced": true
+    },
+    {
+      "name": "Anonymous caller creates checklist templates and blocks",
+      "reproduced": true
+    },
+    {
+      "name": "Anonymous caller publishes and deletes an article",
+      "reproduced": true
+    },
+    {
+      "name": "Anonymous HTML upload reaches the public portfolio directory",
+      "reproduced": true
+    },
+    {
+      "name": "Manager receives administrator passwordHash in OrderForm props",
+      "reproduced": true
+    },
+    {
+      "name": "Maker receives totalPrice in ParticipantTableRow props",
+      "reproduced": true
+    },
+    {
+      "name": "Demoted administrator retains admin mutations with old JWT",
+      "reproduced": true
+    }
+  ]
+}

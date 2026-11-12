@@ -5,6 +5,5 @@ export const ROLES = {
   admin: 'Админ',
 } as const;
 
-// Хитрий тип: дает автокомплит для базовых ролей, но позволяет прокинуть любую строку, 
-// если добавишь новую роль прямо в БД
-export type AppRole = keyof typeof ROLES | (string & {});
+// Неизвестные роли не дают доступ к закрытым разделам.
+export type AppRole = keyof typeof ROLES;

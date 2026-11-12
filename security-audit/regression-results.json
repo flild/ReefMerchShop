@@ -1,0 +1,22 @@
+{
+  "passed": 16,
+  "checks": [
+    "Default key, missing secret, nonexistent user, and unknown roles are rejected",
+    "Production cookies require Secure even without APP_URL",
+    "Restricted administrative mutations reject anonymous callers before validation",
+    "Restricted administrative mutations reject client callers before validation",
+    "Restricted administrative mutations reject maker callers before validation",
+    "Manager cannot manage users; current database role overrides old JWT; deleted users lose access",
+    "Authorized order changes work; arbitrary statuses do not",
+    "Order form exposes only id, name, email; maker dashboard is blocked",
+    "Article editors reject anonymous, client and maker users before reading drafts",
+    "Maker receives no price and cannot set payment states or change participant details",
+    "HTML/SVG, forged image MIME, oversized files are rejected; valid rasters are re-encoded with safe names",
+    "Proofs are stored outside public and served only to staff or the order owner",
+    "Rate-limit quota is atomic and expires in SQLite",
+    "Registration fixes the client role; login validates input and throttles repeated passwords",
+    "Public collect requests remain available to guests and enforce quotas and field limits",
+    "JSON-LD escapes closing script tags"
+  ],
+  "boundary": "Original source, disposable SQLite file and real sharp; mocked Next request and upload filesystem. No production HTTP tested."
+}

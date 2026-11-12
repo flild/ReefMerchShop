@@ -1,5 +1,7 @@
 'use server';
 
+import { assertStaffManager } from '@/lib/auth';
+
 import { db } from '@/db';
 import { checklistTemplates, checklistBlocks } from '@/db/schema';
 import { eq, desc } from 'drizzle-orm';
@@ -29,6 +31,7 @@ export async function getChecklistTemplate(id: string) {
 }
 
 export async function createChecklistTemplate(data: { title: string; description: string; imageUrl?: string }) {
+  await assertStaffManager();
   const id = crypto.randomUUID();
   await db.insert(checklistTemplates).values({
     id,
@@ -41,6 +44,7 @@ export async function createChecklistTemplate(data: { title: string; description
 }
 
 export async function updateChecklistTemplate(id: string, data: { title: string; description: string; imageUrl?: string }) {
+  await assertStaffManager();
   await db.update(checklistTemplates).set({
     title: data.title,
     description: data.description || null,
@@ -52,6 +56,7 @@ export async function updateChecklistTemplate(id: string, data: { title: string;
 }
 
 export async function deleteChecklistTemplate(id: string) {
+  await assertStaffManager();
   await db.delete(checklistTemplates).where(eq(checklistTemplates.id, id));
   revalidatePath('/admin/content/checklists');
 }
@@ -64,6 +69,7 @@ export async function createChecklistBlock(templateId: string, data: {
   optionsJson: string;
   orderIndex: number;
 }) {
+  await assertStaffManager();
   const id = crypto.randomUUID();
   await db.insert(checklistBlocks).values({
     id,
@@ -87,6 +93,7 @@ export async function updateChecklistBlock(id: string, templateId: string, data:
   optionsJson: string;
   orderIndex: number;
 }) {
+  await assertStaffManager();
   await db.update(checklistBlocks).set({
     type: data.type,
     title: data.title,
@@ -99,6 +106,7 @@ export async function updateChecklistBlock(id: string, templateId: string, data:
 }
 
 export async function deleteChecklistBlock(id: string, templateId: string) {
+  await assertStaffManager();
   await db.delete(checklistBlocks).where(eq(checklistBlocks.id, id));
   revalidatePath(`/admin/content/checklists/${templateId}`);
 }

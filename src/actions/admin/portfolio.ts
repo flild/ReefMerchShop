@@ -1,47 +1,21 @@
 'use server';
 
+import { assertStaffManager } from '@/lib/auth';
+
 import { db } from '@/db';
 import { portfolioItems } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
-import fs from 'fs/promises';
-import path from 'path';
+import { saveImage, removeImage } from '@/lib/uploads';
+
 
 // Хелпер для сохранения файла на диск
-async function saveImageLocally(file: File): Promise<string> {
-  const bytes = await file.arrayBuffer();
-  const buffer = Buffer.from(bytes);
-  
-  const ext = file.name.split('.').pop() || 'jpg';
-  const fileName = `${crypto.randomUUID()}.${ext}`;
-  const uploadDir = path.join(process.cwd(), 'public/uploads/portfolio');
-
-  await fs.mkdir(uploadDir, { recursive: true });
-  
-  const filePath = path.join(uploadDir, fileName);
-  await fs.writeFile(filePath, buffer);
-
-  return `/uploads/portfolio/${fileName}`;
-}
-
-// Хелпер для физического удаления файла с диска
-async function deleteFileLocally(fileUrl: string) {
-  // Проверяем, что это наш локальный путь, а не внешняя ссылка
-  if (!fileUrl.startsWith('/uploads/portfolio/')) return;
-  
-  try {
-    const fileName = path.basename(fileUrl);
-    const filePath = path.join(process.cwd(), 'public/uploads/portfolio', fileName);
-    await fs.unlink(filePath);
-  } catch (err) {
-    console.error(`Не удалось физически удалить файл ${fileUrl}:`, err);
-    // Ошибку проглатываем, чтобы не заблокировать удаление из БД, 
-    // если файла по какой-то причине уже нет на диске.
-  }
-}
+async function saveImageLocally(file: File) { return (await saveImage(file, 'portfolio')).path; }
+async function deleteFileLocally(url: string) { await removeImage(url); }
 
 export async function deletePortfolioItem(id: string) {
+  await assertStaffManager();
   try {
     // Сначала достаем запись, чтобы узнать путь к картинке
     const [item] = await db
@@ -66,6 +40,7 @@ export async function deletePortfolioItem(id: string) {
 }
 
 export async function createPortfolioItem(formData: FormData) {
+  await assertStaffManager();
   const title = formData.get('title') as string;
   const categoryId = formData.get('categoryId') as string;
   const authorName = formData.get('authorName') as string;
@@ -97,11 +72,12 @@ export async function createPortfolioItem(formData: FormData) {
 }
 
 export async function updatePortfolioItem(id: string, formData: FormData) {
+  await assertStaffManager();
   const title = formData.get('title') as string;
   const categoryId = formData.get('categoryId') as string;
   const authorName = formData.get('authorName') as string;
   const description = formData.get('description') as string;
-  const existingImageUrl = formData.get('existingImageUrl') as string;
+
   
   const imageFile = formData.get('image') as File | null;
 
@@ -110,15 +86,17 @@ export async function updatePortfolioItem(id: string, formData: FormData) {
   }
 
   try {
-    let imageUrl = existingImageUrl;
+    const [existing] = await db.select({ imageUrl: portfolioItems.imageUrl }).from(portfolioItems).where(eq(portfolioItems.id, id)).limit(1);
+    if (!existing) return { error: 'Portfolio item not found' };
+    let imageUrl = existing.imageUrl;
     
     // Если прикрепили новый файл
     if (imageFile && imageFile.size > 0) {
       imageUrl = await saveImageLocally(imageFile);
       
       // Удаляем старый файл, чтобы он не лежал мертвым грузом
-      if (existingImageUrl) {
-        await deleteFileLocally(existingImageUrl);
+      if (existing.imageUrl) {
+        await deleteFileLocally(existing.imageUrl);
       }
     }
 

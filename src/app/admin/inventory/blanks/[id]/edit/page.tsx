@@ -1,3 +1,4 @@
+import { assertStaffManager as requirePageAccess } from '@/lib/auth';
 import { db } from '@/db';
 import { blanks, materials } from '@/db/schema';
 import { eq } from 'drizzle-orm';
@@ -12,6 +13,7 @@ export default async function EditBlankPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
+  await requirePageAccess();
   const { id } = await params;
 
   const [blank] = await db

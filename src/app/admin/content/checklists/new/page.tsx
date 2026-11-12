@@ -1,8 +1,10 @@
+import { assertStaffManager as requirePageAccess } from '@/lib/auth';
 import { ChecklistTemplateForm } from '@/components/admin/content/checklists/ChecklistTemplateForm';
 
 export const dynamic = 'force-dynamic';
 
-export default function NewChecklistTemplatePage() {
+export default async function NewChecklistTemplatePage() {
+  await requirePageAccess();
   return (
     <div className="flex flex-col gap-8">
       <header>

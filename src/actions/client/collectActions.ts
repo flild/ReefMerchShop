@@ -6,6 +6,7 @@ import { getSession } from '@/lib/auth';
 import { collectRequestSchema } from '@/lib/validations/collect-request';
 import { eq } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
+import { consumeRateLimit } from '@/lib/rate-limit';
 
 type RequestResult =
   | { success: true; participantId: string }
@@ -24,6 +25,9 @@ export async function createParticipantRequest(formData: FormData): Promise<Requ
 
   let result: RequestResult;
   try {
+    if (!await consumeRateLimit('collect-request-global', 'all', 100) || !await consumeRateLimit('collect-request', email.toLowerCase(), 5)) {
+      return { success: false, error: 'Слишком много заявок. Попробуй через 15 минут.' };
+    }
     // Проверка набора и сохранение полной заявки происходят в одной транзакции.
     result = await db.transaction(async (tx): Promise<RequestResult> => {
       const [collect] = await tx.select({ status: collects.status })

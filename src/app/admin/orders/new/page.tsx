@@ -10,11 +10,11 @@ export const dynamic = 'force-dynamic';
 
 export default async function NewOrderPage() {
   const session = await getSession();
-  if (session?.role === 'maker') {
+  if (!session || !['admin', 'manager'].includes(session.role)) {
     redirect('/admin/orders');
   }
 
-  const allUsers = await db.select().from(users);
+  const allUsers = await db.select({ id: users.id, name: users.name, email: users.email }).from(users);
 
   return (
     <div className="flex flex-col gap-8">

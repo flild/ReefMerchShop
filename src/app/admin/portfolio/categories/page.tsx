@@ -1,3 +1,4 @@
+import { assertStaffManager as requirePageAccess } from '@/lib/auth';
 import { db } from '@/db';
 import { categories } from '@/db/schema';
 import Link from 'next/link';
@@ -7,6 +8,7 @@ import { DeleteCategoryButton } from '@/components/admin/categories/DeleteCatego
 export const dynamic = 'force-dynamic';
 
 export default async function CategoriesAdminPage() {
+  await requirePageAccess();
   const items = await db.select().from(categories);
 
   return (

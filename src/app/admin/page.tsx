@@ -1,3 +1,5 @@
+import { getSession } from '@/lib/auth';
+import { redirect } from 'next/navigation';
 import { db } from '@/db';
 import { orders, materials, accessories, collects, collectParticipants } from '@/db/schema';
 import { count, eq, lte, desc, and, gte, sql, or, lt, ne } from 'drizzle-orm';
@@ -26,6 +28,8 @@ const chartStatusColors: Record<string, string> = {
 };
 
 export default async function AdminDashboard() {
+  const session = await getSession();
+  if (!session || !['admin', 'manager'].includes(session.role)) redirect('/admin/orders');
   const [newOrders] = await db
     .select({ value: count() })
     .from(orders)

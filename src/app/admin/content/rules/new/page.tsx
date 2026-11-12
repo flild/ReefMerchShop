@@ -1,8 +1,10 @@
+import { assertStaffManager as requirePageAccess } from '@/lib/auth';
 import { RuleForm } from '@/components/admin/content/RuleForm';
 
 export const dynamic = 'force-dynamic';
 
-export default function NewRulePage() {
+export default async function NewRulePage() {
+  await requirePageAccess();
   return (
     <div className="flex flex-col gap-8">
       <header>

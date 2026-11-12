@@ -1,3 +1,4 @@
+import { assertStaff as requirePageAccess } from '@/lib/auth';
 import { db } from '@/db';
 import { collects } from '@/db/schema';
 import { desc } from 'drizzle-orm';
@@ -10,6 +11,7 @@ import { getSession } from '@/lib/auth';
 export const dynamic = 'force-dynamic';
 
 export default async function CollectsAdminPage() {
+  await requirePageAccess();
   const session = await getSession();
   const isMaker = session?.role === 'maker';
 

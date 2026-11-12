@@ -1,4 +1,6 @@
 'use server';
+import { assertStaffManager } from '@/lib/auth';
+
 
 import { db } from '@/db';
 import {
@@ -9,7 +11,6 @@ import {
   accessories
 } from '@/db/schema';
 import { eq } from 'drizzle-orm';
-import { getSession } from '@/lib/auth';
 import { revalidatePath } from 'next/cache';
 import {
   updatePricingTierSchema,
@@ -18,14 +19,6 @@ import {
   updateModifierSchema,
   updateAccessoryPriceSchema
 } from '@/lib/validations/pricing';
-
-async function assertStaffManager() {
-  const session = await getSession();
-  if (!session || (session.role !== 'admin' && session.role !== 'manager')) {
-    throw new Error('У вас нет прав для выполнения этого действия');
-  }
-  return session;
-}
 
 export async function updatePricingTierAction(id: string, price: number) {
   await assertStaffManager();

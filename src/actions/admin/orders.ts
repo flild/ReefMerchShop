@@ -2,17 +2,20 @@
 
 import { db } from '@/db';
 import { orders, orderStatusHistory, files, orderProofs, orderItems} from '@/db/schema';
-import { writeFile, mkdir } from 'fs/promises';
-import { eq } from 'drizzle-orm';
+import { saveImage } from '@/lib/uploads';
+import { and, eq } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
-import { getSession } from '@/lib/auth';
-import path from 'path';
+import { assertStaff, assertStaffManager } from '@/lib/auth';
+import { z } from 'zod';
 
 
-import { orderItemSchema, orderProofSchema } from '@/lib/validations/orders';
+import { orderItemSchema, orderProofSchema, orderSchema } from '@/lib/validations/orders';
 export async function updateOrderStatus(orderId: string, status: string) {
   try {
+    await assertStaff();
+    const parsed = z.object({ orderId: z.string().uuid(), status: orderSchema.shape.status }).safeParse({ orderId, status });
+    if (!parsed.success) return { success: false, error: 'Некорректный статус заказа' };
     await db.update(orders).set({ status }).where(eq(orders.id, orderId));
     
     await db.insert(orderStatusHistory).values({
@@ -32,23 +35,10 @@ export async function updateOrderStatus(orderId: string, status: string) {
 }
 
 export async function createOrder(formData: FormData) {
-  const session = await getSession();
-  if (!session || session.role === 'maker' || session.role === 'client') {
-    return { error: 'Недостаточно прав для создания заказа' };
-  }
-
-  const userId = formData.get('userId') as string;
-  const status = formData.get('status') as string || 'new';
-  const totalStr = formData.get('total') as string;
-  const details = formData.get('details') as string;
-  const customClientName = formData.get('customClientName') as string;
-  const customClientContact = formData.get('customClientContact') as string;
-
-  const total = parseInt(totalStr, 10);
-
-  if (isNaN(total) || total < 0) {
-    return { error: 'Сумма должна быть адекватным числом' };
-  }
+  await assertStaffManager();
+  const parsed = orderSchema.safeParse({ ...Object.fromEntries(formData), userId: formData.get('userId') || null });
+  if (!parsed.success) return { error: parsed.error.issues[0].message };
+  const { userId, status, total, details, customClientName, customClientContact } = parsed.data;
 
   const orderNumber = `ORD-${Math.floor(100000 + Math.random() * 900000)}`;
   const orderId = crypto.randomUUID();
@@ -84,22 +74,10 @@ export async function createOrder(formData: FormData) {
 }
 
 export async function updateOrder(id: string, formData: FormData) {
-  const session = await getSession();
-  if (!session || session.role === 'maker' || session.role === 'client') {
-    return { error: 'Недостаточно прав для редактирования заказа' };
-  }
-
-  const userId = formData.get('userId') as string;
-  const totalStr = formData.get('total') as string;
-  const details = formData.get('details') as string;
-  const customClientName = formData.get('customClientName') as string;
-  const customClientContact = formData.get('customClientContact') as string;
-
-  const total = parseInt(totalStr, 10);
-
-  if (isNaN(total) || total < 0) {
-    return { error: 'Сумма должна быть адекватным числом' };
-  }
+  await assertStaffManager();
+  const parsed = orderSchema.safeParse({ ...Object.fromEntries(formData), userId: formData.get('userId') || null });
+  if (!parsed.success) return { error: parsed.error.issues[0].message };
+  const { userId, total, details, customClientName, customClientContact } = parsed.data;
 
   try {
     await db.update(orders).set({
@@ -122,6 +100,7 @@ export async function updateOrder(id: string, formData: FormData) {
 }
 
 export async function createOrderItem(formData: FormData) {
+  await assertStaffManager();
   const rawData = {
     orderId: formData.get('orderId'),
     name: formData.get('name'),
@@ -166,6 +145,7 @@ export async function createOrderItem(formData: FormData) {
 
 // Экшен загрузки цветопробы локально
 export async function uploadOrderProof(formData: FormData) {
+  const session = await assertStaff();
   const orderId = formData.get('orderId') as string;
   const orderItemId = formData.get('orderItemId') as string;
   const managerComment = formData.get('managerComment') as string;
@@ -180,35 +160,21 @@ export async function uploadOrderProof(formData: FormData) {
   }
 
   try {
-    // 1. Конвертируем файл в буфер
-    const bytes = await file.arrayBuffer();
-    const buffer = Buffer.from(bytes);
-
-    // 2. Создаем директорию, если её нет
-    const uploadDir = path.join(process.cwd(), 'public', 'uploads', 'proofs');
-    await mkdir(uploadDir, { recursive: true });
-
-    // 3. Генерируем уникальное имя файла, чтобы не перезаписать чужие
-    const uniqueFilename = `${Date.now()}-${Math.round(Math.random() * 1E9)}-${file.name.replace(/\s+/g, '_')}`;
-    const filePath = path.join(uploadDir, uniqueFilename);
-    
-    // 4. Пишем файл на диск
-    await writeFile(filePath, buffer);
-
-    // Относительный путь для веба (Next.js отдаст его из public)
-    const publicPath = `/uploads/proofs/${uniqueFilename}`;
-
-    // 5. Записываем метаданные в таблицу files
+    const validation = orderProofSchema.omit({ fileId: true }).safeParse({ orderId, orderItemId, managerComment: managerComment ?? '' });
+    if (!validation.success) return { success: false, error: validation.error.issues[0].message };
+    const [item] = await db.select({ id: orderItems.id, orderId: orderItems.orderId }).from(orderItems).where(eq(orderItems.id, orderItemId)).limit(1);
+    if (!item || item.orderId !== orderId) return { success: false, error: 'Order item does not belong to order' };
+    const saved = await saveImage(file, 'proofs');
     const fileId = crypto.randomUUID();
     await db.insert(files).values({
       id: fileId,
       name: file.name,
-      path: publicPath,
-      mimeType: file.type,
-      size: file.size,
+      path: saved.path,
+      mimeType: saved.mimeType,
+      size: saved.size,
+      ownerId: session.userId,
     });
 
-    // 6. Создаем саму цветопробу
     await db.insert(orderProofs).values({
       id: crypto.randomUUID(),
       orderId,
@@ -228,8 +194,9 @@ export async function uploadOrderProof(formData: FormData) {
 
 // Экшен удаления позиции из заказа
 export async function deleteOrderItem(itemId: string, orderId: string) {
+  await assertStaffManager();
   try {
-    await db.delete(orderItems).where(eq(orderItems.id, itemId));
+    await db.delete(orderItems).where(and(eq(orderItems.id, itemId), eq(orderItems.orderId, orderId)));
     revalidatePath(`/admin/orders/${orderId}`);
     return { success: true };
   } catch (error) {

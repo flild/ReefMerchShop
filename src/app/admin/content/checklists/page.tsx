@@ -1,3 +1,4 @@
+import { assertStaffManager as requirePageAccess } from '@/lib/auth';
 import { getChecklistTemplates } from '@/actions/admin/checklists';
 import Link from 'next/link';
 import { DeleteChecklistTemplateButton } from '@/components/admin/content/checklists/DeleteChecklistTemplateButton';
@@ -5,6 +6,7 @@ import { DeleteChecklistTemplateButton } from '@/components/admin/content/checkl
 export const dynamic = 'force-dynamic';
 
 export default async function AdminChecklistsPage() {
+  await requirePageAccess();
   const templates = await getChecklistTemplates();
 
   return (

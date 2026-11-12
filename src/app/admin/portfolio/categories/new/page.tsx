@@ -1,8 +1,10 @@
+import { assertStaffManager as requirePageAccess } from '@/lib/auth';
 import { CategoryForm } from '@/components/admin/categories/CategoryForm';
 
 export const dynamic = 'force-dynamic';
 
-export default function NewCategoryPage() {
+export default async function NewCategoryPage() {
+  await requirePageAccess();
   return (
     <div className="flex flex-col gap-8">
       <header>

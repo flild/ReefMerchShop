@@ -1,28 +1,25 @@
 'use server';
+import { assertAdmin } from '@/lib/auth';
+
 
 import { db } from '@/db';
 import { users } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
-import { getSession } from '@/lib/auth';
 import { hash } from 'bcryptjs';
+import { createUserSchema, updateRoleSchema } from '@/lib/validations/auth';
 
 type ActionResponse = {
   success?: boolean;
   error?: string;
 };
 
-async function assertAdmin() {
-  const session = await getSession();
-  if (!session || session.role !== 'admin') {
-    throw new Error('Недостаточно прав: действие разрешено только администраторам');
-  }
-  return session;
-}
-
 export async function updateUserRole(userId: string, newRole: string): Promise<ActionResponse> {
   try {
     const session = await assertAdmin();
+
+    const parsed = updateRoleSchema.safeParse({ userId, newRole });
+    if (!parsed.success) return { success: false, error: 'Некорректная роль или ID пользователя' };
 
     if (session.userId === userId && newRole !== 'admin') {
       return { 
@@ -76,10 +73,9 @@ export async function createUser(
   try {
     await assertAdmin();
 
-    const name = formData.get('name')?.toString().trim();
-    const email = formData.get('email')?.toString().trim().toLowerCase();
-    const role = formData.get('role')?.toString().trim() || 'client';
-    const password = formData.get('password')?.toString();
+    const parsed = createUserSchema.safeParse(Object.fromEntries(formData));
+    if (!parsed.success) return { success: false, error: parsed.error.issues[0].message };
+    const { name, email, role, password } = parsed.data;
 
     if (!name || !email || !password) {
       return { success: false, error: 'Имя, Email и пароль обязательны' };

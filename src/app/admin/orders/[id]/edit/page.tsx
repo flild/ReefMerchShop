@@ -14,7 +14,7 @@ export default async function EditOrderPage({
   params: Promise<{ id: string }>;
 }) {
   const session = await getSession();
-  if (session?.role === 'maker') {
+  if (!session || !['admin', 'manager'].includes(session.role)) {
     redirect('/admin/orders');
   }
 
@@ -29,7 +29,7 @@ export default async function EditOrderPage({
     notFound();
   }
 
-  const allUsers = await db.select().from(users);
+  const allUsers = await db.select({ id: users.id, name: users.name, email: users.email }).from(users);
 
   return (
     <div className="flex flex-col gap-8">

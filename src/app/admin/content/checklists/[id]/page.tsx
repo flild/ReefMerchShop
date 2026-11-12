@@ -1,3 +1,4 @@
+import { assertStaffManager as requirePageAccess } from '@/lib/auth';
 import { getChecklistTemplate } from '@/actions/admin/checklists';
 import { ChecklistTemplateForm } from '@/components/admin/content/checklists/ChecklistTemplateForm';
 import { ChecklistBlocksManager } from '@/components/admin/content/checklists/ChecklistBlocksManager';
@@ -6,6 +7,7 @@ import { notFound } from 'next/navigation';
 export const dynamic = 'force-dynamic';
 
 export default async function EditChecklistTemplatePage(props: { params: Promise<{ id: string }> }) {
+  await requirePageAccess();
   const params = await props.params;
   const template = await getChecklistTemplate(params.id);
 

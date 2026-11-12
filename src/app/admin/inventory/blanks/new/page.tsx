@@ -1,3 +1,4 @@
+import { assertStaffManager as requirePageAccess } from '@/lib/auth';
 import { db } from '@/db';
 import { materials } from '@/db/schema';
 import { BlankForm } from '@/components/admin/inventory/BlankForm';
@@ -6,6 +7,7 @@ import Link from 'next/link';
 export const dynamic = 'force-dynamic';
 
 export default async function NewBlankPage() {
+  await requirePageAccess();
   // Вытаскиваем материалы, чтобы было из чего нарезать заготовки
   const allMaterials = await db.select({
     id: materials.id,

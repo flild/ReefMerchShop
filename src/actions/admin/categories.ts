@@ -1,5 +1,7 @@
 'use server';
 
+import { assertStaffManager } from '@/lib/auth';
+
 import { db } from '@/db';
 import { categories } from '@/db/schema';
 import { eq } from 'drizzle-orm';
@@ -23,6 +25,7 @@ function generateSlug(text: string): string {
 }
 
 export async function deleteCategory(id: string) {
+  await assertStaffManager();
   try {
     await db.delete(categories).where(eq(categories.id, id));
     
@@ -36,6 +39,7 @@ export async function deleteCategory(id: string) {
 }
 
 export async function createCategory(formData: FormData) {
+  await assertStaffManager();
   const name = formData.get('name') as string;
   let slug = formData.get('slug') as string;
   const description = formData.get('description') as string;
@@ -66,6 +70,7 @@ export async function createCategory(formData: FormData) {
 }
 
 export async function updateCategory(id: string, formData: FormData) {
+  await assertStaffManager();
   const name = formData.get('name') as string;
   let slug = formData.get('slug') as string;
   const description = formData.get('description') as string;

@@ -2,6 +2,7 @@
 
 import { useTransition } from 'react';
 import { updateParticipantStatus } from '@/actions/admin/collects';
+import { toast } from 'sonner';
 
 const STATUSES = {
   'new': 'Новая (ждет макетов)',
@@ -17,15 +18,17 @@ interface Props {
   participantId: string;
   currentStatus: string;
   collectId: string;
+  canManagePayments?: boolean;
 }
 
-export function ParticipantStatusSelect({ participantId, currentStatus, collectId }: Props) {
+export function ParticipantStatusSelect({ participantId, currentStatus, collectId, canManagePayments = true }: Props) {
   const [isPending, startTransition] = useTransition();
 
   const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const newStatus = e.target.value;
     startTransition(async () => {
-      await updateParticipantStatus(participantId, newStatus, collectId);
+      const result = await updateParticipantStatus(participantId, newStatus, collectId);
+      if (result.error) toast.error(result.error);
     });
   };
 
@@ -41,8 +44,8 @@ export function ParticipantStatusSelect({ participantId, currentStatus, collectI
         'border-theme-border text-theme-text focus:border-theme-highlight'
       }`}
     >
-      {Object.entries(STATUSES).map(([key, label]) => (
-        <option key={key} value={key}>
+      {Object.entries(STATUSES).filter(([key]) => canManagePayments || !['paid', 'pending_payment'].includes(key) || key === currentStatus).map(([key, label]) => (
+        <option key={key} value={key} disabled={!canManagePayments && ['paid', 'pending_payment'].includes(key)}>
           {label}
         </option>
       ))}

@@ -6,21 +6,28 @@ import { eq } from 'drizzle-orm';
 import { compare, hash } from 'bcryptjs';
 import { createSession, deleteSession } from '@/lib/auth';
 import { redirect } from 'next/navigation';
+import { loginSchema, registerSchema } from '@/lib/validations/auth';
+import { consumeRateLimit } from '@/lib/rate-limit';
 
-export async function login(prevState: any, formData: FormData) {
-  const email = formData.get('email') as string;
-  const password = formData.get('password') as string;
+export async function login(_prevState: { error?: string } | null, formData: FormData) {
+  const parsed = loginSchema.safeParse(Object.fromEntries(formData));
+  if (!parsed.success) return { error: 'Проверь email и пароль' };
+  const { email, password } = parsed.data;
 
   if (!email || !password) {
     return { error: 'Заполни все поля, не тупи.' };
   }
 
   try {
+    if (!await consumeRateLimit('login-global', 'all', 300) || !await consumeRateLimit('login', email, 10)) {
+      return { error: 'Слишком много попыток. Попробуй через 15 минут.' };
+    }
     // Ищем юзера по почте
     const [user] = await db.select().from(users).where(eq(users.email, email));
 
     // Важно: не даем злоумышленникам понять, есть ли такой email в базе
     if (!user) {
+      await compare(password, '$2b$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy');
       return { error: 'Неверный email или пароль.' }; 
     }
 
@@ -48,11 +55,10 @@ export async function logout() {
   redirect('/login');
 }
 
-export async function register(prevState: any, formData: FormData) {
-  const name = formData.get('name') as string;
-  const email = formData.get('email') as string;
-  const password = formData.get('password') as string;
-  const confirmPassword = formData.get('confirmPassword') as string;
+export async function register(_prevState: { error?: string } | null, formData: FormData) {
+  const parsed = registerSchema.safeParse(Object.fromEntries(formData));
+  if (!parsed.success) return { error: parsed.error.issues[0].message };
+  const { name, email, password, confirmPassword } = parsed.data;
 
   if (!name || !email || !password) {
     return { error: 'Заполни все поля, не ленись.' };
@@ -67,6 +73,9 @@ export async function register(prevState: any, formData: FormData) {
   }
 
   try {
+    if (!await consumeRateLimit('register-global', 'all', 30) || !await consumeRateLimit('register', email, 3)) {
+      return { error: 'Слишком много попыток. Попробуй через 15 минут.' };
+    }
     // Проверяем, не занят ли email
     const existing = await db.select().from(users).where(eq(users.email, email));
     if (existing.length > 0) {

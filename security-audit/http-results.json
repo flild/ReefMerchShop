@@ -1,0 +1,12 @@
+{
+  "passed": 6,
+  "checks": [
+    "Anonymous admin access redirects to login",
+    "Manager order form omits password hashes; security headers are present",
+    "Maker HTML and RSC payload omit participant prices",
+    "Drafts are available to managers and hidden from guests and makers on both route families",
+    "Legacy public proof URLs are blocked",
+    "JWT signed with the old default key is rejected over HTTP"
+  ],
+  "boundary": "Local production build; generated JWTs; disposable fixture database; no deployed server tested."
+}

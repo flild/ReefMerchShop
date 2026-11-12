@@ -1,9 +1,11 @@
+import { assertStaffManager as requirePageAccess } from '@/lib/auth';
 import { AccessoryForm } from '@/components/admin/inventory/AccessoryForm';
 import Link from 'next/link';
 
 export const dynamic = 'force-dynamic';
 
-export default function NewAccessoryPage() {
+export default async function NewAccessoryPage() {
+  await requirePageAccess();
   return (
     <div className="flex flex-col gap-8">
       <header className="flex items-center gap-4">
